@@ -9,6 +9,7 @@ import java.time.temporal.ValueRange;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 import org.json.JSONObject;
 
@@ -48,6 +49,7 @@ public class RegistrationDTO {
 	private String additionalInfoReqId;
 	private String processId;
 	private FlowType flowType;
+	private String preRegType;
 	private RegistrationMetaDataDTO registrationMetaDataDTO;
 	private OSIDataDTO osiDataDTO;
 	private List<String> selectedLanguagesByApplicant = new ArrayList<>();
@@ -94,6 +96,7 @@ public class RegistrationDTO {
 		this.SDK_SCORES.clear();
 		this.ATTEMPTS.clear();
 		this.SELECTED_CODES.clear();
+		this.preRegistrationId=StringUtils.EMPTY;
 
 		List<String> allKeys = new ArrayList<>();
 		allKeys.addAll(demographics.keySet());
@@ -303,6 +306,9 @@ public class RegistrationDTO {
 		allIdentityDetails.put("IDSchemaVersion", idSchemaVersion);
 		allIdentityDetails.put("_flow", this.flowType.getCategory());
 		allIdentityDetails.put("_process", this.processId);
+		allIdentityDetails.put("userCase",  this.preRegType != null ? preRegType : this.processId);
+		allIdentityDetails.put("preRegistrationId",this.preRegistrationId);
+
 		allIdentityDetails.put("langCodes", this.selectedLanguagesByApplicant);
 		allIdentityDetails.put("updatableFields",
 				this.updatableFields == null ? Collections.EMPTY_LIST : this.updatableFields);

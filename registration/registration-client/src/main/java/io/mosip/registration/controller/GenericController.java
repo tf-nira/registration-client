@@ -1,5 +1,12 @@
 package io.mosip.registration.controller;
 
+
+import io.mosip.registration.enums.FlowType;
+import javafx.beans.binding.Bindings;
+import javafx.fxml.Initializable;
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
 import static io.mosip.registration.constants.RegistrationConstants.HASH;
 import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAGE;
@@ -15,6 +22,10 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -65,23 +76,12 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.SneakyThrows;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 /**
  * {@code GenericController} is to capture the demographic/demo/Biometric
@@ -131,7 +131,7 @@ public class GenericController extends BaseController {
 
 	@FXML
 	private Label notification;
-	
+
 	private ProgressIndicator progressIndicator;
 
 	@Autowired
@@ -148,25 +148,35 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PreRegistrationDataSyncService preRegistrationDataSyncService;
-	
+
 	private static TreeMap<Integer, UiScreenDTO> orderedScreens = new TreeMap<>();
 	private static Map<String, FxControl> fxControlMap = new HashMap<String, FxControl>();
 	private Stage keyboardStage;
 	private boolean keyboardVisible = false;
 	private String previousId;
 	private Integer additionalInfoReqIdScreenOrder = null;
-	public static Map<String, TreeMap<Integer, String>> hierarchyLevels = new HashMap<String, TreeMap<Integer, String>>();
-	public static Map<String, TreeMap<Integer, String>> currentHierarchyMap = new HashMap<String, TreeMap<Integer, String>>();
-	public static List<UiFieldDTO> fields = new ArrayList<>();
+	public static Map<String, TreeMap<Integer, List<String>>> hierarchyLevels = new HashMap<String,
+			TreeMap<Integer, List<String>>>();
+	public static Map<String, TreeMap<Integer, List<String>>> currentHierarchyMap = new
+			HashMap<String, TreeMap<Integer, List<String>>>();	public static List<UiFieldDTO> fields = new ArrayList<>();
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
 	}
-	
+
+	//@cifu
+	private TextField registrationNumberTextField;
+	@Autowired
+	private QrCodePopUpViewController qrCodePopUpViewController;
+	List<String> updateFlowAllowedProcess = new ArrayList<>();
+
+	public TextField getRegistrationNumberTextField() {
+		return registrationNumberTextField;
+	}//@cifu
 	public void disableAuthenticateButton(boolean disable) {
 		authenticate.setDisable(disable);
 	}
-	
+
 	private void initialize(RegistrationDTO registrationDTO) {
 		orderedScreens.clear();
 		fxControlMap.clear();
@@ -177,21 +187,24 @@ public class GenericController extends BaseController {
 		anchorPane.prefHeightProperty().bind(genericScreen.heightProperty());
 		fields = getAllFields(registrationDTO.getProcessId(), registrationDTO.getIdSchemaVersion());
 		additionalInfoReqIdScreenOrder = null;
+		updateFlowAllowedProcess.clear();
+		updateFlowAllowedProcess.add(FlowType.UPDATE.name());
+		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
 	}
-
 
 	private void fillHierarchicalLevelsByLanguage() {
 		for(String langCode : getConfiguredLangCodes()) {
-			TreeMap<Integer, String> hierarchicalData = new TreeMap<>();
-			List<LocationHierarchy> hierarchies = masterSyncDao.getAllLocationHierarchy(langCode);
+			TreeMap<Integer, List<String>> hierarchicalData = new TreeMap<>();
+			List<LocationHierarchy> hierarchies =
+					masterSyncDao.getAllLocationHierarchy(langCode);
 			hierarchies.forEach( hierarchy -> {
-				hierarchicalData.put(hierarchy.getHierarchyLevel(), hierarchy.getHierarchyLevelName());
+				hierarchicalData.computeIfAbsent(hierarchy.getHierarchyLevel(), k ->
+						new ArrayList<>()).add(hierarchy.getHierarchyLevelName());
 			});
 			hierarchyLevels.put(langCode, hierarchicalData);
 		}
 	}
-
-	private HBox getPreRegistrationFetchComponent() {
+	private HBox getPreRegistrationFetchComponent(String processFlow) {
 		String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
 
 		HBox hBox = new HBox();
@@ -199,6 +212,11 @@ public class GenericController extends BaseController {
 		hBox.setSpacing(20);
 		hBox.setPrefHeight(100);
 		hBox.setPrefWidth(200);
+
+		HBox innerHBox = new HBox();
+		innerHBox.setAlignment(Pos.CENTER_LEFT);
+		innerHBox.setSpacing(0);
+		innerHBox.setPrefHeight(100);
 
 		Label label = new Label();
 		label.getStyleClass().add(LABEL_CLASS);
@@ -210,16 +228,27 @@ public class GenericController extends BaseController {
 		textField.setId("preRegistrationId");
 		textField.getStyleClass().add(TEXTFIELD_CLASS);
 		hBox.getChildren().add(textField);
+		this.registrationNumberTextField = textField;
+
 		Button button = new Button();
 		button.setId("fetchBtn");
 		button.getStyleClass().add("demoGraphicPaneContentButton");
 		button.setText(ApplicationContext.getBundle(langCode, RegistrationConstants.LABELS)
 				.getString("fetch"));
 
-		button.setOnAction(event -> {
-			executePreRegFetchTask(textField);
-		});
+		Button scanQRbutton = new Button();
+		scanQRbutton.setId("scanQRBtn");
+		scanQRbutton.setGraphic(new ImageView(
+				new Image(this.getClass().getResourceAsStream("/images/qr-code.png"), 25, 25,
+						true, true)));
+		scanQRbutton.getStyleClass().add("demoGraphicPaneContentButton");
+		scanQRbutton.setOnAction(event -> {	executeQRCodeScan();});
+		innerHBox.getChildren().add(scanQRbutton);
+		innerHBox.getChildren().add(textField);
 
+		button.setOnAction(event -> {executePreRegFetchTask(textField, processFlow);	});
+
+		hBox.getChildren().add(innerHBox);
 		hBox.getChildren().add(button);
 		progressIndicator = new ProgressIndicator();
 		progressIndicator.setId("progressIndicator");
@@ -228,7 +257,7 @@ public class GenericController extends BaseController {
 		return hBox;
 	}
 
-	private void executePreRegFetchTask(TextField textField) {
+	void executePreRegFetchTask(TextField textField, String processFlow) {
 		genericScreen.setDisable(true);
 		progressIndicator.setVisible(true);
 
@@ -238,7 +267,7 @@ public class GenericController extends BaseController {
 				return new Task<Void>() {
 					/*
 					 * (non-Javadoc)
-					 * 
+					 *
 					 * @see javafx.concurrent.Task#call()
 					 */
 					@Override
@@ -254,16 +283,26 @@ public class GenericController extends BaseController {
 								return;
 							}
 							ResponseDTO responseDTO = preRegistrationDataSyncService.getPreRegistration(textField.getText(), false);
-							
+
 							if (responseDTO.getErrorResponseDTOs() != null
 									&& !responseDTO.getErrorResponseDTOs().isEmpty()
 									&& responseDTO.getErrorResponseDTOs().get(0).getMessage() != null
 									&& responseDTO.getErrorResponseDTOs().get(0).getMessage()
-											.equalsIgnoreCase(RegistrationConstants.CONSUMED_PRID_ERROR_CODE)) {
+									.equalsIgnoreCase(RegistrationConstants.CONSUMED_PRID_ERROR_CODE)) {
 								generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationConstants.PRE_REG_CONSUMED_PACKET_ERROR);
 								return;
 							}
-							
+
+							if (responseDTO.getSuccessResponseDTO() != null) {
+								String preRegType = (String) responseDTO.getSuccessResponseDTO().getOtherAttributes().get("preRegType");
+								getRegistrationDTOFromSession().setPreRegType(preRegType);
+
+								if(processFlow.equals(FlowType.UPDATE.name()) ? !updateFlowAllowedProcess.contains(preRegType) : !processFlow.equals(preRegType)) {
+									generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationConstants.PRE_REG_WRONG_PROCESS_FLOW);
+									return;
+								}
+							}
+
 							try {
 								loadPreRegSync(responseDTO);
 								if (responseDTO.getSuccessResponseDTO() != null) {
@@ -301,7 +340,42 @@ public class GenericController extends BaseController {
 			}
 		});
 	}
-
+	private void executeQRCodeScan() {
+		genericScreen.setDisable(true);
+		Service<Void> taskService = new Service<Void>() {
+			@Override
+			protected Task<Void> createTask() {
+				return new Task<Void>() {
+					/*
+					 * (non-Javadoc)
+					 *
+					 * @see javafx.concurrent.Task#call()
+					 */
+					@Override
+					protected Void call() {
+						Platform.runLater(() -> {
+							qrCodePopUpViewController.init("Scan QR Code");});
+						return null;
+					}
+				};
+			}
+		};
+		taskService.start();
+		taskService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
+		{
+			@Override
+			public void handle(WorkerStateEvent workerStateEvent) {
+				genericScreen.setDisable(false);
+			}
+		});
+		taskService.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				LOGGER.debug("QR code scan failed");
+				genericScreen.setDisable(false);
+			}
+		});
+	}
 	private HBox getAdditionalInfoRequestIdComponent() {
 		String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
 		HBox hBox = new HBox();
@@ -354,18 +428,18 @@ public class GenericController extends BaseController {
 	private void loadPreRegSync(ResponseDTO responseDTO) throws RegBaseCheckedException{
 		auditFactory.audit(AuditEvent.REG_DEMO_PRE_REG_DATA_FETCH, Components.REG_DEMO_DETAILS, SessionContext.userId(),
 				AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
-		
+
 		SuccessResponseDTO successResponseDTO = responseDTO.getSuccessResponseDTO();
 		List<ErrorResponseDTO> errorResponseDTOList = responseDTO.getErrorResponseDTOs();
 
-		if (errorResponseDTOList != null && !errorResponseDTOList.isEmpty() || 
-				successResponseDTO==null || 
-				successResponseDTO.getOtherAttributes() == null || 
+		if (errorResponseDTOList != null && !errorResponseDTOList.isEmpty() ||
+				successResponseDTO==null ||
+				successResponseDTO.getOtherAttributes() == null ||
 				!successResponseDTO.getOtherAttributes().containsKey(RegistrationConstants.REGISTRATION_DTO)) {
 			throw new RegBaseCheckedException(RegistrationExceptionConstants.PRE_REG_SYNC_FAIL.getErrorCode(),
 					RegistrationExceptionConstants.PRE_REG_SYNC_FAIL.getErrorMessage());
 		}
-
+		Map<String, Object> demographics = getRegistrationDTOFromSession().getDemographics();
 		for (UiScreenDTO screenDTO : orderedScreens.values()) {
 			for (UiFieldDTO field : screenDTO.getFields()) {
 				FxControl fxControl = getFxControl(field.getId());
@@ -377,10 +451,13 @@ public class GenericController extends BaseController {
 							fxControl.selectAndSet(getRegistrationDTOFromSession().getDocuments().get(field.getId()));
 							break;
 						default:
-							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
-							//it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
-							//kind of supporting data
-							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
+
+							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
+							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null ? getRegistrationDTOFromSession().getDemographics().get(field.getId()) : demographicsCopy.get(field.getId()));
+//it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
+//kind of supporting data
+							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null ? getRegistrationDTOFromSession().getDemographics().get(field.getId()) : demographicsCopy.get(field.getId()));
+
 							break;
 					}
 				}
@@ -410,15 +487,15 @@ public class GenericController extends BaseController {
 		}
 
 		screenFields.forEach( field -> {
-				String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup"
-						: field.getAlignmentGroup();
+			String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup"
+					: field.getAlignmentGroup();
 
-				if(field.isInputRequired()) {
-					if(!groupedScreenFields.containsKey(alignmentGroup))
-						groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
+			if(field.isInputRequired()) {
+				if(!groupedScreenFields.containsKey(alignmentGroup))
+					groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
 
-					groupedScreenFields.get(alignmentGroup).add(field);
-				}
+				groupedScreenFields.get(alignmentGroup).add(field);
+			}
 		});
 		return groupedScreenFields;
 	}
@@ -508,7 +585,8 @@ public class GenericController extends BaseController {
 		return new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				TabPane tabPane = (TabPane) anchorPane.lookup(HASH+getRegistrationDTOFromSession().getRegistrationId());
+				TabPane tabPane = (TabPane)
+						anchorPane.lookup(HASH+getRegistrationDTOFromSession().getRegistrationId());
 				int selectedIndex = tabPane.getSelectionModel().getSelectedIndex();
 				while(selectedIndex < tabPane.getTabs().size()) {
 					selectedIndex++;
@@ -541,22 +619,88 @@ public class GenericController extends BaseController {
 	}
 
 	private void setTabSelectionChangeEventHandler(TabPane tabPane) {
-
+        final boolean[] ignoreChange = { false };
 		tabPane.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>(){
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if (ignoreChange[0]) {
+					ignoreChange[0] = false;
+					return;
+				}
+
 				LOGGER.debug("Old selection : {} New Selection : {}", oldValue, newValue);
-				
+
 				if (isKeyboardVisible() && keyboardStage != null) {
 					keyboardStage.close();
 				}
+				if (oldValue.intValue() >= 0 && newValue.intValue() != oldValue.intValue()) {
+					if (oldValue.intValue() == 1 || oldValue.intValue() == 2) {
 
-				int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
+						// Prevent the tab from changing immediately
+						ignoreChange[0] = true;
+						tabPane.getSelectionModel().select(oldValue.intValue());
+
+						// Create the confirmation dialog
+						Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+						confirmationDialog.setTitle("Confirmation Required");
+						confirmationDialog.setHeaderText(null);
+						confirmationDialog.setContentText("Are you sure you want to continue?");
+
+						// Set the dialog to non-blocking modality
+						confirmationDialog.initModality(Modality.NONE);
+
+						DialogPane dialogPane = confirmationDialog.getDialogPane();
+
+						// Centering the text
+						Node contentLabel = dialogPane.lookup(".content.label");
+						if (contentLabel != null) {
+							contentLabel.setStyle("-fx-text-alignment: center; -fx-font-size: 14px;");
+						}
+
+						ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+						ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+						confirmationDialog.getButtonTypes().setAll(okButton, cancelButton);
+
+						Button okButtonNode = (Button) dialogPane.lookupButton(okButton);
+						if (okButtonNode != null) {
+							okButtonNode.setStyle("-fx-text-fill: black;;");
+						}
+
+						Button cancelButtonNode = (Button) dialogPane.lookupButton(cancelButton);
+						if (cancelButtonNode != null) {
+							cancelButtonNode.setStyle("-fx-text-fill: black;");
+						}
+
+						// Aligning buttons to the center
+						Node buttonBar = dialogPane.lookup(".button-bar");
+						if (buttonBar != null) {
+							buttonBar.setStyle("-fx-alignment: center;");
+						}
+
+						tabPane.toFront();
+
+						// Defer the dialog display to ensure TabPane is rendered first
+						Platform.runLater(() -> {
+							Optional<ButtonType> result = confirmationDialog.showAndWait();
+							if (result.isPresent() && result.get() == okButton) {
+								// If OK is clicked, proceed to change the tab
+								ignoreChange[0] = true;
+								tabPane.getSelectionModel().select(newValue.intValue());
+							} else {
+								// If Cancel is clicked, remain on the current tab
+								ignoreChange[0] = true;
+								tabPane.getSelectionModel().select(oldValue.intValue());
+							}
+						});
+						return; 
+					}
+				}
+                int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
 				final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
 
-				//Hide continue button in preview page
-				next.setVisible(newScreenName.equals("AUTH") ? false : true);
-				authenticate.setVisible(newScreenName.equals("AUTH") ? true : false);
+				// Hide continue button in preview page
+				next.setVisible(!newScreenName.equals("AUTH"));
+				authenticate.setVisible(newScreenName.equals("AUTH"));
 
 				if(oldValue.intValue() < 0) {
 					tabPane.getSelectionModel().selectFirst();
@@ -601,8 +745,16 @@ public class GenericController extends BaseController {
 				}
 
 				tabPane.getTabs().get(oldValue.intValue()).getStyleClass().remove(TAB_LABEL_ERROR_CLASS);
-				//tabPane.getSelectionModel().select(newSelection);
-				tabPane.getSelectionModel().select(getNextSelection(tabPane, oldValue.intValue(), newSelection));
+				
+				// Safeguard against illegal index range issues
+				int nextSelection = getNextSelection(tabPane, oldValue.intValue(), newSelection);
+				if (nextSelection < oldValue.intValue()) {
+					LOGGER.error("Next selection index is less than the old value");
+					tabPane.getSelectionModel().select(oldValue.intValue());
+					return;
+				}
+
+				tabPane.getSelectionModel().select(nextSelection);
 			}
 		});
 	}
@@ -610,15 +762,15 @@ public class GenericController extends BaseController {
 	private int getNextSelection(TabPane tabPane, int oldSelection, int newSelection) {
 		if (newSelection-oldSelection <= 1) {
 			return newSelection;
-		} 
+		}
 		for (int i = oldSelection + 1; i < newSelection; i++) {
 			if (!tabPane.getTabs().get(i).isDisabled()) {
 				return oldSelection;
 			}
-		}		
+		}
 		return newSelection;
 	}
-	
+
 	private boolean isScreenValid(final String screenName) {
 		Optional<UiScreenDTO> result = orderedScreens.values()
 				.stream().filter(screen -> screen.getName().equals(screenName.replace("_tab", EMPTY))).findFirst();
@@ -720,10 +872,10 @@ public class GenericController extends BaseController {
 			});
 
 			String tabNameInApplicationLanguage = screenDTO.getLabel().get(getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0));
-			
+
 			if(screenFieldGroups == null || screenFieldGroups.isEmpty())
 				continue;
-			
+
 			Tab screenTab = new Tab();
 			screenTab.setId(screenDTO.getName()+"_tab");
 			screenTab.setText(tabNameInApplicationLanguage == null ?
@@ -738,7 +890,7 @@ public class GenericController extends BaseController {
 			GridPane gridPane = getScreenGroupGridPane(screenGridPane.getId()+"_col_1", screenGridPane);
 
 			if(screenDTO.isPreRegFetchRequired()) {
-				gridPane.add(getPreRegistrationFetchComponent(), 0, rowIndex++);
+				gridPane.add(getPreRegistrationFetchComponent(processSpecDto.getFlow()), 0, rowIndex++);
 			}
 			if(screenDTO.isAdditionalInfoRequestIdRequired()) {
 				additionalInfoReqIdScreenOrder = screenDTO.getOrder();
@@ -746,21 +898,62 @@ public class GenericController extends BaseController {
 			}
 
 			for(Entry<String, List<UiFieldDTO>> groupEntry : screenFieldGroups.entrySet()) {
-				FlowPane groupFlowPane = new FlowPane();
+				GridPane groupFlowPane = new GridPane();
 				groupFlowPane.prefWidthProperty().bind(gridPane.widthProperty());
 				groupFlowPane.setHgap(20);
 				groupFlowPane.setVgap(20);
 
+				if(screenDTO.getName().equals("DemographicDetails")) {
+					groupFlowPane.getStyleClass().add("preRegParentPaneSection");
+
+
+//					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
+					groupFlowPane.setPadding(new Insets(20, 0, 20, 20));
+
+					ColumnConstraints leftColumn = new ColumnConstraints();
+					leftColumn.setPercentWidth(33);
+					ColumnConstraints centerColumn = new ColumnConstraints();
+					centerColumn.setPercentWidth(33);
+					ColumnConstraints rightColumn = new ColumnConstraints();
+					rightColumn.setPercentWidth(33);
+					groupFlowPane.getColumnConstraints().addAll(leftColumn, centerColumn, rightColumn);
+
+					/* Adding Group label */
+					Label label = new Label(groupEntry.getKey());
+					label.getStyleClass().add("demoGraphicCustomLabel");
+					label.setPadding(new Insets(0, 0, 0, 55));
+					//label.setPrefWidth(1200);
+					groupFlowPane.add(label, 0, 0, 2, 1);
+				}
+				int fieldIndex=0;
 				for(UiFieldDTO fieldDTO : groupEntry.getValue()) {
 					try {
 						FxControl fxControl = buildFxElement(fieldDTO);
 						if(fxControl.getNode() instanceof GridPane) {
 							((GridPane)fxControl.getNode()).prefWidthProperty().bind(groupFlowPane.widthProperty());
 						}
-						groupFlowPane.getChildren().add(fxControl.getNode());
+
+						if(screenDTO.getName().equals("DemographicDetails")) {
+							fxControl.getNode().getStyleClass().add("demoGraphicCustomField");
+
+							groupFlowPane.add( fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
+							fieldIndex++;
+						} else {
+							if(screenDTO.getName().equals("Documents")) {
+								fxControl.getNode().getStyleClass().add(RegistrationConstants.DOCUMENT_COMBOBOX_FIELD);
+							}
+							groupFlowPane.getChildren().add(fxControl.getNode());
+						}
 					} catch (Exception exception){
 						LOGGER.error("Failed to build control " + fieldDTO.getId(), exception);
 					}
+				}
+				//Hide introducer grouping for adults
+				if(groupEntry.getKey().equals("Introducer")) {
+					groupFlowPane.visibleProperty().bind(Bindings.or(
+							groupFlowPane.getChildren().get(1).visibleProperty(),
+							groupFlowPane.getChildren().get(2).visibleProperty())
+					);
 				}
 				gridPane.add(groupFlowPane, 0, rowIndex++);
 			}
@@ -789,7 +982,7 @@ public class GenericController extends BaseController {
 			authLabels.add(ApplicationContext.getBundle(langCode, RegistrationConstants.LABELS)
 					.getString(RegistrationConstants.authentication));
 		}
-		
+
 		String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
 
 		Tab previewScreen = new Tab();
@@ -872,9 +1065,9 @@ public class GenericController extends BaseController {
 
 	private FxControl buildFxElement(UiFieldDTO uiFieldDTO) throws Exception {
 		LOGGER.info("Building fxControl for field : {}", uiFieldDTO.getId());
-
 		FxControl fxControl = null;
-		if (uiFieldDTO.getControlType() != null) {
+
+		if (uiFieldDTO.getControlType() != null ) {
 			switch (uiFieldDTO.getControlType()) {
 				case CONTROLTYPE_TEXTFIELD:
 					fxControl = new TextFieldFxControl().build(uiFieldDTO);
@@ -913,6 +1106,7 @@ public class GenericController extends BaseController {
 			}
 		}
 
+
 		if(fxControl == null)
 			throw  new Exception("Failed to build fxControl");
 
@@ -932,11 +1126,11 @@ public class GenericController extends BaseController {
 	private FxControl getFxControl(String fieldId) {
 		return GenericController.getFxControlMap().get(fieldId);
 	}
-	
-	public Stage getKeyboardStage() {		
+
+	public Stage getKeyboardStage() {
 		return keyboardStage;
 	}
-	
+
 	public void setKeyboardStage(Stage keyboardStage) {
 		this.keyboardStage = keyboardStage;
 	}
@@ -956,7 +1150,7 @@ public class GenericController extends BaseController {
 	public void setPreviousId(String previousId) {
 		this.previousId = previousId;
 	}
-	
+
 	public String getCurrentScreenName() {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH + getRegistrationDTOFromSession().getRegistrationId());
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
