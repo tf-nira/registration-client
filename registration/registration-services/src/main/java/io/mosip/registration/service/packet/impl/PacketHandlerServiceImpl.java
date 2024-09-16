@@ -178,6 +178,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		ResponseDTO responseDTO = new ResponseDTO();
 		responseDTO.setErrorResponseDTOs(new ArrayList<>());
 		ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO();
+		registrationDTO.addDemographicField("selectedHandles", "NIN");
 
 		if (registrationDTO == null || registrationDTO.getRegistrationId() == null) {
 			errorResponseDTO.setCode(REG_PACKET_CREATION_ERROR_CODE.getErrorCode());
