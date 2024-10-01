@@ -155,6 +155,59 @@ public abstract class FxControl  {
 		}
 		visible(this.node, isFieldVisible(uiFieldDTO));
 	}
+	
+	public void refreshDependentFields() {
+		boolean isFieldVisible =  isFieldVisible(uiFieldDTO);
+		if(!isFieldVisible) {
+			switch (uiFieldDTO.getType()) {
+				case "documentType":
+					getRegistrationDTo().removeDocument(uiFieldDTO.getId());
+					break;
+				case "biometricsType":
+					List<String> requiredAttributes = requiredFieldValidator.getRequiredBioAttributes(uiFieldDTO, getRegistrationDTo());
+					for(String bioAttribute : uiFieldDTO.getBioAttributes()) {
+						if(!requiredAttributes.contains(bioAttribute))
+							getRegistrationDTo().clearBIOCache(uiFieldDTO.getId(), bioAttribute);
+					}
+					break;
+				default:
+					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					break;
+			}
+		}
+		boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
+		if(isRequiredField) {
+			 VBox vbox = (VBox) this.node;
+			 for (Node child : vbox.getChildren()) {
+				 if (child instanceof Label) {
+			        System.out.println("box");
+			        Label label = (Label) child;
+			        String lab = label.getText();
+			        if (!lab.endsWith("*")) {
+			        	lab = lab + " *";
+				        label.setText(lab);
+			        }
+			        break;
+				 }  
+			    }
+		}
+		else {
+			VBox vbox = (VBox) this.node;
+			 for (Node child : vbox.getChildren()) {
+				 if (child instanceof Label) {
+			        System.out.println("box");
+			        Label label = (Label) child;
+			        String lab = label.getText();
+			        if (lab.endsWith("*")) {
+			        	lab = lab.substring(0, lab.length() - 1);
+				        label.setText(lab);
+			        }
+			        break;
+				 }  
+			    }
+		}
+		visible(this.node, isFieldVisible(uiFieldDTO));
+	}
 
 	/**
 	 * Hide the field
