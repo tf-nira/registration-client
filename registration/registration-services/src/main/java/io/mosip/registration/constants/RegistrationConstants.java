@@ -604,7 +604,10 @@ public class RegistrationConstants {
 	public static final String LIST_ITEM_OPENING_TAG = "<li><span>";
 	public static final String LIST_ITEM_CLOSING_TAG = "</span></li><br/>";
 	public static final String SPLIT_DELIMITOR = "\\.";
-	public static final String TEMPLATE_GUIDELINES = "Guidelines";
+	public static final String TEMPLATE_GUIDELINES1 = "guideline1";
+	public static final String TEMPLATE_GUIDELINES2 = "guideline2";
+	public static final String TEMPLATE_GUIDELINES3 = "guideline3";
+	public static final String TEMPLATE_GUIDELINES4 = "guideline4";
 	public static final String TEMPLATE_IS_UIN_UPDATE = "IsUINUpdate";
 	public static final String TEMPLATE_APPLICANT_NAME_LABEL = "NameLabel";
 	public static final String TEMPLATE_APPLICANT_NAME_VALUE = "NameValue";

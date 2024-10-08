@@ -427,6 +427,10 @@ public class TemplateGenerator extends BaseService {
 			templateValues.put(RegistrationConstants.TEMPLATE_REG_CENTER_LABEL, getLabel("registrationcenter"));
 			templateValues.put(RegistrationConstants.TEMPLATE_REG_CENTER, SessionContext.userContext().getRegistrationCenterDetailDTO().getRegistrationCenterName());
 			templateValues.put(RegistrationConstants.TEMPLATE_IMPORTANT_GUIDELINES, firstLanguageProperties.getString("importantguidelines"));
+			templateValues.put(RegistrationConstants.TEMPLATE_GUIDELINES1, firstLanguageProperties.getString("guideline1"));
+			templateValues.put(RegistrationConstants.TEMPLATE_GUIDELINES2, firstLanguageProperties.getString("guideline2"));
+			templateValues.put(RegistrationConstants.TEMPLATE_GUIDELINES3, firstLanguageProperties.getString("guideline3"));
+			templateValues.put(RegistrationConstants.TEMPLATE_GUIDELINES4, firstLanguageProperties.getString("guideline4"));
 
 			templateValues.put(RegistrationConstants.TEMPLATE_DEMO_INFO, getLabel("demographicInformation"));
 			templateValues.put(RegistrationConstants.TEMPLATE_DOCUMENTS_LABEL, getLabel("documents"));
