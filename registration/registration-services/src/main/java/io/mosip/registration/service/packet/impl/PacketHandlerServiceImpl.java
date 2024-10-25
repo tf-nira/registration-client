@@ -186,11 +186,16 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			return responseDTO;
 		}
 
+		registrationDTO.addDemographicField("selectedHandles", "NIN");
+		
 		if (registrationDTO.getAdditionalInfoReqId() != null) {
 			registrationDTO.setAppId(registrationDTO.getAdditionalInfoReqId().split("-")[0]);
 		}
 		
 		registrationDTO.setRegistrationId(registrationDTO.getAppId());
+		if(registrationDTO.getFlowType().equals(FlowType.NEW)) {
+			registrationDTO.addDemographicField("part", "1");
+		}
 		
 		Map<String, String> metaInfoMap = new LinkedHashMap<>();
 		try {
@@ -394,7 +399,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			switch (registrationDTO.getFlowType()) {
 				case UPDATE:
 					if (demographics.get(fieldName) != null && (registrationDTO.getUpdatableFields().contains(fieldName) ||
-							fieldName.equals("UIN")))
+							fieldName.equals("NIN")))
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);
 					break;

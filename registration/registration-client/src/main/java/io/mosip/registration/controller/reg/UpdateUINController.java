@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -27,17 +30,14 @@ import io.mosip.registration.controller.FXUtils;
 import io.mosip.registration.controller.GenericController;
 import io.mosip.registration.dto.schema.ProcessSpecDto;
 import io.mosip.registration.dto.schema.UiFieldDTO;
+import io.mosip.registration.util.common.NinValidator;
+import io.mosip.registration.enums.FlowType;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -92,10 +92,13 @@ public class UpdateUINController extends BaseController implements Initializable
 	private HashMap<String, Object> checkBoxKeeper;
 
 	private Map<String, List<UiFieldDTO>> groupedMap;
+
 	private Map<String, Map<String, String>> groupLabels;
 
 	private FXUtils fxUtils;
 
+    @Autowired
+	private NinValidator ninValidator;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -113,6 +116,7 @@ public class UpdateUINController extends BaseController implements Initializable
 
 		groupedMap = new HashMap<>();
 		groupLabels = new HashMap<>();
+		
 		ProcessSpecDto processSpecDto = getProcessSpec(getRegistrationDTOFromSession().getProcessId(), getRegistrationDTOFromSession().getIdSchemaVersion());
 		processSpecDto.getScreens().forEach(screen -> {
 			screen.getFields().forEach(field -> {
@@ -120,12 +124,14 @@ public class UpdateUINController extends BaseController implements Initializable
 					List<UiFieldDTO> fields = groupedMap.getOrDefault(field.getGroup(), new ArrayList<>());
 					fields.add(field);
 					groupedMap.put(field.getGroup(), fields);
+
 					if(field.getGroupLabel() != null) {
 						groupLabels.put(field.getGroup(), field.getGroupLabel());
 					}
 				}
 			});
 		});
+
 		
 		scrollPane.prefWidthProperty().bind(demographicHBox.widthProperty());
 		
@@ -159,6 +165,7 @@ public class UpdateUINController extends BaseController implements Initializable
 		checkBox.setTooltip(new Tooltip(groupLabel));
 		checkBox.getStyleClass().add(RegistrationConstants.updateUinCheckBox);
 		fxUtils.listenOnSelectedCheckBox(checkBox);
+		//checkBox.setDisable(true);
 		checkBoxKeeper.put(groupName, checkBox);
 		
 		GridPane gridPane = new GridPane();
@@ -226,11 +233,17 @@ public class UpdateUINController extends BaseController implements Initializable
 				return;
 			}
 
-			if (uinValidatorImpl.validateId(uinId.getText()) && !selectedFieldGroups.isEmpty()) {
-				getRegistrationDTOFromSession().addDemographicField("UIN", uinId.getText());
+			if (ninValidator.validate(uinId.getText()) && !selectedFieldGroups.isEmpty()) {
+				getRegistrationDTOFromSession().addDemographicField("NIN", uinId.getText());
 				getRegistrationDTOFromSession().setUpdatableFieldGroups(selectedFieldGroups);
 				getRegistrationDTOFromSession().setUpdatableFields(new ArrayList<>());
-				getRegistrationDTOFromSession().setBiometricMarkedForUpdate(selectedFieldGroups.contains(RegistrationConstants.BIOMETRICS_GROUP) ? true : false);
+				
+				if(getRegistrationDTOFromSession().getFlowType().equals(FlowType.RENEWAL)) {
+					getRegistrationDTOFromSession().setBiometricMarkedForUpdate(true);
+				}
+				else {
+					getRegistrationDTOFromSession().setBiometricMarkedForUpdate(selectedFieldGroups.contains(RegistrationConstants.BIOMETRICS_GROUP) ? true : false);
+				}
 
 				Parent createRoot = BaseController.load(
 						getClass().getResource(RegistrationConstants.CREATE_PACKET_PAGE),
@@ -242,7 +255,8 @@ public class UpdateUINController extends BaseController implements Initializable
 			}
 		} catch (InvalidIDException invalidIdException) {
 			LOGGER.error(invalidIdException.getMessage(), invalidIdException);
-			generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.UPDATE_UIN_VALIDATION_ALERT));
+			//generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.UPDATE_UIN_VALIDATION_ALERT));
+		    generateAlert(RegistrationConstants.ERROR, "Please Enter a Valid NIN ID");
 		} catch (Throwable exception) {
 			LOGGER.error(exception.getMessage(), exception);
 			generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.UNABLE_LOAD_REG_PAGE));

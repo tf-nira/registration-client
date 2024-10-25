@@ -6,7 +6,7 @@
 
     <groupId>io.mosip.registration</groupId>
     <artifactId>ref-document-scanner</artifactId>
-    <version>1.2.0.2</version>
+    <version>1.2.0.2-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -20,8 +20,38 @@
         <dependency>
             <groupId>io.mosip.registration</groupId>
             <artifactId>registration-api</artifactId>
-            <version>1.2.0.2</version>
+            <version>1.2.0.2-SNAPSHOT</version>
             <scope>compile</scope>
+             <exclusions>
+            	<exclusion>
+            		<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-databind</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-core</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-annotations</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>com.fasterxml.jackson.datatype</groupId>
+            		<artifactId>jackson-datatype-jsr310</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>com.fasterxml.jackson.module</groupId>
+            		<artifactId>jackson-module-afterburner</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>io.mosip.kernel</groupId>
+            		<artifactId>kernel-core</artifactId>
+            	</exclusion>
+            	<exclusion>
+            		<groupId>org.springframework.cloud</groupId>
+            		<artifactId>spring-cloud-starter-config</artifactId>
+            	</exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -37,35 +67,35 @@
             <version>3.6.2</version>
         </dependency>
 
-        <dependency>
+      <!-- <dependency>
             <groupId>com.github.sarxos</groupId>
             <artifactId>webcam-capture</artifactId>
             <version>0.3.12</version>
-        </dependency>
+        </dependency>--> 
 
-        <dependency>
+     <!--    <dependency>
             <groupId>morena7</groupId>
-            <artifactId>morena7</artifactId>
+            <artifactId>morena7</artifactId>-->
             <!--<scope>system</scope>-->
-            <version>1.0</version>
+         <!--   <version>1.0</version>-->
            <!-- <systemPath>${basedir}/lib/morena/morena7.jar</systemPath>-->
-        </dependency>
+       <!--   </dependency>-->
 
-        <dependency>
+        <!--  <dependency>
             <groupId>morena7-license</groupId>
-            <artifactId>morena7-license</artifactId>
+            <artifactId>morena7-license</artifactId>-->
             <!--<scope>system</scope>-->
-            <version>1.0</version>
+              <!--<version>1.0</version>-->
             <!--<systemPath>${basedir}/lib/morena/morena_license.jar</systemPath>-->
-        </dependency>
+      <!--  </dependency>-->
 
-        <dependency>
+      <!--  <dependency>
             <groupId>morena7-win</groupId>
-            <artifactId>morena7-win</artifactId>
+            <artifactId>morena7-win</artifactId>-->
            <!-- <scope>system</scope>-->
-            <version>1.0</version>
+           <!--  <version>1.0</version>-->
            <!-- <systemPath>${basedir}/lib/morena/morena7_win.jar</systemPath>-->
-        </dependency>
+       <!--  </dependency>-->
 
         <!--<dependency>
             <groupId>morena7-osx</groupId>
@@ -86,6 +116,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.30</version>
+        </dependency>
+         <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.7.0-0</version>
         </dependency>
 
     </dependencies>
