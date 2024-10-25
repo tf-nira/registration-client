@@ -1,8 +1,21 @@
 package io.mosip.registration.api.docscanner;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -13,18 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 
 public class DocScannerUtil {
 
@@ -33,8 +37,8 @@ public class DocScannerUtil {
 
 
     public static byte[] getImageBytesFromBufferedImage(BufferedImage bufferedImage) throws IOException {
-        try(ByteArrayOutputStream imagebyteArray = new ByteArrayOutputStream()) {
-            ImageIO.write(bufferedImage, SCANNER_IMG_TYPE, imagebyteArray);
+        try (ByteArrayOutputStream imagebyteArray = new ByteArrayOutputStream()) {
+			ImageIO.write(bufferedImage, SCANNER_IMG_TYPE, imagebyteArray);
             imagebyteArray.flush();
             return imagebyteArray.toByteArray();
         }
@@ -43,16 +47,16 @@ public class DocScannerUtil {
     public static byte[] asPDF(@NonNull List<BufferedImage> bufferedImages, Float compressionQuality) {
         try (PDDocument pdDocument = new PDDocument();
              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            for(BufferedImage bufferedImage : bufferedImages) {
+            for (BufferedImage bufferedImage : bufferedImages) {
                 PDPage pdPage = new PDPage();
                 byte[] image = getCompressedImage(bufferedImage, compressionQuality);
                 LOGGER.info("image size after compression : {}", image.length);
                 PDImageXObject pdImageXObject = PDImageXObject.createFromByteArray(pdDocument, image, "");
                 Dimension scaledDimension = getScaledDimension(new Dimension(pdImageXObject.getWidth(), pdImageXObject.getHeight()),
-                        new Dimension((int)pdPage.getMediaBox().getWidth(), (int)pdPage.getMediaBox().getHeight()));
+                        new Dimension((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight()));
                 try (PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage)) {
-                    float startx = (pdPage.getMediaBox().getWidth() - scaledDimension.width)/2;
-                    float starty = (pdPage.getMediaBox().getHeight() - scaledDimension.height)/2;
+                    float startx = (pdPage.getMediaBox().getWidth() - scaledDimension.width) / 2;
+                    float starty = (pdPage.getMediaBox().getHeight() - scaledDimension.height) / 2;
                     contentStream.drawImage(pdImageXObject, startx, starty, scaledDimension.width, scaledDimension.height);
                 }
                 pdDocument.addPage(pdPage);
@@ -67,7 +71,7 @@ public class DocScannerUtil {
 
     private static byte[] getCompressedImage(BufferedImage bufferedImage, Float compressionQuality) throws IOException {
         ImageWriter imageWriter = null;
-        try(ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             imageWriter = ImageIO.getImageWritersByFormatName(SCANNER_IMG_TYPE).next();
             ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
             imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -76,7 +80,7 @@ public class DocScannerUtil {
             imageWriter.write(bufferedImage);
             return bos.toByteArray();
         } finally {
-            if(imageWriter != null)
+            if (imageWriter != null)
                 imageWriter.dispose();
         }
     }
@@ -134,14 +138,14 @@ public class DocScannerUtil {
 
     public static List<BufferedImage> pdfToImages(@NonNull byte[] pdfBytes) throws IOException {
         List<BufferedImage> bufferedImages = new ArrayList<>();
-        try(PDDocument document = PDDocument.load(new ByteArrayInputStream(pdfBytes));) {
-            for(int i=0; i<document.getNumberOfPages(); i++) {
-                Iterable<COSName> objectNames =  document.getPage(i).getResources().getXObjectNames();
+        try (PDDocument document = PDDocument.load(new ByteArrayInputStream(pdfBytes));) {
+            for (int i = 0; i < document.getNumberOfPages(); i++) {
+                Iterable<COSName> objectNames = document.getPage(i).getResources().getXObjectNames();
                 Iterator<COSName> itr = objectNames.iterator();
                 while (itr.hasNext()) {
                     PDXObject pdxObject = document.getPage(i).getResources().getXObject(itr.next());
-                    if(pdxObject instanceof PDImageXObject) {
-                        bufferedImages.add(((PDImageXObject)pdxObject).getImage());
+                    if (pdxObject instanceof PDImageXObject) {
+                        bufferedImages.add(((PDImageXObject) pdxObject).getImage());
                     }
                 }
             }
@@ -167,4 +171,12 @@ public class DocScannerUtil {
         }
         return wr;
     }
+
+	public static byte[] getImageBytesFromBufferedImageFromPng(BufferedImage bufferedImage) throws IOException {
+		try (ByteArrayOutputStream imagebyteArray = new ByteArrayOutputStream()) {
+			ImageIO.write(bufferedImage, "png", imagebyteArray);
+			imagebyteArray.flush();
+			return imagebyteArray.toByteArray();
+		}
+	}
 }

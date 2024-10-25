@@ -55,35 +55,38 @@ public class DropDownFxControl extends FxControl {
 	public FxControl build(UiFieldDTO uiFieldDTO) {
 		this.uiFieldDTO = uiFieldDTO;
 		this.control = this;
-		this.node = create(uiFieldDTO, getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
-
-		//As subType in UI Spec is defined in any lang we find the langCode to fill initial dropdown
+		this.node = create(uiFieldDTO,
+				getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
+//As subType in UI Spec is defined in any lang we find the langCode to fill initial dropdown
 		String subTypeLangCode = getSubTypeLangCode(uiFieldDTO.getSubType());
 		if(subTypeLangCode != null) {
-			TreeMap<Integer, String> groupFields = GenericController.currentHierarchyMap.getOrDefault(uiFieldDTO.getGroup(), new TreeMap<>());
-			for (Entry<Integer, String> entry : GenericController.hierarchyLevels.get(subTypeLangCode).entrySet()) {
-				if (entry.getValue().equals(uiFieldDTO.getSubType())) {
+			TreeMap<Integer, List<String>> groupFields =
+					GenericController.currentHierarchyMap.getOrDefault(uiFieldDTO.getGroup(), new TreeMap<>());
+			for (Entry<Integer, List<String>> entry :
+					GenericController.hierarchyLevels.get(subTypeLangCode).entrySet()) {
+				if (entry.getValue().contains(uiFieldDTO.getSubType())) {
 					this.hierarchyLevel = entry.getKey();
-					groupFields.put(entry.getKey(), uiFieldDTO.getId());
+					groupFields.computeIfAbsent(entry.getKey(), k -> new
+							ArrayList<>()).add(uiFieldDTO.getId());
 					GenericController.currentHierarchyMap.put(uiFieldDTO.getGroup(), groupFields);
 					break;
 				}
 			}
 		}
-
 		Map<String, Object> data = new LinkedHashMap<>();
 		data.put(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0),
 				getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)));
-
-		//clears & refills items
+//clears & refills items
 		fillData(data);
 		return this.control;
 	}
 
 	private String getSubTypeLangCode(String subType) {
 		for( String langCode : GenericController.hierarchyLevels.keySet()) {
-			if(GenericController.hierarchyLevels.get(langCode).containsValue(subType))
-				return langCode;
+			TreeMap<Integer, List<String>> levels =	GenericController.hierarchyLevels.get(langCode);
+			for(Entry<Integer, List<String>> hierarchy: levels.entrySet())
+				if( hierarchy.getValue().contains(subType))
+					return langCode;
 		}
 		return null;
 	}
@@ -111,6 +114,7 @@ public class DropDownFxControl extends FxControl {
 		String titleText = String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO);
 		ComboBox<GenericDto> comboBox = getComboBox(fieldName, titleText, RegistrationConstants.DOC_COMBO_BOX,
 				simpleTypeVBox.getPrefWidth(), false);
+		comboBox.setMaxWidth(Double.MAX_VALUE);
 		simpleTypeVBox.getChildren().add(comboBox);
 
 		comboBox.setOnMouseExited(event -> {
@@ -142,28 +146,43 @@ public class DropDownFxControl extends FxControl {
 	public List<GenericDto> getPossibleValues(String langCode) {
 		boolean isHierarchical = false;
 		String fieldSubType = uiFieldDTO.getSubType();
-
-		if(GenericController.currentHierarchyMap.containsKey(uiFieldDTO.getGroup())) {
+		if (GenericController.currentHierarchyMap.containsKey(uiFieldDTO.getGroup())) {
 			isHierarchical = true;
-			Entry<Integer, String> parentEntry = GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
-					.lowerEntry(this.hierarchyLevel);
-			if(parentEntry == null) { //first parent
-				parentEntry = GenericController.hierarchyLevels.get(langCode).lowerEntry(this.hierarchyLevel);
+			Entry<Integer, List<String>> parentEntry =
+					GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
+							.lowerEntry(this.hierarchyLevel);
+			if (parentEntry == null) { //first parent
+				parentEntry =
+						GenericController.hierarchyLevels.get(langCode).lowerEntry(this.hierarchyLevel);
 				Assert.notNull(parentEntry);
-				List<Location> locations = masterSyncDao.getLocationDetails(parentEntry.getValue(), langCode);
-				fieldSubType = locations != null && !locations.isEmpty() ? locations.get(0).getCode() : null;
-			}
-			else {
-				FxControl fxControl = GenericController.getFxControlMap().get(parentEntry.getValue());
-				Node comboBox = getField(fxControl.getNode(), parentEntry.getValue());
-				GenericDto selectedItem = comboBox != null ?
-						((ComboBox<GenericDto>) comboBox).getSelectionModel().getSelectedItem() : null;
-				fieldSubType = selectedItem != null ? selectedItem.getCode() : null;
-				if(fieldSubType == null)
+				List<Location> locations =
+						masterSyncDao.getLocationDetails(parentEntry.getValue().get(0), langCode);
+				fieldSubType = locations != null && !locations.isEmpty() ?
+						locations.get(0).getCode() : null;
+			} else {
+				for (String parent : parentEntry.getValue()) {
+					FxControl fxControl =
+							GenericController.getFxControlMap().get(parent);
+					Node comboBox = getField(fxControl.getNode(), parent);
+					GenericDto selectedItem = comboBox != null ?
+							((ComboBox<GenericDto>)
+									comboBox).getSelectionModel().getSelectedItem() : null;
+					fieldSubType = selectedItem != null ? selectedItem.getCode() :
+							null;
+					if (fieldSubType != null) {
+						List<GenericDto> values =
+								masterSyncService.getFieldValues(fieldSubType, uiFieldDTO.getSubType(), langCode, isHierarchical);
+						if (!values.isEmpty())
+							return values;
+					}
+				}
+				if (fieldSubType == null) {
 					return Collections.EMPTY_LIST;
+				}
 			}
 		}
-		return masterSyncService.getFieldValues(fieldSubType, langCode, isHierarchical);
+		return masterSyncService.getFieldValues(fieldSubType, uiFieldDTO.getSubType(),
+				langCode, isHierarchical);
 	}
 
 	private <T> ComboBox<GenericDto> getComboBox(String id, String titleText, String stycleClass, double prefWidth,
@@ -193,11 +212,17 @@ public class DropDownFxControl extends FxControl {
 			case RegistrationConstants.SIMPLE_TYPE:
 				List<SimpleDto> values = new ArrayList<SimpleDto>();
 				for (String langCode : getRegistrationDTo().getSelectedLanguagesByApplicant()) {
-					Optional<GenericDto> result = getPossibleValues(langCode).stream()
-							.filter(b -> b.getCode().equals(selectedCode)).findFirst();
-					if (result.isPresent()) {
-						SimpleDto simpleDto = new SimpleDto(langCode, result.get().getName());
+					if(langCode.equals(appComboBox.getSelectionModel().getSelectedItem().getLangCode())) {
+						SimpleDto simpleDto = new SimpleDto(langCode, appComboBox.getSelectionModel().getSelectedItem().getName());
 						values.add(simpleDto);
+					}
+					else {
+						Optional<GenericDto> result = getPossibleValues(langCode).stream()
+								.filter(b -> b.getCode().equals(selectedCode)).findFirst();
+						if (result.isPresent()) {
+							SimpleDto simpleDto = new SimpleDto(langCode, result.get().getName());
+							values.add(simpleDto);
+						}
 					}
 				}
 				getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), values);
@@ -250,11 +275,16 @@ public class DropDownFxControl extends FxControl {
 				List<String> toolTipText = new ArrayList<>();
 				String selectedCode = fieldComboBox.getSelectionModel().getSelectedItem().getCode();
 				for (String langCode : getRegistrationDTo().getSelectedLanguagesByApplicant()) {
-					Optional<GenericDto> result = getPossibleValues(langCode).stream()
-							.filter(b -> b.getCode().equals(selectedCode)).findFirst();
-					if (result.isPresent()) {
-						
-						toolTipText.add(result.get().getName());
+					if(langCode.equals(fieldComboBox.getSelectionModel().getSelectedItem().getLangCode())) {
+						toolTipText.add(fieldComboBox.getSelectionModel().getSelectedItem().getName());
+					}
+					else {
+						Optional<GenericDto> result = getPossibleValues(langCode).stream()
+								.filter(b -> b.getCode().equals(selectedCode)).findFirst();
+						if (result.isPresent()) {
+							
+							toolTipText.add(result.get().getName());
+						}
 					}
 				}
 
@@ -264,27 +294,44 @@ public class DropDownFxControl extends FxControl {
 				setData(null);
 				refreshNextHierarchicalFxControls();
 				demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),	uiFieldDTO.getChangeAction());
+				
 				// Group level visibility listeners
-				refreshFields();
+				if(uiFieldDTO.getDependentFields() != null && !uiFieldDTO.getDependentFields().isEmpty()) {
+					refreshDependentFields(uiFieldDTO.getDependentFields());
+				}
+				
+				//reset the value
+				if (uiFieldDTO.getId().equals("userServiceType")) {	
+					resetValue();		
+				}
 			}
 		});
+	}
+	
+	@Override
+	public void clearToolTipText() {
+		Label messageLabel = (Label) getField(uiFieldDTO.getId() + RegistrationConstants.MESSAGE);
+		messageLabel.setText(null);
 	}
 
 	private void refreshNextHierarchicalFxControls() {
 		if(GenericController.currentHierarchyMap.containsKey(uiFieldDTO.getGroup())) {
-			Entry<Integer, String> nextEntry = GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
-					.higherEntry(this.hierarchyLevel);
-
+			Entry<Integer, List<String>> nextEntry =
+					GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
+							.higherEntry(this.hierarchyLevel);
 			while (nextEntry != null) {
-				FxControl fxControl = GenericController.getFxControlMap().get(nextEntry.getValue());
-				Map<String, Object> data = new LinkedHashMap<>();
-				data.put(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0),
-						fxControl.getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)));
-
-				//clears & refills items
-				fxControl.fillData(data);
-				nextEntry = GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
-						.higherEntry(nextEntry.getKey());
+				for(String fieldLevel: nextEntry.getValue()) {
+					FxControl fxControl =
+							GenericController.getFxControlMap().get(fieldLevel);
+					Map<String, Object> data = new LinkedHashMap<>();
+					data.put(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0),
+							fxControl.getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)));
+//clears & refills items
+					fxControl.fillData(data);
+				}
+				nextEntry =
+						GenericController.currentHierarchyMap.get(uiFieldDTO.getGroup())
+								.higherEntry(nextEntry.getKey());
 			}
 		}
 	}

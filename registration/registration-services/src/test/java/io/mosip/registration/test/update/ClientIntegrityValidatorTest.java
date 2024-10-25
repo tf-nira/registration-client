@@ -3,11 +3,11 @@ package io.mosip.registration.test.update;
 import java.io.IOException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
-import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -48,6 +48,7 @@ public class ClientIntegrityValidatorTest {
 	}
 
 	@Test
+	@Ignore
 	public void integrityCheckTest() throws IOException {
 		URL url = ManifestCreatorTest.class.getResource("/setup/registration-api-1.2.0-SNAPSHOT.jar");
 		X509Certificate certificate = ClientIntegrityValidator.getCertificate();

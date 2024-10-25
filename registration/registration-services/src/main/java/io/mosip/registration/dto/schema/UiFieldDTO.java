@@ -60,6 +60,8 @@ public class UiFieldDTO {
 	private List<ConditionalBioAttributes> conditionalBioAttributes;
 	@JsonProperty("exceptionPhotoRequired")
 	private boolean isExceptionPhotoRequired;
+	private List<String> groupProcess;
+	private List<String> dependentFields;
 
 
 	/**

@@ -14,6 +14,7 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.api.docscanner.DocScannerFacade;
 import io.mosip.registration.api.docscanner.DocScannerUtil;
 import io.mosip.registration.api.docscanner.dto.DocScanDevice;
+import io.mosip.registration.api.signaturescanner.SignatureFacade;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.constants.RegistrationUIConstants;
@@ -113,6 +114,9 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	@Autowired
 	private DocScannerFacade docScannerFacade;
 
+	@Autowired
+	private SignatureFacade signatureFacade;
+
 	@Value("${mosip.doc.stage.width:1200}")
 	private int width;
 
@@ -127,6 +131,8 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	public DocScanDevice docScanDevice;
 	private RectangleSelection rectangleSelection = null;
 	final DoubleProperty zoomProperty = new SimpleDoubleProperty(200);
+
+	private String subType;
 
 	public Group getImageGroup() {
 		return imageGroup;
@@ -198,11 +204,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	 * @param parentControllerObj
 	 * @param title
 	 */
-	public void init(BaseController parentControllerObj, String title) {
+	public void init(BaseController parentControllerObj, String title, String subType) {
 		try {
 			streamerValue = new TextField();
 			baseController = parentControllerObj;
-
+			this.subType = subType;
 			LOGGER.info("Loading Document scan page : {}", RegistrationConstants.SCAN_PAGE);
 			Parent scanPopup = BaseController.load(getClass().getResource(RegistrationConstants.SCAN_PAGE));
 			scanImage.setPreserveRatio(true);
@@ -223,6 +229,13 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 				cancelBtn.setDisable(true);
 				previewBtn.setDisable(true);
 			}
+			if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+				streamBtn.setDisable(true);
+				cropButton.setDisable(true);
+				cancelBtn.setDisable(true);
+				previewBtn.setDisable(true);
+			}
+
 			scene.getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
 			popupStage = new Stage();
 			//popupStage.setResizable(true);
@@ -343,6 +356,12 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			getImageGroup().getChildren().clear();
 			getImageGroup().getChildren().add(new ImageView(getImage(documentScanController.getScannedPages().get(currentPage-1))));
 		}
+		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			streamBtn.setDisable(true);
+			cropButton.setDisable(true);
+			cancelBtn.setDisable(true);
+			previewBtn.setDisable(true);
+		}
 		saveBtn.setDisable(false);
 	}
 
@@ -366,6 +385,9 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		} catch (RuntimeException exception) {
 			LOGGER.error("Failed to set data in documentDTO", exception);
 			generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		showPagination();
 	}
@@ -467,6 +489,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 				streamer_thread.interrupt();
 		} finally {
 			docScannerFacade.stopDevice(this.docScanDevice);
+			signatureFacade.stopDevice(this.docScanDevice);
 		}
 	}
 
