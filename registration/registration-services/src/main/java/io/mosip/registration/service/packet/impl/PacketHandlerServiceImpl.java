@@ -405,6 +405,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 					break;
 				case CORRECTION:
 				case LOST:
+				case RENEWAL:
 				case NEW:
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
