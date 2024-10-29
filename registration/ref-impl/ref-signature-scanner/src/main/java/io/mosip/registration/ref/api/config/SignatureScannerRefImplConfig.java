@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 @ComponentScan(basePackages = { "io.mosip.registration.ref.herofun" })
 @Configuration
-public class ScannerRefImplConfig {
+public class SignatureScannerRefImplConfig {
 
 
 }
