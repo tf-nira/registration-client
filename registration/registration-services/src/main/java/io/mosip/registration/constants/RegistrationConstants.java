@@ -281,6 +281,7 @@ public class RegistrationConstants {
 	public static final String RETRY_BUTTON_NAME = "retry-button";
 	public static final String CONFIRM_BUTTON_NAME = "confirm-button";
 	public static final String PROOF_OF_SIGNATURE = "POS";
+	public static final String PROOF_OF_INTRODUCER_SIGNATURE = "POIS";
 	public static final String RESIDENCE_STATUS = "residenceStatus";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
@@ -1591,6 +1592,7 @@ public class RegistrationConstants {
 	public static final String AUTH_HASH = "hash";
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
+	public static final String INTRODUCER_SIGNATURE = "introducer_signature";
 	public static final String ADD = "aad";
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";
@@ -1599,7 +1601,8 @@ public class RegistrationConstants {
 	public static final int MAX_BIO_QUALITY_SCORE = 100;
 
 	public static String DEDUPLICATION_ENABLE_FLAG = "mosip.registration.mds.deduplication.enable.flag";
-
+	
+	public static final String SIGNATURE_TEXT = "mosip.ui.signature.default.text";
 	public static final String SERVER_ACTIVE_PROFILE = "mosip.registration.server_profile";
 	public static final String AUTH_FINGERPRINT_SLAB = "mosip.registration.auth_fingerprint_slab";
 	public static final String ID_AUTH_DOMAIN_URI = "mosip.registration.ida.domainuri";
