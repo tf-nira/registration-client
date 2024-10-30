@@ -92,7 +92,7 @@ public class DocumentFxControl extends FxControl {
 		hBox.getChildren().add(create(uiFieldDTO));
 
 		// REF-FIELD
-		if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+		if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 		hBox.getChildren().add(createDocRef(uiFieldDTO.getId()));
 	}
 
@@ -361,6 +361,10 @@ public class DocumentFxControl extends FxControl {
 					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
 					getRegistrationDTo().addDemographicField(RegistrationConstants.SIGNATURE,
 							CryptoUtil.encodeToPlainBase64(byteArray));
+				} else if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
+					getRegistrationDTo().addDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE,
+							CryptoUtil.encodeToPlainBase64(byteArray));
 				} else {
 				String configuredDocType = ApplicationContext.getStringValueFromApplicationMap(RegistrationConstants.DOC_TYPE);
 				byte[] byteArray =  ("pdf".equalsIgnoreCase(configuredDocType)) ?
@@ -549,6 +553,15 @@ public class DocumentFxControl extends FxControl {
 				label.setVisible(true);
 				return false;
 			}
+		} else if (isRequired && uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			if (getRegistrationDTo().getDemographics().get(RegistrationConstants.INTRODUCER_SIGNATURE) == null) {
+				
+				Label label = (Label) getField(uiFieldDTO.getId() + RegistrationConstants.LABEL);
+				label.getStyleClass().clear();
+				label.getStyleClass().add(RegistrationConstants.DemoGraphicFieldMessageLabel);
+				label.setVisible(true);
+				return false;
+			}
 		} else if (isRequired && getRegistrationDTo().getDocuments().get(this.uiFieldDTO.getId()) == null) {
 			
 			Label label = (Label) getField(uiFieldDTO.getId() + RegistrationConstants.LABEL);
@@ -596,8 +609,8 @@ public class DocumentFxControl extends FxControl {
 	
 	@Override
 	public void clearValue() {		
-		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
-			getRegistrationDTo().removeDemographicField("signature");
+		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
 		} else {
 			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
 			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);

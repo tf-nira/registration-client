@@ -120,7 +120,7 @@ public class DocumentScanController extends BaseController {
 			} catch (Exception e){};
 			
 			Optional<DocScanDevice> result = null;
-			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				result = signatureFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
 			} else {
 				result =  docScannerFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
@@ -190,7 +190,7 @@ public class DocumentScanController extends BaseController {
 	 */
 	private void initializeAndShowScanPopup(boolean isPreviewOnly,String subType) {
 		List<DocScanDevice> devices = null;
-		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 			devices = signatureFacade.getConnectedDevices();
 		} else {
 			devices = docScannerFacade.getConnectedDevices();
@@ -291,7 +291,7 @@ public class DocumentScanController extends BaseController {
 		this.fxControl = fxControl;
 	}
 	public BufferedImage saveSignature() throws Exception {
-		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE))
+		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE))
 			try {
 				{
 					Optional<DocScanDevice> result = signatureFacade.getConnectedDevices().stream()

@@ -93,9 +93,17 @@ public class CheckBoxFxControl extends FxControl {
 		auditFactory.audit(AuditEvent.REG_CHECKBOX_FX_CONTROL, Components.REG_DEMO_DETAILS, SessionContext.userId(),
 				AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 		
-		CheckBox checkBox = (CheckBox) getField(uiFieldDTO.getId());
-		getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), checkBox == null ? "N"
-								: checkBox.isSelected() ? "Y" : "N");
+		String text = io.mosip.registration.context.ApplicationContext.getStringValueFromApplicationMap(RegistrationConstants.SIGNATURE_TEXT);
+		
+		if(uiFieldDTO.getId().equals("applicantUnabletoSign") || uiFieldDTO.getId().equals("introducerUnabletoSign") ) {
+			CheckBox checkBox = (CheckBox) getField(uiFieldDTO.getId());
+			getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), checkBox == null ? "N"
+									: checkBox.isSelected() ? text : "N");
+		} else {
+			CheckBox checkBox = (CheckBox) getField(uiFieldDTO.getId());
+			getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), checkBox == null ? "N"
+									: checkBox.isSelected() ? "Y" : "N");
+		}
 	}
 
 	@Override
