@@ -159,6 +159,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 	@Value("${objectstore.packet.supervisor_biometrics_file_name}")
 	private String supervisorBiometricsFileName;
+	
+	@Value("${io.mosip.registration.service.packet.impl.packethandlerserviceimpl.applicantunabletosign.default:Unable to Sign}")
+	private String applicantUnabletoSignDefault;
+	
+	@Value("${io.mosip.registration.service.packet.impl.packethandlerserviceimpl.introducerunabletosign.default:Unable to Sign}")
+	private String introducerUnabletoSignDefault;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 	private static String SLASH = "/";
@@ -187,6 +193,14 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
+		
+		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {
+			registrationDTO.addDemographicField(RegistrationConstants.SIGNATURE,applicantUnabletoSignDefault);
+		}
+		
+		if(registrationDTO.getDemographic("introducerUnabletoSign")!=null && !registrationDTO.getDemographic("introducerUnabletoSign").equals("N")) {
+			registrationDTO.addDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE,introducerUnabletoSignDefault);
+		}
 		
 		if (registrationDTO.getAdditionalInfoReqId() != null) {
 			registrationDTO.setAppId(registrationDTO.getAdditionalInfoReqId().split("-")[0]);
