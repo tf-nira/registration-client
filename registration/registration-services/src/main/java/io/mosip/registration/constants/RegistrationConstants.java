@@ -1592,7 +1592,7 @@ public class RegistrationConstants {
 	public static final String AUTH_HASH = "hash";
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
-	public static final String INTRODUCER_SIGNATURE = "introducer_signature";
+	public static final String INTRODUCER_SIGNATURE = "introducerSignature";
 	public static final String ADD = "aad";
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";
