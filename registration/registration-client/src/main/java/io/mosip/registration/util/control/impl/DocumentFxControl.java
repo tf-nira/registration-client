@@ -4,7 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -92,9 +94,7 @@ public class DocumentFxControl extends FxControl {
 		hBox.getChildren().add(create(uiFieldDTO));
 
 		// REF-FIELD
-		if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 		hBox.getChildren().add(createDocRef(uiFieldDTO.getId()));
-	}
 
 		// CLEAR IMAGE
 		GridPane tickMarkGridPane = getImageGridPane(PREVIEW_ICON, RegistrationConstants.DOC_PREVIEW_ICON);
@@ -237,8 +237,14 @@ public class DocumentFxControl extends FxControl {
 		simpleTypeVBox.getChildren().add(fieldTitle);
 
 		/** Text Field */
-		TextField textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, titleText,
-				RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		TextField textField;
+		if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, titleText,
+					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		} else {
+			textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, "",
+					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, true);
+		}
 
 		textField.textProperty().addListener((observable, oldValue, newValue) -> {
 			Label label = (Label) getField(
@@ -254,7 +260,6 @@ public class DocumentFxControl extends FxControl {
 				getRegistrationDTo().getDocuments().get(uiFieldDTO.getId()).setRefNumber(newValue);
 			}
 		});
-
 		simpleTypeVBox.getChildren().add(textField);
 		return simpleTypeVBox;
 	}
@@ -361,10 +366,18 @@ public class DocumentFxControl extends FxControl {
 					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
 					getRegistrationDTo().addDemographicField(RegistrationConstants.SIGNATURE,
 							CryptoUtil.encodeToPlainBase64(byteArray));
+					
+					getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(true);
+					getField(uiFieldDTO.getId() + PREVIEW_ICON).setManaged(true);
+
 				} else if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
 					getRegistrationDTo().addDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE,
 							CryptoUtil.encodeToPlainBase64(byteArray));
+					
+					getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(true);
+					getField(uiFieldDTO.getId() + PREVIEW_ICON).setManaged(true);
+					
 				} else {
 				String configuredDocType = ApplicationContext.getStringValueFromApplicationMap(RegistrationConstants.DOC_TYPE);
 				byte[] byteArray =  ("pdf".equalsIgnoreCase(configuredDocType)) ?
@@ -610,7 +623,9 @@ public class DocumentFxControl extends FxControl {
 	@Override
 	public void clearValue() {		
 		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
+			getRegistrationDTo().removeDemographicField(this.uiFieldDTO.getId());
+			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
+			getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(false);
 		} else {
 			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
 			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
