@@ -42,10 +42,13 @@ public class HerofunScanServiceImpl implements SignatureService {
 				signaturepad.HWClearSig();
 			} catch (InterruptedException e) {
 				LOGGER.error("Failed to scan", e);
+				return null;
 			} catch (ExecutionException e) {
 				LOGGER.error("Failed to scan", e);
+				return null;
 			}catch (Exception e) {
 				LOGGER.error("Failed to scan", e);
+				return null;
 			}
 			
 		}
@@ -85,6 +88,10 @@ public class HerofunScanServiceImpl implements SignatureService {
 			bufferedImage = ImageIO.read(byteArrayInputStream);
 		} catch (IOException e) {
 			LOGGER.error("Failed to open serial port", e);
+			return null;
+		} catch (Exception e1) {
+			LOGGER.error("Failed to convert into bufferedImage", e1);
+			return null;
 		}
 		return bufferedImage;
 	}
@@ -110,7 +117,7 @@ public class HerofunScanServiceImpl implements SignatureService {
 					Thread.sleep(1000); // Wait for 1 second before checking again
 				}
 
-				byte[] outPng = new byte[1024]; // Assume max size of 1024 bytes
+				byte[] outPng = new byte[1000000]; // Assume max size of 1000000 bytes/ 1 mb
 				int[] outPngLength = new int[1]; // This will hold the length of the data
 				int result = signaturepad.HWGetPng(outPng, outPngLength);
 				while (result == -3) { // If result is -2, buffer was too small
