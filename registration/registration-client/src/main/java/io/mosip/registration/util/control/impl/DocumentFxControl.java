@@ -292,7 +292,9 @@ public class DocumentFxControl extends FxControl {
 		simpleTypeVBox.getChildren().add(comboBox);
 
 		comboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-			if (comboBox.getSelectionModel().getSelectedItem() != null) {
+			if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+				clearValue();
+			} else if(comboBox.getSelectionModel().getSelectedItem() != null) {
 				String selectedCode = comboBox.getSelectionModel().getSelectedItem().getCode();
 
 				if(getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId()) &&
@@ -368,7 +370,10 @@ public class DocumentFxControl extends FxControl {
 							CryptoUtil.encodeToPlainBase64(byteArray));
 					
 					getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(true);
+					getField(uiFieldDTO.getId() + CLEAR_ID).setVisible(true);
+					
 					getField(uiFieldDTO.getId() + PREVIEW_ICON).setManaged(true);
+					getField(uiFieldDTO.getId() + CLEAR_ID).setManaged(true);
 
 				} else if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
@@ -376,7 +381,10 @@ public class DocumentFxControl extends FxControl {
 							CryptoUtil.encodeToPlainBase64(byteArray));
 					
 					getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(true);
+					getField(uiFieldDTO.getId() + CLEAR_ID).setVisible(true);
+					
 					getField(uiFieldDTO.getId() + PREVIEW_ICON).setManaged(true);
+					getField(uiFieldDTO.getId() + CLEAR_ID).setManaged(true);
 					
 				} else {
 				String configuredDocType = ApplicationContext.getStringValueFromApplicationMap(RegistrationConstants.DOC_TYPE);
@@ -622,10 +630,10 @@ public class DocumentFxControl extends FxControl {
 	
 	@Override
 	public void clearValue() {		
-		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-			getRegistrationDTo().removeDemographicField(this.uiFieldDTO.getId());
-			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
-			getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(false);
+		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.SIGNATURE);
+		} else if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE);
 		} else {
 			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
 			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
