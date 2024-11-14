@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -32,6 +33,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private static final String SERVICE_NAME = "OpenCV";
 	private static final String DELIMITER = ":";
 
+
 	public OpenCvScannerImpl() {
 		OpenCV.loadShared();
 	}
@@ -44,12 +46,13 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public BufferedImage scan(DocScanDevice docScanDevice, String deviceType) {
 		LOGGER.info("Entering the opencv device impl of scan *************************************");
-		int width = 980;
-		int height = 540;
+		int width = 640;
+		int height = 480;
 
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
 		VideoCapture capture = new VideoCapture(index);
 		capture.set(Videoio.CAP_PROP_BUFFERSIZE, 1);
+		capture.set(Videoio.CAP_PROP_FPS, 15);
 
 		Mat frame = new Mat(new Size(width, height), CvType.CV_8UC3);
 		if (capture.isOpened()) {
@@ -66,26 +69,28 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public List<DocScanDevice> getConnectedDevices() {
 		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
-		var deviceIndexList = returnCameraIndexes();
+		var deviceIndexList = returnCameraIndexes(0);
 
-		List<DocScanDevice> devices = new ArrayList<>();
-		for (Integer index : deviceIndexList) {
-			VideoCapture capture = new VideoCapture(index);
-			DocScanDevice docScanDevice = new DocScanDevice();
-			docScanDevice.setDeviceType(DeviceType.CAMERA);
-			docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
-			docScanDevice.setServiceName(getServiceName());
-			docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
-			devices.add(docScanDevice);
-			capture.release();
-		}
+		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
+		deviceIndexList.parallelStream().forEach(index -> {
+			VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
+			if (capture.isOpened()) {
+				DocScanDevice docScanDevice = new DocScanDevice();
+				docScanDevice.setDeviceType(DeviceType.CAMERA);
+				docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
+				docScanDevice.setServiceName(getServiceName());
+				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
+				devices.add(docScanDevice);
+				capture.release();
+			}
+		});
 		return devices;
 	}
 
 	@Override
 	public void stop(DocScanDevice docScanDevice) {
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
-		VideoCapture capture = new VideoCapture(index);
+		VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
 		capture.release();
 	}
 
@@ -95,21 +100,13 @@ public class OpenCvScannerImpl implements DocScannerService {
 		InputStream inputStream = new ByteArrayInputStream(bytes.toArray());
 		return ImageIO.read(inputStream);
 	}
-
-	private List<Integer> returnCameraIndexes() {
+	private List<Integer> returnCameraIndexes(int cameraIndex) {
 		var cameraIndexes = new ArrayList<Integer>();
-		var iterator = 0;
-		var end = 10;
-		while (end > 0) {
-			var cap = new VideoCapture(iterator);
-			if (cap.isOpened()) {
-				cameraIndexes.add(iterator);
-				cap.release();
-			}
-			iterator++;
-			end--;
+		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
+		if (cap.isOpened()) {
+			cameraIndexes.add(cameraIndex);
+			cap.release();
 		}
-
 		return cameraIndexes;
 	}
 }
