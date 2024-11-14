@@ -239,14 +239,14 @@ public class DocumentScanController extends BaseController {
 		return scannedPages.get(docPageNumber <= 0 ? 0 : docPageNumber);
 	}
 
-	public boolean loadDataIntoScannedPages(String fieldId) throws IOException {
+	public boolean loadDataIntoScannedPages(String fieldId, String subType) throws IOException {
 		
 		DocumentDto documentDto = getRegistrationDTOFromSession().getDocuments().get(fieldId);
 		String signature = "";
-		if(fieldId.equals("applicantProofOfSignature")) {
-			signature = getRegistrationDTOFromSession().getDemographic("signature");
-		} else if(fieldId.equals("introducerProofOfSignature")) {
-			signature = getRegistrationDTOFromSession().getDemographic("introducerSignature");
+		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			signature = getRegistrationDTOFromSession().getDemographic(RegistrationConstants.SIGNATURE);
+		} else if(subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			signature = getRegistrationDTOFromSession().getDemographic(RegistrationConstants.INTRODUCER_SIGNATURE);
 		}
 		if(signature != null && !signature.isEmpty()) {	
 				
@@ -280,7 +280,7 @@ public class DocumentScanController extends BaseController {
 		try {
 			this.fxControl = fxControl;
 
-			loadDataIntoScannedPages(fieldId);
+			loadDataIntoScannedPages(fieldId,subType);
 
 			initializeAndShowScanPopup(isPreviewOnly,subType);
 

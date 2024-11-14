@@ -365,7 +365,8 @@ public class DocumentFxControl extends FxControl {
 					return;
 				}
 				if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
-					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
+					int signSize = bufferedImages.size();
+					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(signSize-1));
 					getRegistrationDTo().addDemographicField(RegistrationConstants.SIGNATURE,
 							CryptoUtil.encodeToPlainBase64(byteArray));
 					
@@ -376,7 +377,8 @@ public class DocumentFxControl extends FxControl {
 					getField(uiFieldDTO.getId() + CLEAR_ID).setManaged(true);
 
 				} else if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(0));
+					int signSize = bufferedImages.size();
+					byte[] byteArray = DocScannerUtil.getImageBytesFromBufferedImageFromPng(bufferedImages.get(signSize-1));
 					getRegistrationDTo().addDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE,
 							CryptoUtil.encodeToPlainBase64(byteArray));
 					
@@ -636,11 +638,11 @@ public class DocumentFxControl extends FxControl {
 			getRegistrationDTo().removeDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE);
 		} else {
 			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
-			TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
-			textField.setText(RegistrationConstants.EMPTY);
-			getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(false);
-			getField(uiFieldDTO.getId() + CLEAR_ID).setVisible(false);
 		}
+		TextField textField = (TextField) getField(uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
+		textField.setText(RegistrationConstants.EMPTY);
+		getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(false);
+		getField(uiFieldDTO.getId() + CLEAR_ID).setVisible(false);
 		return;
 	}
 
