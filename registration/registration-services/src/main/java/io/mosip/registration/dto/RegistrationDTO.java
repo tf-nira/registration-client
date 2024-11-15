@@ -126,6 +126,10 @@ public class RegistrationDTO {
 			this.demographics.put(fieldId, values);
 		}
 	}
+	
+	public String getDemographic(String fieldID) {
+		return (String) this.demographics.get(fieldID);
+	}
 
 	public void removeDemographicField(String fieldId) {
 		this.demographics.remove(fieldId);

@@ -14,7 +14,10 @@ import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
+import antlr.StringUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.registration.api.docscanner.DeviceType;
 import io.mosip.registration.api.docscanner.DocScannerFacade;
 import io.mosip.registration.api.docscanner.DocScannerUtil;
@@ -27,6 +30,7 @@ import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.BaseController;
 import io.mosip.registration.controller.device.ScanPopUpViewController;
 import io.mosip.registration.dto.packetmanager.DocumentDto;
+import io.mosip.registration.dto.schema.UiFieldDTO;
 import io.mosip.registration.util.control.FxControl;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -120,7 +124,7 @@ public class DocumentScanController extends BaseController {
 			} catch (Exception e){};
 			
 			Optional<DocScanDevice> result = null;
-			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				result = signatureFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
 			} else {
 				result =  docScannerFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
@@ -138,7 +142,7 @@ public class DocumentScanController extends BaseController {
 			scanDevice.setFrame(null);
 			BufferedImage bufferedImage = null;
 			
-			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				bufferedImage =signatureFacade.scanDocument(scanDevice, DeviceType.SIGNATURE_PAD.toString());
 			} else {
 				bufferedImage = docScannerFacade.scanDocument(scanDevice, getValueFromApplicationContext(RegistrationConstants.IMAGING_DEVICE_TYPE));
@@ -190,7 +194,7 @@ public class DocumentScanController extends BaseController {
 	 */
 	private void initializeAndShowScanPopup(boolean isPreviewOnly,String subType) {
 		List<DocScanDevice> devices = null;
-		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 			devices = signatureFacade.getConnectedDevices();
 		} else {
 			devices = docScannerFacade.getConnectedDevices();
@@ -235,13 +239,30 @@ public class DocumentScanController extends BaseController {
 		return scannedPages.get(docPageNumber <= 0 ? 0 : docPageNumber);
 	}
 
-	public boolean loadDataIntoScannedPages(String fieldId) throws IOException {
+	public boolean loadDataIntoScannedPages(String fieldId, String subType) throws IOException {
+		
 		DocumentDto documentDto = getRegistrationDTOFromSession().getDocuments().get(fieldId);
+		String signature = "";
+		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			signature = getRegistrationDTOFromSession().getDemographic(RegistrationConstants.SIGNATURE);
+		} else if(subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			signature = getRegistrationDTOFromSession().getDemographic(RegistrationConstants.INTRODUCER_SIGNATURE);
+		}
+		if(signature != null && !signature.isEmpty()) {	
+				
+			byte[] image=CryptoUtil.decodePlainBase64(signature);
+			InputStream is = new ByteArrayInputStream(image);
+			BufferedImage newBi = ImageIO.read(is);
+			List<BufferedImage> list = new LinkedList<>();
+			list.add(newBi);
+			setScannedPages(list);
+			return true;
+		}
 		if(documentDto == null) {
 			this.scannedPages = new ArrayList<>();
 			return false;
 		}
-
+		
 		if (RegistrationConstants.PDF.equalsIgnoreCase(documentDto.getFormat())) {
 			setScannedPages(DocScannerUtil.pdfToImages(documentDto.getDocument()));
 			return true;
@@ -255,12 +276,11 @@ public class DocumentScanController extends BaseController {
 		}
 	}
 
-
 	public void scanDocument(String fieldId, FxControl fxControl, boolean isPreviewOnly,String subType) {
 		try {
 			this.fxControl = fxControl;
 
-			loadDataIntoScannedPages(fieldId);
+			loadDataIntoScannedPages(fieldId,subType);
 
 			initializeAndShowScanPopup(isPreviewOnly,subType);
 
@@ -291,7 +311,7 @@ public class DocumentScanController extends BaseController {
 		this.fxControl = fxControl;
 	}
 	public BufferedImage saveSignature() throws Exception {
-		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE))
+		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE))
 			try {
 				{
 					Optional<DocScanDevice> result = signatureFacade.getConnectedDevices().stream()

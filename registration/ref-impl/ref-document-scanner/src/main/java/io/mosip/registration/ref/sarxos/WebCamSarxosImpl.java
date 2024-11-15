@@ -1,4 +1,4 @@
-package io.mosip.registration.ref.sarxos;
+/*package io.mosip.registration.ref.sarxos;
 
 import com.github.sarxos.webcam.Webcam;
 import io.mosip.registration.api.docscanner.DocScannerService;
@@ -85,3 +85,4 @@ public class WebCamSarxosImpl implements DocScannerService {
         LOGGER.info("Closing webcam device ");
     }
 }
+*/

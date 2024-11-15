@@ -281,6 +281,7 @@ public class RegistrationConstants {
 	public static final String RETRY_BUTTON_NAME = "retry-button";
 	public static final String CONFIRM_BUTTON_NAME = "confirm-button";
 	public static final String PROOF_OF_SIGNATURE = "POS";
+	public static final String PROOF_OF_INTRODUCER_SIGNATURE = "POIS";
 	public static final String RESIDENCE_STATUS = "residenceStatus";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
@@ -1591,6 +1592,7 @@ public class RegistrationConstants {
 	public static final String AUTH_HASH = "hash";
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
+	public static final String INTRODUCER_SIGNATURE = "introducerSignature";
 	public static final String ADD = "aad";
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";
@@ -1599,7 +1601,8 @@ public class RegistrationConstants {
 	public static final int MAX_BIO_QUALITY_SCORE = 100;
 
 	public static String DEDUPLICATION_ENABLE_FLAG = "mosip.registration.mds.deduplication.enable.flag";
-
+	
+	public static final String SIGNATURE_TEXT = "mosip.ui.signature.default.text";
 	public static final String SERVER_ACTIVE_PROFILE = "mosip.registration.server_profile";
 	public static final String AUTH_FINGERPRINT_SLAB = "mosip.registration.auth_fingerprint_slab";
 	public static final String ID_AUTH_DOMAIN_URI = "mosip.registration.ida.domainuri";
@@ -1746,9 +1749,9 @@ public class RegistrationConstants {
 
 	// UI Schema field group name
 	public static final String UI_SCHEMA_GROUP_FULL_NAME = "FullName";
-	public static final String UI_SCHEMA_SUBTYPE_FULL_NAME = "name";
-	public static final String UI_SCHEMA_SUBTYPE_EMAIL = "Email";
-	public static final String UI_SCHEMA_SUBTYPE_PHONE = "Phone";
+	public static final String UI_SCHEMA_SUBTYPE_FULL_NAME = "applicantName";
+	public static final String UI_SCHEMA_SUBTYPE_EMAIL = "email";
+	public static final String UI_SCHEMA_SUBTYPE_PHONE = "phone";
 	public static final String MVEL_TYPE = "MVEL";
 	public static final String MACHINE_VERIFICATION_SUCCESS = "Machine Verification Success";
 	public static final String UTC_APPENDER = " (UTC)";
@@ -1943,9 +1946,6 @@ public class RegistrationConstants {
 
 
 	public static final String PACKET_APPLICATION_ID = "applicationId";
-	public static final String APPLICANT_GIVEN_NAME = "givenName";
-	public static final String APPLICANT_PARISH = "applicantPlaceOfResidenceParish";
-	public static final String APPLICANT_VILLAGE ="applicantPlaceOfResidenceVillage";
 
 	/** Settings Page Labels & CSS styles */
 	public static final String SYNC_JOB_STYLE = "syncJobStyle";
@@ -2017,7 +2017,7 @@ public class RegistrationConstants {
 	public static final String PRINT_ACK_A6 = "mosip.registration.ack.a6.default.printer";
 	public static final String PRINT_ACK_A6_WIDTH = "mosip.registration.ack.printer.a6.width";
 	public static final String PRINT_ACK_A6_HEIGHT = "mosip.registration.ack.printer.a6.height";
-	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part";
+	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part1";
 	
 
 }

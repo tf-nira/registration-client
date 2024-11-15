@@ -1,4 +1,4 @@
-package io.mosip.registration.ref.morena;
+/*package io.mosip.registration.ref.morena;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -86,4 +86,4 @@ public class MorenaDocScanServiceImpl implements DocScannerService {
     public void stop(DocScanDevice docScanDevice) {
 
     }
-}
+}*/

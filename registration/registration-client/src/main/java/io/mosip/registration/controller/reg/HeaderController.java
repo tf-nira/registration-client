@@ -8,11 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -244,6 +240,38 @@ public class HeaderController extends BaseController {
 			settingsByRole.clear();
 			List<SettingsSchema> settingsSchema = identitySchemaService
 					.getSettingsSchema(identitySchemaService.getLatestEffectiveSchemaVersion());
+			settingsSchema = Arrays.asList(
+					new SettingsSchema(
+							"scheduledjobs",
+							new HashMap<>(Map.of("eng", "Scheduled Jobs Settings")),
+							new HashMap<>(Map.of("eng", "Scheduled Jobs Settings")),
+							"ScheduledJobsSettings.fxml",
+							"scheduledjobs.png",
+							"scheduledjobs-shortcut.png",
+							"1",
+							Arrays.asList("REGISTRATION_SUPERVISOR")
+					),
+					new SettingsSchema(
+							"globalconfigs",
+							new HashMap<>(Map.of("eng", "Global Config Settings")),
+							new HashMap<>(Map.of("eng", "Global Config Settings")),
+							"GlobalConfigSettings.fxml",
+							"globalconfigs.png",
+							"globalconfigs-shortcut.png",
+							"2",
+							Arrays.asList("REGISTRATION_SUPERVISOR", "REGISTRATION_OFFICER")
+					),
+					new SettingsSchema(
+							"devices",
+							new HashMap<>(Map.of("eng", "Device Settings")),
+							new HashMap<>(Map.of("eng", "Device Settings")),
+							"DeviceSettings.fxml",
+							"devices.png",
+							"devices-shortcut.png",
+							"3",
+							Arrays.asList("REGISTRATION_SUPERVISOR", "REGISTRATION_OFFICER")
+					)
+			);
 			if (settingsSchema != null && !settingsSchema.isEmpty()) {
 				List<String> userRoles = userDetailService.getUserRoleByUserId(SessionContext.userId());
 				settingsByRole = settingsSchema.stream()

@@ -13,6 +13,7 @@ artifactory_url="$artifactory_url_env"
 keystore_secret="$keystore_secret_env"
 reg_client_custom_impls_url="$reg_client_custom_impls_url_env"
 host_name="$host_name_env"
+reg_client_docscan_impl_url="$reg_client_docscan_impl_url_env"
 
 echo "initialized variables"
 
@@ -61,6 +62,18 @@ then
 else
   echo "No Custom(scanner & geo-position) implementations found !!"
 fi
+
+if [ "$reg_client_docscan_impl_url" ]
+then
+  wget "$reg_client_docscan_impl_url" -O "${work_dir}"/docscan.zip
+  echo "Successfully downloaded docscan-implementations zip, Adding it to reg-client jar"
+  mkdir "${work_dir}"/docscanimpls
+  /usr/bin/unzip "${work_dir}"/docscan.zip -d "${work_dir}"/docscanimpls/
+  cp "${work_dir}"/docscanimpls/*.jar "${work_dir}"/registration-client/target/lib/
+else
+  echo "No Custom(scanner & geo-position) implementations found !!"
+fi
+  
 
 cd "${work_dir}"
 mkdir -p "${work_dir}"/sdkjars

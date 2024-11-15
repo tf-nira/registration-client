@@ -229,11 +229,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 				cancelBtn.setDisable(true);
 				previewBtn.setDisable(true);
 			}
-			if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				streamBtn.setDisable(true);
 				cropButton.setDisable(true);
-				cancelBtn.setDisable(true);
-				previewBtn.setDisable(true);
+				cancelBtn.setDisable(false);
+				previewBtn.setDisable(false);
 			}
 
 			scene.getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
@@ -356,11 +356,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			getImageGroup().getChildren().clear();
 			getImageGroup().getChildren().add(new ImageView(getImage(documentScanController.getScannedPages().get(currentPage-1))));
 		}
-		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 			streamBtn.setDisable(true);
 			cropButton.setDisable(true);
-			cancelBtn.setDisable(true);
-			previewBtn.setDisable(true);
+			cancelBtn.setDisable(false);
+			previewBtn.setDisable(false);
 		}
 		saveBtn.setDisable(false);
 	}
@@ -433,9 +433,9 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			} else {
 
 				scanImage.setImage(null);
-
+				getImageGroup().getChildren().clear();
+				documentScanController.getFxControl().clearValue();
 				initializeDocPages(0, 0);
-
 				previewOption.setVisible(false);
 
 			}
@@ -689,7 +689,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		previewOption.setVisible(isVisible);
 		scanImage.setVisible(true);
 		cancelBtn.setDisable(false);
-		cropButton.setDisable(false);
+		cropButton.setDisable(true);
 	}
 
 	private void showStream(boolean isVisible) {

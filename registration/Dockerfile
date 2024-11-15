@@ -1,4 +1,4 @@
-FROM mosipdev/javafx-reg-client-openjdk:latest
+FROM technoforte2023/javafx-reg-client-openjdk:1.2.0.1
 
 ARG SOURCE
 ARG COMMIT_HASH
