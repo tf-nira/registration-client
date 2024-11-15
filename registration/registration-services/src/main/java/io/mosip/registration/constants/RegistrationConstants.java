@@ -1597,6 +1597,7 @@ public class RegistrationConstants {
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";
 	public static final String AP_ID = "applicationId";
+
 	public static final String AP_IDA = "IDA";
 	public static final int MAX_BIO_QUALITY_SCORE = 100;
 
@@ -1946,6 +1947,9 @@ public class RegistrationConstants {
 
 
 	public static final String PACKET_APPLICATION_ID = "applicationId";
+	public static final String APPLICANT_GIVEN_NAME = "givenName";
+	public static final String APPLICANT_PARISH = "applicantPlaceOfResidenceParish";
+	public static final String APPLICANT_VILLAGE ="applicantPlaceOfResidenceVillage";
 
 	/** Settings Page Labels & CSS styles */
 	public static final String SYNC_JOB_STYLE = "syncJobStyle";
@@ -2005,6 +2009,8 @@ public class RegistrationConstants {
 	public static final String DEMOGRAPHIC_GROUP = "demographicGroup";
 	public static final String DEMOGRAPHIC_FIELD = "demographicField";
 	public static final String DEMOGRAPHIC_GROUP_LABEL = "demographicGroupLabel";
+
+
 
 	public static final String DOCUMENT_COMBOBOX_FIELD = "documentComboboxField";
 
