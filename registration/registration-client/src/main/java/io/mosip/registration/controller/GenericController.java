@@ -780,7 +780,7 @@ public class GenericController extends BaseController {
 						// Centering the text
 						Node contentLabel = dialogPane.lookup(".content.label");
 						if (contentLabel != null) {
-							contentLabel.setStyle("-fx-text-alignment: center; -fx-font-size: 14px;");
+							contentLabel.setStyle("-fx-text-alignment: left; -fx-font-size: 14px;");
 						}
 
 						// Adding buttons to the dialog
