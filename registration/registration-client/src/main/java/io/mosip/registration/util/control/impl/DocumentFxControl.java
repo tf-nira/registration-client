@@ -142,7 +142,13 @@ public class DocumentFxControl extends FxControl {
 		auditFactory.audit(auditEvent, Components.REG_DOCUMENTS, SessionContext.userId(),
 				AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 		
-		getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
+		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.SIGNATURE);
+		} else if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE);
+		} else {
+			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
+		}
 		
 		TextField textField = (TextField) getField(
 				uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
@@ -292,9 +298,7 @@ public class DocumentFxControl extends FxControl {
 		simpleTypeVBox.getChildren().add(comboBox);
 
 		comboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-			if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-				clearValue();
-			} else if(comboBox.getSelectionModel().getSelectedItem() != null) {
+			if(comboBox.getSelectionModel().getSelectedItem() != null) {
 				String selectedCode = comboBox.getSelectionModel().getSelectedItem().getCode();
 
 				if(getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId()) &&
