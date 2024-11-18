@@ -761,7 +761,6 @@ public class GenericController extends BaseController {
 					String oldTabName = tabPane.getTabs().get(oldValue.intValue()).getText();
 
 					if (DEMOGRAPHIC_DETAILS.equals(oldTabName) || DOCUMENT_UPLOAD.equals(oldTabName)) {
-
 						// Prevent the tab from changing immediately
 						ignoreChange[0] = true;
 						tabPane.getSelectionModel().select(oldValue.intValue());
@@ -770,8 +769,7 @@ public class GenericController extends BaseController {
 						Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
 						confirmationDialog.setTitle("Confirmation Required");
 						confirmationDialog.setHeaderText(null);
-						confirmationDialog
-								.setContentText("Please review your details before proceeding to the next section.");
+						confirmationDialog.setContentText("Please review your details before proceeding to the next section.");
 
 						Stage dialogStage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
 						dialogStage.initModality(Modality.APPLICATION_MODAL);
@@ -785,19 +783,20 @@ public class GenericController extends BaseController {
 							contentLabel.setStyle("-fx-text-alignment: center; -fx-font-size: 14px;");
 						}
 
+						// Adding buttons to the dialog
 						ButtonType proceedButton = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
 						ButtonType reviewButton = new ButtonType("Review Details", ButtonBar.ButtonData.CANCEL_CLOSE);
 						confirmationDialog.getButtonTypes().setAll(proceedButton, reviewButton);
 
+						// Customizing the button styles
 						Button proceedButtonNode = (Button) dialogPane.lookupButton(proceedButton);
 						if (proceedButtonNode != null) {
-							proceedButtonNode.setStyle(
-									"-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
+							proceedButtonNode.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
 						}
 
 						Button reviewButtonNode = (Button) dialogPane.lookupButton(reviewButton);
 						if (reviewButtonNode != null) {
-							reviewButtonNode.setStyle("-fx-text-fill: black;;");
+							reviewButtonNode.setStyle("-fx-text-fill: black;");
 						}
 
 						// Aligning buttons to the center
@@ -810,22 +809,36 @@ public class GenericController extends BaseController {
 
 						// Defer the dialog display to ensure TabPane is rendered first
 						Platform.runLater(() -> {
+							// Adding focus lost event to close the dialog if the window loses focus
+							dialogStage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+								if (!isNowFocused) {
+									confirmationDialog.close(); // Close the dialog if the application loses focus
+								}
+							});
+
 							Optional<ButtonType> result = confirmationDialog.showAndWait();
 							if (result.isPresent() && result.get() == proceedButton) {
-								// If OK is clicked, proceed to change the tab
+								// If "Proceed" is clicked, proceed to change the tab
 								ignoreChange[0] = true;
 								int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
-								final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
-								tabPane.getTabs().get(newSelection).setDisable(!refreshScreenVisibility(newScreenName));
+								final String newScreenName = tabPane.getTabs()
+										.get(newSelection)
+										.getId()
+										.replace("_tab", EMPTY);
+								tabPane.getTabs()
+										.get(newSelection)
+										.setDisable(!refreshScreenVisibility(newScreenName));
 								tabPane.getSelectionModel().select(newValue.intValue());
 							} else {
-								// If Cancel is clicked, remain on the current tab
+								// If "Review Details" is clicked, remain on the current tab
 								ignoreChange[0] = false;
 								tabPane.getSelectionModel().select(oldValue.intValue());
 							}
 						});
+
 						return;
 					}
+
 				}
 				int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
 				final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
