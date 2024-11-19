@@ -1946,6 +1946,9 @@ public class RegistrationConstants {
 
 
 	public static final String PACKET_APPLICATION_ID = "applicationId";
+	public static final String APPLICANT_GIVEN_NAME = "givenName";
+	public static final String APPLICANT_PARISH = "applicantPlaceOfResidenceParish";
+	public static final String APPLICANT_VILLAGE ="applicantPlaceOfResidenceVillage";
 
 	/** Settings Page Labels & CSS styles */
 	public static final String SYNC_JOB_STYLE = "syncJobStyle";
