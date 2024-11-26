@@ -435,6 +435,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case LOST:
 				case CORRECTION:
 				case RENEWAL:
+				case UPDATE:
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
@@ -442,15 +443,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 						genericController.populateScreens();
 						return;
 					}
-					break;
-				case UPDATE:
-					if(registrationController.createRegistrationDTOObject(processId)) {
-						Parent root = BaseController.load(getClass().getResource(RegistrationConstants.UIN_UPDATE),
-								applicationContext.getBundle(registrationController.getSelectedLangList().get(0), RegistrationConstants.LABELS));
-						getScene(root);
-						LOGGER.info(PACKET_HANDLER, APPLICATION_NAME, APPLICATION_ID, "Loading Update UIN screen ended.");
-						return;
-					}
+					break;	 
 			}
 
 		} catch (Exception e) {
