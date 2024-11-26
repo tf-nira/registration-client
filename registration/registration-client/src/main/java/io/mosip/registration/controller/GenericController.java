@@ -949,14 +949,14 @@ public class GenericController extends BaseController {
 	            }
 				
 				// Validate PRN differently
-				/*if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
+				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
 					LOGGER.error("PRN verification failed");
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
 							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
 					showHideErrorNotification(label);
 					isValid = false;
 					break;
-				}*/
+				}
 
 				
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
@@ -1124,7 +1124,7 @@ public class GenericController extends BaseController {
 							fieldIndex++;
 
 							// Only if field is PRN
-							/*if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
+							if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
 									
 								Node node = fxControl.getNode();
 	
@@ -1140,7 +1140,7 @@ public class GenericController extends BaseController {
 					                    );
 
 						        });
-							}*/
+							}
 
 						} else {
 							if (screenDTO.getName().equals("Documents")) {
