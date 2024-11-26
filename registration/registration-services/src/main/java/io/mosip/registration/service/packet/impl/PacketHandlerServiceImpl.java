@@ -412,11 +412,6 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			LOGGER.info("Adding demographics for field : {}", fieldName);
 			switch (registrationDTO.getFlowType()) {
 				case UPDATE:
-//					if (demographics.get(fieldName) != null && (registrationDTO.getUpdatableFields().contains(fieldName) ||
-//							fieldName.equals("NIN")))
-//						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
-//								registrationDTO.getProcessId().toUpperCase(), source);
-//					break;
 				case CORRECTION:
 				case LOST:
 				case RENEWAL:

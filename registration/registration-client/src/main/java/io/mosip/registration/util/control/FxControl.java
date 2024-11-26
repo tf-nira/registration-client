@@ -282,11 +282,6 @@ public abstract class FxControl  {
 		String mandatorySuffix = RegistrationConstants.EMPTY;
 		switch (getRegistrationDTo().getFlowType()) {
 			case UPDATE:
-//				if (getRegistrationDTo().getUpdatableFields().contains(schema.getId())) {
-//					mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
-//				}
-//				break;
-
 			case CORRECTION:
 			case NEW:
 			case RENEWAL:
@@ -334,7 +329,6 @@ public abstract class FxControl  {
 
 			switch (getRegistrationDTo().getFlowType()) {
 				case UPDATE:
-			//		return (getRegistrationDTo().getUpdatableFields().contains(schemaDTO.getId())) ? isVisibleAccordingToSpec : false;
 				case CORRECTION:
 				case NEW:
 				case LOST:
