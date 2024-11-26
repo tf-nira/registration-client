@@ -921,6 +921,9 @@ public class GenericController extends BaseController {
 				.filter(screen -> screen.getName().equals(screenName.replace("_tab", EMPTY))).findFirst();
 
 		boolean isValid = true;
+		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
+		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
+		
 		if (result.isPresent()) {
 
 			if (!isAdditionalInfoRequestIdProvided(result.get())) {
@@ -931,6 +934,19 @@ public class GenericController extends BaseController {
 			}
 
 			for (UiFieldDTO field : result.get().getFields()) {
+				
+				 // Check if the field belongs to the "Notification of Change" group
+	            if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
+	                isNotificationOfChangePresent = true;          // Found relevant group fields on this screen
+	                FxControl control = getFxControl(field.getId());
+	                if (control != null) {
+	                    Object fieldValue = control.getData(); // Fetch the data
+	                    LOGGER.debug("Field ID: {}, Value: {}", field.getId(), fieldValue); 
+	                    if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
+	                        isNotificationOfChangeFilled = true;      // At least one non-empty value found
+	                    }
+	                }
+	            }
 				
 				// Validate PRN differently
 				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
@@ -953,11 +969,17 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
+		
 		if (isValid) {
 			showHideErrorNotification(null);
 			auditFactory.audit(AuditEvent.REG_NAVIGATION, Components.REGISTRATION_CONTROLLER,
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 		}
+		// Show error if fields from "Notification of Change" are present but none are filled
+	    if (isNotificationOfChangePresent && !isNotificationOfChangeFilled) {
+	        showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.");
+	        return false;
+	    }
 		return isValid;
 	}
 
