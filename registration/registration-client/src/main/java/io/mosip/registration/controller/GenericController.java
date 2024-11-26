@@ -949,14 +949,14 @@ public class GenericController extends BaseController {
 	            }
 				
 				// Validate PRN differently
-				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
+				/*if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
 					LOGGER.error("PRN verification failed");
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
 							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
 					showHideErrorNotification(label);
 					isValid = false;
 					break;
-				}
+				}*/
 
 				
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
@@ -1124,7 +1124,7 @@ public class GenericController extends BaseController {
 							fieldIndex++;
 
 							// Only if field is PRN
-							if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
+							/*if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
 									
 								Node node = fxControl.getNode();
 	
@@ -1140,7 +1140,7 @@ public class GenericController extends BaseController {
 					                    );
 
 						        });
-							}
+							}*/
 
 						} else {
 							if (screenDTO.getName().equals("Documents")) {
@@ -1540,6 +1540,43 @@ public class GenericController extends BaseController {
 			}
 		}
 	}
+	public void assignValue(boolean check) {
+		for (UiScreenDTO screenDTO : orderedScreens.values()) {
+			for (UiFieldDTO field : screenDTO.getFields()) {
+				FxControl fxControl = getFxControl(field.getId());
+				if (fxControl != null) {
+					switch (fxControl.getUiSchemaDTO().getType()) {
+						case "biometricsType":
+							fxControl.selectAndSet(null);
+							break;
+						case "documentType":
+							fxControl.selectAndSet(null);
+							break;
+						default:
+							if(field.getId().equals("isCardRequired")) {
+								if( check){
+								fxControl.selectAndSet("Y");
+								fxControl.setData("Y");
+
+
+								}
+
+								else{
+									fxControl.selectAndSet("N");
+									fxControl.setData("N");
+								}
+								if (fxControl.getNode() != null) {
+									fxControl.getNode().setDisable(true);
+								}
+
+							}
+							break;
+					}
+				}
+			}
+		}
+	}
+
 
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
