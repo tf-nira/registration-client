@@ -551,9 +551,16 @@ public class TemplateGenerator extends BaseService {
 								ResourceBundle applicationLanguageProperties) throws RegBaseCheckedException {
 		try {
 			StringBuilder qrCodeString = new StringBuilder();
-			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.PACKET_APPLICATION_ID)).append(" : ").append("\n")
-					.append(registration.getAppId());
-			byte[] qrCodeInBytes = qrCodeGenerator.generateQrCode(qrCodeString.toString(), QrVersion.V4);
+			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.PACKET_APPLICATION_ID)).append(" : ")
+					.append(registration.getAppId()).append("\n");//displaying regID
+			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_GIVEN_NAME)).append(" : ")
+					.append(getValue(registration.getDemographics().get("givenName"))).append("\n");//displaying givenName
+			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_PARISH)).append(" : ")
+					.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceParish"))).append("\n");//displaying parish
+			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_VILLAGE)).append(" : ")
+					.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceVillage")));//displaying village
+
+			byte[] qrCodeInBytes = qrCodeGenerator.generateQrCode(qrCodeString.toString(), QrVersion.V6);
 			String qrCodeImageEncodedBytes = StringUtils.newStringUtf8(Base64.encodeBase64(qrCodeInBytes, false));
 			templateValues.put(RegistrationConstants.TEMPLATE_QRCODE_SOURCE,
 					RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + qrCodeImageEncodedBytes);

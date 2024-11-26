@@ -1593,6 +1593,8 @@ public class RegistrationConstants {
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
 	public static final String INTRODUCER_SIGNATURE = "introducerSignature";
+	public static final String SIGNATURE_CODE = "SIG";
+	public static final String INTRODUCER_SIGNATURE_CODE = "INSI";
 	public static final String ADD = "aad";
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";
@@ -1946,6 +1948,9 @@ public class RegistrationConstants {
 
 
 	public static final String PACKET_APPLICATION_ID = "applicationId";
+	public static final String APPLICANT_GIVEN_NAME = "givenName";
+	public static final String APPLICANT_PARISH = "applicantPlaceOfResidenceParish";
+	public static final String APPLICANT_VILLAGE ="applicantPlaceOfResidenceVillage";
 
 	/** Settings Page Labels & CSS styles */
 	public static final String SYNC_JOB_STYLE = "syncJobStyle";
