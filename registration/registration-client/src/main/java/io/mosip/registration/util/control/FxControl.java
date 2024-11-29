@@ -230,11 +230,6 @@ public abstract class FxControl  {
 		genericController.refreshDependentFields(dependentFields);
 	}
 
-	public void assignValue(boolean check) {
-		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-		genericController.assignValue(check);
-	}
-
 	public void resetValue() {
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 		genericController.resetValue();
@@ -351,6 +346,23 @@ public abstract class FxControl  {
 		}
 		return true;
 	}
+
+	public boolean isFieldDefaultValue(UiFieldDTO schemaDTO) {
+		if (requiredFieldValidator == null) {
+			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
+		}
+		try {
+			// Determine if the field should use its default value according to some specifications
+			boolean isDefaultValueAccordingToSpec = requiredFieldValidator.isFieldDefaultValue(schemaDTO, getRegistrationDTo());
+
+			return isDefaultValueAccordingToSpec;
+		} catch (Exception e) {
+			// Handle exception gracefully
+			e.printStackTrace();
+		}
+		return false; // Default to false if something goes wrong
+	}
+
 
 	protected void changeNodeOrientation(Node node, String langCode) {
 

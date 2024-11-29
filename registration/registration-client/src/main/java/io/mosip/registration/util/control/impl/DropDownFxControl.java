@@ -301,22 +301,11 @@ public class DropDownFxControl extends FxControl {
 				}
 				
 				//reset the value
-				if (uiFieldDTO.getId().equals("userServiceType")) {	
+				if (uiFieldDTO.isSetRequired()){
 					resetValue();
 				}
 
-				if (uiFieldDTO.getId().equals("userServiceTypeCop")) {
-					List<String> arrY = Arrays.asList("CNRMD", "GFID", "CERNIN", "CCN","CNPBA", "CIAGE", "CNANN","CISNVS", "CIPR", "CION");
-					List<String> arrN = Arrays.asList("CERPO", "CNDNPT", "CIPRC","IDMN", "CERPCC", "CERPOC");
-
-					if (arrY.contains(newValue.getCode())) {
-						assignValue(true);
-					}
-                    else if (arrN.contains(newValue.getCode())){
-						assignValue(false);
-					}
 				}
-			}
 		});
 	}
 	

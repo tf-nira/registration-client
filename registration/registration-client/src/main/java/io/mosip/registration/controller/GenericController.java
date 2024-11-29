@@ -1528,10 +1528,22 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.getId().equals("userServiceType") && screenDTO.getOrder() == 2) {
+								if(!field.isSetRequired()) {
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
+								}
+								if (field.getDefaultValue() != null) {
+									boolean check = fxControl.isFieldDefaultValue(field);
+									if (check) {
+										fxControl.selectAndSet("Y");
+										//fxControl.setData("Y");
+										fxControl.getNode().setDisable(true);
+									} else {
+										fxControl.selectAndSet("N");
+										//fxControl.setData("N");
+										fxControl.getNode().setDisable(false);
+									}
 								}
 								break;
 						}
@@ -1540,43 +1552,6 @@ public class GenericController extends BaseController {
 			}
 		}
 	}
-	public void assignValue(boolean check) {
-		for (UiScreenDTO screenDTO : orderedScreens.values()) {
-			for (UiFieldDTO field : screenDTO.getFields()) {
-				FxControl fxControl = getFxControl(field.getId());
-				if (fxControl != null) {
-					switch (fxControl.getUiSchemaDTO().getType()) {
-						case "biometricsType":
-							fxControl.selectAndSet(null);
-							break;
-						case "documentType":
-							fxControl.selectAndSet(null);
-							break;
-						default:
-							if(field.getId().equals("isCardRequired")) {
-								if( check){
-								fxControl.selectAndSet("Y");
-								fxControl.setData("Y");
-
-
-								}
-
-								else{
-									fxControl.selectAndSet("N");
-									fxControl.setData("N");
-								}
-								if (fxControl.getNode() != null) {
-									fxControl.getNode().setDisable(true);
-								}
-
-							}
-							break;
-					}
-				}
-			}
-		}
-	}
-
 
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
