@@ -33,6 +33,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -167,6 +168,9 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PrnService prnService;
+	
+	@Value("${nira.payment.gateway.statusCode}")
+	private String statusCode;
 	
 	private boolean isPrnValid = false;
 
@@ -937,7 +941,7 @@ public class GenericController extends BaseController {
 				
 				 // Check if the field belongs to the "Notification of Change" group
 	            if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
-	                isNotificationOfChangePresent = true;          // Found relevant group fields on this screen
+	                isNotificationOfChangePresent = true;		// Found relevant group fields on this screen
 	                FxControl control = getFxControl(field.getId());
 	                if (control != null) {
 	                    Object fieldValue = control.getData(); // Fetch the data
@@ -1189,7 +1193,7 @@ public class GenericController extends BaseController {
 	    CheckPRNStatusResponseDTO responseDTO = prnService.checkPRNStatus(prnText);
 
 	    if (responseDTO != null) {
-	        if (responseDTO.getStatusCode().equalsIgnoreCase("T")) {
+	        if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
 	            if (responseDTO.getProcessFlow().equalsIgnoreCase(processFlow)) {
 	                Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	                if (prnCheck == null) {
