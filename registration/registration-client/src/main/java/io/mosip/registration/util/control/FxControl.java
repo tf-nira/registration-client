@@ -282,6 +282,11 @@ public abstract class FxControl  {
 		String mandatorySuffix = RegistrationConstants.EMPTY;
 		switch (getRegistrationDTo().getFlowType()) {
 			case UPDATE:
+				/*if (getRegistrationDTo().getUpdatableFields().contains(schema.getId())) {
+					mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
+				}
+				break;
+*/
 			case CORRECTION:
 			case NEW:
 			case RENEWAL:
@@ -329,6 +334,7 @@ public abstract class FxControl  {
 
 			switch (getRegistrationDTo().getFlowType()) {
 				case UPDATE:
+					//return (getRegistrationDTo().getUpdatableFields().contains(schemaDTO.getId())) ? isVisibleAccordingToSpec : false;
 				case CORRECTION:
 				case NEW:
 				case LOST:
@@ -340,6 +346,23 @@ public abstract class FxControl  {
 		}
 		return true;
 	}
+
+	public boolean isFieldDefaultValue(UiFieldDTO schemaDTO) {
+		if (requiredFieldValidator == null) {
+			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
+		}
+		try {
+			// Determine if the field should use its default value according to some specifications
+			boolean isDefaultValueAccordingToSpec = requiredFieldValidator.isFieldDefaultValue(schemaDTO, getRegistrationDTo());
+
+			return isDefaultValueAccordingToSpec;
+		} catch (Exception e) {
+			// Handle exception gracefully
+			e.printStackTrace();
+		}
+		return false; // Default to false if something goes wrong
+	}
+
 
 	protected void changeNodeOrientation(Node node, String langCode) {
 

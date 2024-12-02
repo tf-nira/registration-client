@@ -1528,10 +1528,22 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.getId().equals("userServiceType") && screenDTO.getOrder() == 2) {
+								if(!field.isSetRequired()) {
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
+								}
+								if (field.getDefaultValue() != null) {
+									boolean check = fxControl.isFieldDefaultValue(field);
+									if (check) {
+										fxControl.selectAndSet("Y");
+										//fxControl.setData("Y");
+										fxControl.getNode().setDisable(true);
+									} else {
+										fxControl.selectAndSet("N");
+										//fxControl.setData("N");
+										fxControl.getNode().setDisable(false);
+									}
 								}
 								break;
 						}
