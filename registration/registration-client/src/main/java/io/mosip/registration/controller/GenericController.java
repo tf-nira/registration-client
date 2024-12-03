@@ -1532,7 +1532,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired()) {
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1541,7 +1541,6 @@ public class GenericController extends BaseController {
 									boolean check = fxControl.isFieldDefaultValue(field);
 									if (check) {
 										fxControl.selectAndSet("Y");
-										//fxControl.setData("Y");
 										fxControl.getNode().setDisable(true);
 									} else {
 										fxControl.selectAndSet("N");
