@@ -135,6 +135,8 @@ public class RegistrationUIConstants {
 	// SUCCESS
 	public static final String PACKET_CREATED_SUCCESS = "PACKET_CREATED_SUCCESS";
 	public static final String PRINT_INITIATION_SUCCESS = "PRINT_INITIATION_SUCCESS";
+	public static final String PRINT_INITIATION_FAILED = "PRINT_INITIATION_FAILED";
+	public static final String PRINT_INITIATION_FAILED_JOB="PRINT_JOB_INITIATION_FAILED";
 	public static final String REREGISTRATION_APPROVE_SUCCESS = "REREGISTRATION_APPROVE_SUCCESS";
 	public static final String REREGISTER_TITLEPANE = "REREGISTER_TITLEPANE";
 	public static final String APPLICATIONS = "APPLICATIONS";

@@ -140,7 +140,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			job.getJobSettings().setJobName("A6_Ack");
 			// get a list of available printers
 			ObservableSet<Printer> printers = Printer.getAllPrinters();
-			Printer selectedPrinter = Printer.getDefaultPrinter();;
+			Printer selectedPrinter = Printer.getDefaultPrinter();
 			Paper customPaper = null;
 			if(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH) != null &&
 					getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT) != null
@@ -174,14 +174,41 @@ public class AckReceiptController extends BaseController implements Initializabl
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
 
 		PrinterJob job = PrinterJob.createPrinterJob();
+
 		if (job != null) {
-			job.getJobSettings().setJobName(getRegistrationDTOFromSession().getRegistrationId() + "_Ack");
-			webView.getEngine().print(job);
-			job.endJob();
+			ObservableSet<Printer> printers = Printer.getAllPrinters();
+			boolean printerFound = false;
+
+			for (Printer printer : printers) {
+				// Check if the printer matches the desired name
+				//PRINT_ACK_A4 is an example printer. The actual printer to be used should be replace PRINT_ACK_A4
+				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A4))) {
+					job.setPrinter(printer);
+					job.getJobSettings().setJobName(getRegistrationDTOFromSession().getRegistrationId() + "_Ack");
+					webView.getEngine().print(job);
+					job.endJob();
+					generateAlert(RegistrationConstants.ALERT_INFORMATION,
+							RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_SUCCESS));
+					printerFound = true;
+					break; // printer found, get out of the loop
+				}
+			}
+
+			// Execute this block only if no matching printer was found
+			if (!printerFound) {
+				LOGGER.info("Configured Printer doesn't exist");
+				generateAlert(RegistrationConstants.ALERT_INFORMATION,
+						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+				// goToHomePageFromRegistration();
+			}
+		} else {
+			LOGGER.info("Failed to create a print job.");
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,
+					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
 		}
-		generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_SUCCESS));
-		//goToHomePageFromRegistration();
 	}
+
+
 
 
 	@FXML
