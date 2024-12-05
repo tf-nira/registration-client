@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -467,8 +468,23 @@ public class PacketHandlerController extends BaseController implements Initializ
 			String platformLanguageCode = ApplicationContext.applicationLanguage();
 
 			//slip acknowledgement
-			String slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE,
-					platformLanguageCode);
+			String slipAckTemplateText = null;
+
+			List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
+
+			String residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
+					? residenceStatusList.get(0).getValue()
+					: null;
+
+			LOGGER.info("Residence Status: " + residenceStatus);
+
+			if(residenceStatus != null && !residenceStatus.isEmpty()){
+				if ("In Uganda".equals(residenceStatus)) {
+					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+				} else {
+					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
+				}
+			}
 
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
 

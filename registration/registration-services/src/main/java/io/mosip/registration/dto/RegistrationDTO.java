@@ -130,6 +130,9 @@ public class RegistrationDTO {
 	public String getDemographic(String fieldID) {
 		return (String) this.demographics.get(fieldID);
 	}
+	public Object getDemographicSimpleType(String fieldId) {
+		return (Object) this.demographics.get(fieldId);
+	}
 
 	public void removeDemographicField(String fieldId) {
 		this.demographics.remove(fieldId);

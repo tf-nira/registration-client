@@ -786,9 +786,8 @@ public class RegistrationConstants {
 	public static final String DONGLE_SERIAL_NUMBER = "dongleSerialNumber";
 	public static final String ONBOARD_DEVICES_REF_ID_TYPE = "UserID";
 
-	// Template Name
-	public static final String ACKNOWLEDGEMENT_TEMPLATE = "Ack Template";
-	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";
+
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";//for A4 Ack
 	public static final String PREVIEW_TEMPLATE_CODE = "reg-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
@@ -2020,7 +2019,11 @@ public class RegistrationConstants {
 	public static final String PRINT_ACK_A6 = "mosip.registration.ack.a6.default.printer";
 	public static final String PRINT_ACK_A6_WIDTH = "mosip.registration.ack.printer.a6.width";
 	public static final String PRINT_ACK_A6_HEIGHT = "mosip.registration.ack.printer.a6.height";
-	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part1";
-	
+	// Template Name
+	public static final String ACKNOWLEDGEMENT_TEMPLATE = "Ack Template";
+
+	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part";
+
+	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA  = "reg_ack_a6slip_template_part_out";
 
 }
