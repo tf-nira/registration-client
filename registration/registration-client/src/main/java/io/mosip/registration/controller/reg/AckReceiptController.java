@@ -138,78 +138,74 @@ public class AckReceiptController extends BaseController implements Initializabl
 		PrinterJob job = PrinterJob.createPrinterJob();
 		if (job != null) {
 			job.getJobSettings().setJobName("A6_Ack");
-			// get a list of available printers
 			ObservableSet<Printer> printers = Printer.getAllPrinters();
-			Printer selectedPrinter = Printer.getDefaultPrinter();
+			Printer selectedPrinter = null;
 			Paper customPaper = null;
 			if(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH) != null &&
 					getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT) != null
 			) {
 				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If Laxton Printer
-				// select a specific printer by name
 				for (Printer printer : printers) {
-					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6))) {  //If it is Thermal Printer
-						System.out.println("Is Thermal Printer");
+					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_80MM_SERIES_PRINTER))) {  //If it is Thermal Printer
+						LOGGER.info("Is Thermal Printer");
 						selectedPrinter = printer;
 						break;
 					}
-					else{
-						System.out.println("NOT Thermal Printer");
-					}
-			}
+				}
 			} else {
 				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);//If Laxton Printer
 			}
-			PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
-			job.getJobSettings().setPageLayout(pageLayout);
-			slipWebView.getEngine().print(job);
-			job.endJob();
+			if(selectedPrinter != null){
+				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
+				PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
+				job.setPrinter(selectedPrinter);
+				job.getJobSettings().setPageLayout(pageLayout);
+				slipWebView.getEngine().print(job);
+				job.endJob();
+			}
+			else{
+				generateAlert(RegistrationConstants.ALERT_INFORMATION,
+						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+			}
 		}
-		generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
 	}
 
 	@FXML
 	public void printReceipt(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
-
 		PrinterJob job = PrinterJob.createPrinterJob();
-
 		if (job != null) {
 			ObservableSet<Printer> printers = Printer.getAllPrinters();
-			boolean printerFound = false;
-
+			boolean printerSelected = false;
 			for (Printer printer : printers) {
-				// Check if the printer matches the desired name
-				//PRINT_ACK_A4 is an example printer. The actual printer to be used should be replace PRINT_ACK_A4
-				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A4))) {
+				LOGGER.info( "selected printer in the loop"+ printer.getName());
+				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_80MM_SERIES_PRINTER))) {
+					LOGGER.info("Skipping Thermal Printer: " + printer.getName());
+				}else{
+					// Attempt to use any other Printer but not Thermal
 					job.setPrinter(printer);
 					job.getJobSettings().setJobName(getRegistrationDTOFromSession().getRegistrationId() + "_Ack");
 					webView.getEngine().print(job);
 					job.endJob();
 					generateAlert(RegistrationConstants.ALERT_INFORMATION,
 							RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_SUCCESS));
-					printerFound = true;
-					break; // printer found, get out of the loop
+					printerSelected = true;
+					LOGGER.info("Successfully sent print job to printer: " + printer.getName());
+					break;
 				}
 			}
-
-			// Execute this block only if no matching printer was found
-			if (!printerFound) {
-				LOGGER.info("Configured Printer doesn't exist");
+			if (!printerSelected) {
+				LOGGER.info("No Valid Printer is installed");
 				generateAlert(RegistrationConstants.ALERT_INFORMATION,
 						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
-				// goToHomePageFromRegistration();
 			}
 		} else {
-			LOGGER.info("Failed to create a print job.");
+			LOGGER.error("Failed to create a print job.");
 			generateAlert(RegistrationConstants.ALERT_INFORMATION,
-					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_JOB));
 		}
 	}
-
-
-
 
 	@FXML
 	public void sendNotification(ActionEvent event) {
