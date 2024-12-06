@@ -146,7 +146,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			) {
 				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If Laxton Printer
 				for (Printer printer : printers) {
-					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_80MM_SERIES_PRINTER))) {  //If it is Thermal Printer
+					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {  //If it is Thermal Printer
 						LOGGER.info("Is Thermal Printer");
 						selectedPrinter = printer;
 						break;

@@ -2027,6 +2027,6 @@ public class RegistrationConstants {
 
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part";
 
-	public static final String A6_80MM_SERIES_PRINTER  = "mosip.registration.ack.printer.a6.printer.name";
+	public static final String A6_THERMAL_PRINTER  = "mosip.registration.ack.printer.a6.thermal";
 
 }
