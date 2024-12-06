@@ -17,6 +17,8 @@ import java.util.Set;
  */
 public class RegistrationConstants {
 
+
+
 	/**
 	 * private constructor
 	 */
@@ -1948,6 +1950,7 @@ public class RegistrationConstants {
 	public static final String APPLICANT_GIVEN_NAME = "givenName";
 	public static final String APPLICANT_PARISH = "applicantPlaceOfResidenceParish";
 	public static final String APPLICANT_VILLAGE ="applicantPlaceOfResidenceVillage";
+	public static final String APPLICANT_FOREIGN_RESIDENCE_COUNTRY ="applicantForeignResidenceCountry";
 
 	/** Settings Page Labels & CSS styles */
 	public static final String SYNC_JOB_STYLE = "syncJobStyle";
