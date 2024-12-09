@@ -82,8 +82,6 @@ public class OpenCvScannerImpl implements DocScannerService {
 				docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
 				docScanDevice.setServiceName(getServiceName());
 				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
-				docScanDevice.setWidth(640);
-				docScanDevice.setHeight(480);
 				devices.add(docScanDevice);
 				capture.release();
 			}
