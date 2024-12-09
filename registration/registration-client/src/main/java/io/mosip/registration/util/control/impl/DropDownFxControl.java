@@ -301,10 +301,11 @@ public class DropDownFxControl extends FxControl {
 				}
 				
 				//reset the value
-				if (uiFieldDTO.getId().equals("userServiceType")) {	
-					resetValue();		
+				if (uiFieldDTO.isSetRequired()){
+					resetValue();
 				}
-			}
+
+				}
 		});
 	}
 	
