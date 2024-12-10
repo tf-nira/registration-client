@@ -481,9 +481,13 @@ public class PacketHandlerController extends BaseController implements Initializ
 			if(residenceStatus != null && !residenceStatus.isEmpty()){
 				if ("In Uganda".equals(residenceStatus)) {
 					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+
+
 				} else {
 					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
+					
 				}
+
 			}
 
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {

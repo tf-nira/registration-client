@@ -144,8 +144,10 @@ public class AckReceiptController extends BaseController implements Initializabl
 			if(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH) != null &&
 					getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT) != null
 			) {
-				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If Laxton Printer
+				//customPaper = PrintHelper.createPaper("A6 Paper", 75, Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
+				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
 				for (Printer printer : printers) {
+					//if (printer.getName().contains("80mm Series Printer")) {
 					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {  //If it is Thermal Printer
 						LOGGER.info("Is Thermal Printer");
 						selectedPrinter = printer;
@@ -153,7 +155,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 					}
 				}
 			} else {
-				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);//If Laxton Printer
+				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);
 			}
 			if(selectedPrinter != null){
 				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
@@ -180,7 +182,8 @@ public class AckReceiptController extends BaseController implements Initializabl
 			boolean printerSelected = false;
 			for (Printer printer : printers) {
 				LOGGER.info( "selected printer in the loop"+ printer.getName());
-				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_80MM_SERIES_PRINTER))) {
+				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
+				//if (printer.getName().contains("80mm Series Printer")) {
 					LOGGER.info("Skipping Thermal Printer: " + printer.getName());
 				}else{
 					// Attempt to use any other Printer but not Thermal
