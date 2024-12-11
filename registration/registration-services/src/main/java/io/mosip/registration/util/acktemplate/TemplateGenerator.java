@@ -397,7 +397,7 @@ public class TemplateGenerator extends BaseService {
 	            	data.put(RegistrationConstants.SIGNATURE, RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + value);
 	            }
 	        } catch (Exception e) {
-	            System.err.println("Error processing applicant signature: " + e.getMessage());
+	            LOGGER.error("Error processing applicant signature: " + e.getMessage());
 	            e.printStackTrace();
 	        }
 	    } else if (RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
@@ -407,7 +407,7 @@ public class TemplateGenerator extends BaseService {
 	            	data.put(RegistrationConstants.INTRODUCER_SIGNATURE, RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + value);
 	            }
 	        } catch (Exception e) {
-	            System.err.println("Error processing applicant signature: " + e.getMessage());
+	            LOGGER.error("Error processing applicant signature: " + e.getMessage());
 	            e.printStackTrace();
 	        }
 	    } else {
