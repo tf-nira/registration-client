@@ -379,15 +379,28 @@ public class TemplateGenerator extends BaseService {
 	}
 
 	private Map<String, Object> getDemographicData(RegistrationDTO registration, UiFieldDTO field) {
+
+
 		Map<String, Object> data = null;
 		if("UIN".equalsIgnoreCase(field.getId()) || "IDSchemaVersion".equalsIgnoreCase(field.getId()))
 			return null;
 
 		String value = getValue(registration.getDemographics().get(field.getId()));
+
+		// Helper condition to remove code values if any of these fields are null or empty
+		if(value == null || value.isEmpty()){
+			if("surname".equalsIgnoreCase(field.getId()) || "givenName".equalsIgnoreCase(field.getId())
+					|| "applicantPlaceOfResidenceParish".equalsIgnoreCase(field.getId())
+					|| "applicantPlaceOfResidenceVillage".equalsIgnoreCase(field.getId())
+					|| "applicantForeignResidenceCountry".equalsIgnoreCase(field.getId())){
+				value = "N/A";
+			}
+		}
+
 		if (value != null && !value.isEmpty()) {
 			data = new HashMap<>();
 			String fieldLabel = getFieldLabel(field);
-			String fieldValue = getFieldValue(field);
+			String fieldValue = "N/A".equals(value) ? value : getFieldValue(field);
 			data.put("label", fieldLabel);
 			data.put("value", fieldValue);
 
