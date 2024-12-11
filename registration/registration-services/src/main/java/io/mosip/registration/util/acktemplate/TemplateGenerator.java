@@ -580,14 +580,24 @@ public class TemplateGenerator extends BaseService {
 								ResourceBundle applicationLanguageProperties) throws RegBaseCheckedException {
 		try {
 			StringBuilder qrCodeString = new StringBuilder();
+
 			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.PACKET_APPLICATION_ID)).append(" : ")
 					.append(registration.getAppId()).append("\n");//displaying regID
+
 			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_GIVEN_NAME)).append(" : ")
-					.append(getValue(registration.getDemographics().get("givenName"))).append("\n");//displaying givenName
-			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_PARISH)).append(" : ")
-					.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceParish"))).append("\n");//displaying parish
-			qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_VILLAGE)).append(" : ")
-					.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceVillage")));//displaying village
+					.append(getValue(registration.getDemographics().get("givenName"))).append("\n");
+
+			String residenceStatus = getValue(registration.getDemographics().get("residenceStatus"));
+
+			if ("In Uganda".equalsIgnoreCase(residenceStatus)) {
+				qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_PARISH)).append(" : ")
+						.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceParish"))).append("\n");
+				qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_VILLAGE)).append(" : ")
+						.append(getValue(registration.getDemographics().get("applicantPlaceOfResidenceVillage")));
+			} else if ("Outside Uganda".equalsIgnoreCase(residenceStatus)) {
+				qrCodeString.append(applicationLanguageProperties.getString(RegistrationConstants.APPLICANT_FOREIGN_RESIDENCE_COUNTRY)).append(" : ")
+						.append(getValue(registration.getDemographics().get("applicantForeignResidenceCountry")));
+			}
 
 			byte[] qrCodeInBytes = qrCodeGenerator.generateQrCode(qrCodeString.toString(), QrVersion.V6);
 			String qrCodeImageEncodedBytes = StringUtils.newStringUtf8(Base64.encodeBase64(qrCodeInBytes, false));
@@ -595,7 +605,7 @@ public class TemplateGenerator extends BaseService {
 					RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + qrCodeImageEncodedBytes);
 		} catch (QrcodeGenerationException | IOException exception) {
 			LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID, ExceptionUtils.getStackTrace(exception));
-			throw  new RegBaseCheckedException(RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, exception.getMessage());
+			throw new RegBaseCheckedException(RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, exception.getMessage());
 		}
 	}
 
