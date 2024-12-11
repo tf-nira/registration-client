@@ -142,7 +142,13 @@ public class DocumentFxControl extends FxControl {
 		auditFactory.audit(auditEvent, Components.REG_DOCUMENTS, SessionContext.userId(),
 				AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 		
-		getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
+		if (this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.SIGNATURE);
+		} else if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			getRegistrationDTo().removeDemographicField(RegistrationConstants.INTRODUCER_SIGNATURE);
+		} else {
+			getRegistrationDTo().removeDocument(this.uiFieldDTO.getId());
+		}
 		
 		TextField textField = (TextField) getField(
 				uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD);
@@ -292,9 +298,7 @@ public class DocumentFxControl extends FxControl {
 		simpleTypeVBox.getChildren().add(comboBox);
 
 		comboBox.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-			if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-				clearValue();
-			} else if(comboBox.getSelectionModel().getSelectedItem() != null) {
+			if(comboBox.getSelectionModel().getSelectedItem() != null) {
 				String selectedCode = comboBox.getSelectionModel().getSelectedItem().getCode();
 
 				if(getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId()) &&
@@ -655,22 +659,37 @@ public class DocumentFxControl extends FxControl {
 			comboBox.getItems().clear();
 			comboBox.getItems().addAll(list);
 
-			Optional<DocumentCategoryDto> savedValue = list.stream()
-					.filter( d -> getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId())
-							&& d.getCode().equals(getRegistrationDTo().getDocuments().get(uiFieldDTO.getId()).getType()))
-							.findFirst();
-
+			Optional<DocumentCategoryDto> savedValue = Optional.empty(); 
+			
+			if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_SIGNATURE)) {
+				if (getRegistrationDTo().getDemographic(RegistrationConstants.SIGNATURE) != null && !getRegistrationDTo().getDemographic(RegistrationConstants.SIGNATURE).isEmpty()) {
+	               savedValue = list.stream()
+	                        .filter(d -> RegistrationConstants.SIGNATURE_CODE.equals(d.getCode())) 
+	                        .findFirst();
+	            }
+			} else if(this.currentDocSubType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+				if (getRegistrationDTo().getDemographic(RegistrationConstants.INTRODUCER_SIGNATURE) != null && !getRegistrationDTo().getDemographic(RegistrationConstants.INTRODUCER_SIGNATURE).isEmpty()) {
+	                savedValue = list.stream()
+	                        .filter(d -> RegistrationConstants.INTRODUCER_SIGNATURE_CODE.equals(d.getCode())) 
+	                        .findFirst();
+	            }
+			} else {
+				savedValue= list.stream()
+						.filter( d -> getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId())
+								&& d.getCode().equals(getRegistrationDTo().getDocuments().get(uiFieldDTO.getId()).getType()))
+								.findFirst();
+			}
+			
 			if(savedValue.isPresent())
 				comboBox.getSelectionModel().select(savedValue.get());
 		}
-
 
 		if(getRegistrationDTo().getDocuments().containsKey(uiFieldDTO.getId())) {
 			getField(uiFieldDTO.getId() + PREVIEW_ICON).setVisible(true);
 			getField(uiFieldDTO.getId() + CLEAR_ID).setVisible(true);
 		}
 	}
-
+	
 	private List<DocumentCategoryDto> getDocumentCategories() {
 		Object applicantTypeCode = requiredFieldValidator.evaluateMvelScript((String) ApplicationContext.map().getOrDefault(
 				RegistrationConstants.APPLICANT_TYPE_MVEL_SCRIPT, SCRIPT_NAME), getRegistrationDTo());

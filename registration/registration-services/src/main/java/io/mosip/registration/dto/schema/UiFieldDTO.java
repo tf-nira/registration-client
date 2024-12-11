@@ -62,6 +62,8 @@ public class UiFieldDTO {
 	private boolean isExceptionPhotoRequired;
 	private List<String> groupProcess;
 	private List<String> dependentFields;
+	private RequiredOnExpr defaultValue;
+	private boolean setRequired;
 
 
 	/**

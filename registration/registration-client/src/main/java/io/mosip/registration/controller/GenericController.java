@@ -33,6 +33,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -167,6 +168,9 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PrnService prnService;
+	
+	@Value("${nira.payment.gateway.statusCode}")
+	private String statusCode;
 	
 	private boolean isPrnValid = false;
 
@@ -761,7 +765,6 @@ public class GenericController extends BaseController {
 					String oldTabName = tabPane.getTabs().get(oldValue.intValue()).getText();
 
 					if (DEMOGRAPHIC_DETAILS.equals(oldTabName) || DOCUMENT_UPLOAD.equals(oldTabName)) {
-
 						// Prevent the tab from changing immediately
 						ignoreChange[0] = true;
 						tabPane.getSelectionModel().select(oldValue.intValue());
@@ -770,8 +773,7 @@ public class GenericController extends BaseController {
 						Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
 						confirmationDialog.setTitle("Confirmation Required");
 						confirmationDialog.setHeaderText(null);
-						confirmationDialog
-								.setContentText("Please review your details before proceeding to the next section.");
+						confirmationDialog.setContentText("Please review your details before proceeding to the next section.");
 
 						Stage dialogStage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
 						dialogStage.initModality(Modality.APPLICATION_MODAL);
@@ -782,22 +784,23 @@ public class GenericController extends BaseController {
 						// Centering the text
 						Node contentLabel = dialogPane.lookup(".content.label");
 						if (contentLabel != null) {
-							contentLabel.setStyle("-fx-text-alignment: center; -fx-font-size: 14px;");
+							contentLabel.setStyle("-fx-text-alignment: left; -fx-font-size: 14px;");
 						}
 
+						// Adding buttons to the dialog
 						ButtonType proceedButton = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
 						ButtonType reviewButton = new ButtonType("Review Details", ButtonBar.ButtonData.CANCEL_CLOSE);
 						confirmationDialog.getButtonTypes().setAll(proceedButton, reviewButton);
 
+						// Customizing the button styles
 						Button proceedButtonNode = (Button) dialogPane.lookupButton(proceedButton);
 						if (proceedButtonNode != null) {
-							proceedButtonNode.setStyle(
-									"-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
+							proceedButtonNode.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
 						}
 
 						Button reviewButtonNode = (Button) dialogPane.lookupButton(reviewButton);
 						if (reviewButtonNode != null) {
-							reviewButtonNode.setStyle("-fx-text-fill: black;;");
+							reviewButtonNode.setStyle("-fx-text-fill: black;");
 						}
 
 						// Aligning buttons to the center
@@ -810,22 +813,36 @@ public class GenericController extends BaseController {
 
 						// Defer the dialog display to ensure TabPane is rendered first
 						Platform.runLater(() -> {
+							// Adding focus lost event to close the dialog if the window loses focus
+							dialogStage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+								if (!isNowFocused) {
+									confirmationDialog.close(); // Close the dialog if the application loses focus
+								}
+							});
+
 							Optional<ButtonType> result = confirmationDialog.showAndWait();
 							if (result.isPresent() && result.get() == proceedButton) {
-								// If OK is clicked, proceed to change the tab
+								// If "Proceed" is clicked, proceed to change the tab
 								ignoreChange[0] = true;
 								int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
-								final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
-								tabPane.getTabs().get(newSelection).setDisable(!refreshScreenVisibility(newScreenName));
+								final String newScreenName = tabPane.getTabs()
+										.get(newSelection)
+										.getId()
+										.replace("_tab", EMPTY);
+								tabPane.getTabs()
+										.get(newSelection)
+										.setDisable(!refreshScreenVisibility(newScreenName));
 								tabPane.getSelectionModel().select(newValue.intValue());
 							} else {
-								// If Cancel is clicked, remain on the current tab
+								// If "Review Details" is clicked, remain on the current tab
 								ignoreChange[0] = false;
 								tabPane.getSelectionModel().select(oldValue.intValue());
 							}
 						});
+
 						return;
 					}
+
 				}
 				int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
 				final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
@@ -908,6 +925,9 @@ public class GenericController extends BaseController {
 				.filter(screen -> screen.getName().equals(screenName.replace("_tab", EMPTY))).findFirst();
 
 		boolean isValid = true;
+		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
+		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
+		
 		if (result.isPresent()) {
 
 			if (!isAdditionalInfoRequestIdProvided(result.get())) {
@@ -918,6 +938,19 @@ public class GenericController extends BaseController {
 			}
 
 			for (UiFieldDTO field : result.get().getFields()) {
+				
+				 // Check if the field belongs to the "Notification of Change" group
+	            if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
+	                isNotificationOfChangePresent = true;		// Found relevant group fields on this screen
+	                FxControl control = getFxControl(field.getId());
+	                if (control != null) {
+	                    Object fieldValue = control.getData(); // Fetch the data
+	                    LOGGER.debug("Field ID: {}, Value: {}", field.getId(), fieldValue); 
+	                    if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
+	                        isNotificationOfChangeFilled = true;      // At least one non-empty value found
+	                    }
+	                }
+	            }
 				
 				// Validate PRN differently
 				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
@@ -940,11 +973,17 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
+		
 		if (isValid) {
 			showHideErrorNotification(null);
 			auditFactory.audit(AuditEvent.REG_NAVIGATION, Components.REGISTRATION_CONTROLLER,
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 		}
+		// Show error if fields from "Notification of Change" are present but none are filled
+	    if (isNotificationOfChangePresent && !isNotificationOfChangeFilled) {
+	        showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.");
+	        return false;
+	    }
 		return isValid;
 	}
 
@@ -1154,7 +1193,7 @@ public class GenericController extends BaseController {
 	    CheckPRNStatusResponseDTO responseDTO = prnService.checkPRNStatus(prnText);
 
 	    if (responseDTO != null) {
-	        if (responseDTO.getStatusCode().equalsIgnoreCase("T")) {
+	        if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
 	            if (responseDTO.getProcessFlow().equalsIgnoreCase(processFlow)) {
 	                Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	                if (prnCheck == null) {
@@ -1493,10 +1532,21 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.getId().equals("userServiceType") && screenDTO.getOrder() == 2) {
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
+								}
+								if (field.getDefaultValue() != null) {
+									boolean check = fxControl.isFieldDefaultValue(field);
+									if (check) {
+										fxControl.selectAndSet("Y");
+										fxControl.getNode().setDisable(true);
+									} else {
+										fxControl.selectAndSet("N");
+										//fxControl.setData("N");
+										fxControl.getNode().setDisable(false);
+									}
 								}
 								break;
 						}

@@ -1594,6 +1594,8 @@ public class RegistrationConstants {
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
 	public static final String INTRODUCER_SIGNATURE = "introducerSignature";
+	public static final String SIGNATURE_CODE = "SIG";
+	public static final String INTRODUCER_SIGNATURE_CODE = "INSI";
 	public static final String ADD = "aad";
 	public static final String SALT = "salt";
 	public static final String REQ_TIME = "requesttime";

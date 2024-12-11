@@ -157,10 +157,15 @@ public class TemplateGenerator extends BaseService {
 			for (UiFieldDTO field : schemaFields) {
 				switch (field.getType()) {
 					case "documentType":
-						Map<String, Object> doc_data = getDocumentData(registration, field, templateValues);
-						if(doc_data != null) { documentsData.put(field.getId(), doc_data); }
-						break;
-
+						if(RegistrationConstants.PROOF_OF_SIGNATURE.equalsIgnoreCase(field.getSubType()) || RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
+							Map<String, Object> demo_data = getDemographicData(registration, field);
+							if(demo_data != null) { demographicsData.put(field.getId(), demo_data); }
+							break;
+						} else {
+							Map<String, Object> doc_data = getDocumentData(registration, field, templateValues);
+							if(doc_data != null) { documentsData.put(field.getId(), doc_data); }
+							break;
+						}
 					case "biometricsType":
 						Map<String, Object> bio_data = getBiometericData(registration, field, isPrevTemplate, templateValues, crossImagePath, firstLanguageProperties);
 						if(bio_data != null) { biometricsData.put(field.getId(), bio_data); }
@@ -380,35 +385,56 @@ public class TemplateGenerator extends BaseService {
 
 	private Map<String, Object> getDemographicData(RegistrationDTO registration, UiFieldDTO field) {
 
+	    Map<String, Object> data = new HashMap<>();
+	    String value = null;
 
-		Map<String, Object> data = null;
-		if("UIN".equalsIgnoreCase(field.getId()) || "IDSchemaVersion".equalsIgnoreCase(field.getId()))
-			return null;
+	    if("UIN".equalsIgnoreCase(field.getId()) || "IDSchemaVersion".equalsIgnoreCase(field.getId()))
+	        return null;
+    
+	    if (RegistrationConstants.PROOF_OF_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
+	        value = getValue(registration.getDemographics().get(RegistrationConstants.SIGNATURE));
+	        try {
+	        	if (value != null && !value.isEmpty()) {
+	            	data.put(RegistrationConstants.SIGNATURE, RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + value);
+	            }
+	        } catch (Exception e) {
+	            LOGGER.error("Error processing applicant signature: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	    } else if (RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
+	        value = getValue(registration.getDemographics().get(RegistrationConstants.INTRODUCER_SIGNATURE));
+	        try {
+	            if (value != null && !value.isEmpty()) {
+	            	data.put(RegistrationConstants.INTRODUCER_SIGNATURE, RegistrationConstants.TEMPLATE_PNG_IMAGE_ENCODING + value);
+	            }
+	        } catch (Exception e) {
+	            LOGGER.error("Error processing applicant signature: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	    } else {
+	        value = getValue(registration.getDemographics().get(field.getId()));
+           // Helper condition to remove code values if any of these fields are null or empty
+          if(value == null || value.isEmpty()){
+            if("surname".equalsIgnoreCase(field.getId()) || "givenName".equalsIgnoreCase(field.getId())
+                || "applicantPlaceOfResidenceParish".equalsIgnoreCase(field.getId())
+                || "applicantPlaceOfResidenceVillage".equalsIgnoreCase(field.getId())
+                || "applicantForeignResidenceCountry".equalsIgnoreCase(field.getId())){
+              value = "N/A";
+            }
+          }
+	    }
 
-		String value = getValue(registration.getDemographics().get(field.getId()));
+	    if (value != null && !value.isEmpty()) {
+        String fieldLabel = getFieldLabel(field);
+        String fieldValue = "N/A".equals(value) ? value : getFieldValue(field);
+        data.put("label", fieldLabel);
+        data.put("value", fieldValue);
 
-		// Helper condition to remove code values if any of these fields are null or empty
-		if(value == null || value.isEmpty()){
-			if("surname".equalsIgnoreCase(field.getId()) || "givenName".equalsIgnoreCase(field.getId())
-					|| "applicantPlaceOfResidenceParish".equalsIgnoreCase(field.getId())
-					|| "applicantPlaceOfResidenceVillage".equalsIgnoreCase(field.getId())
-					|| "applicantForeignResidenceCountry".equalsIgnoreCase(field.getId())){
-				value = "N/A";
-			}
-		}
-
-		if (value != null && !value.isEmpty()) {
-			data = new HashMap<>();
-			String fieldLabel = getFieldLabel(field);
-			String fieldValue = "N/A".equals(value) ? value : getFieldValue(field);
-			data.put("label", fieldLabel);
-			data.put("value", fieldValue);
-
-			//Added for backward compatibility(1.1.5.5 & 1.1.4.*), this support will be removed from next version
-			data.put("primaryLabel", fieldLabel);
-			data.put("primaryValue", fieldValue);
-		}
-		return data;
+        //Added for backward compatibility(1.1.5.5 & 1.1.4.*), this support will be removed from next version
+        data.put("primaryLabel", fieldLabel);
+        data.put("primaryValue", fieldValue);
+      }
+	    return data;
 	}
 
 	private void setBasicDetails(Map<String, Object> templateValues, RegistrationDTO registration, boolean isPrevTemplate,
@@ -621,9 +647,18 @@ public class TemplateGenerator extends BaseService {
 		return value == null ? RegistrationConstants.EMPTY : value;
 	}
 
+	@SuppressWarnings("unchecked")
 	private String getFieldValue(UiFieldDTO field) {
-		Object fieldValue = getRegistrationDTOFromSession().getDemographics().get(((UiFieldDTO) field).getId());
 		List<String> values = new ArrayList<>();
+		Object fieldValue =null;
+		if(RegistrationConstants.PROOF_OF_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
+			fieldValue = getRegistrationDTOFromSession().getDemographics().get(RegistrationConstants.SIGNATURE);
+		} else if(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
+			fieldValue = getRegistrationDTOFromSession().getDemographics().get(RegistrationConstants.INTRODUCER_SIGNATURE);
+		} else {
+			fieldValue = getRegistrationDTOFromSession().getDemographics().get(((UiFieldDTO) field).getId());
+		}
+		
 		List<String> selectedLanguages = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant();
 		for (String selectedLanguage : selectedLanguages) {
 			values.add(getValue(fieldValue, selectedLanguage));
