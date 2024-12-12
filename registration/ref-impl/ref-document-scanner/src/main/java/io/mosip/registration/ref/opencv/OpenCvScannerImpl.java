@@ -46,13 +46,15 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public BufferedImage scan(DocScanDevice docScanDevice, String deviceType) {
 		LOGGER.info("Entering the opencv device impl of scan *************************************");
-		int width = 640;
-		int height = 480;
 
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
 		VideoCapture capture = new VideoCapture(index);
+		int width = 2480;
+		int height = 1800;
+
 		capture.set(Videoio.CAP_PROP_BUFFERSIZE, 1);
-		capture.set(Videoio.CAP_PROP_FPS, 15);
+		capture.set(Videoio.CAP_PROP_FRAME_WIDTH, width);
+		capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, height);
 
 		Mat frame = new Mat(new Size(width, height), CvType.CV_8UC3);
 		if (capture.isOpened()) {
@@ -69,7 +71,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public List<DocScanDevice> getConnectedDevices() {
 		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
-		var deviceIndexList = returnCameraIndexes(0);
+		var deviceIndexList = returnCameraIndexes();
 
 		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
 		deviceIndexList.parallelStream().forEach(index -> {
@@ -100,13 +102,24 @@ public class OpenCvScannerImpl implements DocScannerService {
 		InputStream inputStream = new ByteArrayInputStream(bytes.toArray());
 		return ImageIO.read(inputStream);
 	}
-	private List<Integer> returnCameraIndexes(int cameraIndex) {
+
+	private List<Integer> returnCameraIndexes() {
 		var cameraIndexes = new ArrayList<Integer>();
-		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
-		if (cap.isOpened()) {
-			cameraIndexes.add(cameraIndex);
-			cap.release();
+		var iterator = 0;
+		var end = 5;
+		while (end > 0) {
+			var cap = new VideoCapture(iterator);
+			LOGGER.info("contrast of device*****index" + iterator + "******" + cap.get(Videoio.CAP_PROP_CONTRAST));
+			if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
+					&& cap.isOpened()) {
+				cameraIndexes.add(iterator);
+				cap.release();
+				break;
+			}
+			iterator++;
+			end--;
 		}
+
 		return cameraIndexes;
 	}
 }
