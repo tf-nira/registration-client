@@ -384,12 +384,13 @@ public class TemplateGenerator extends BaseService {
 	}
 
 	private Map<String, Object> getDemographicData(RegistrationDTO registration, UiFieldDTO field) {
+
 	    Map<String, Object> data = new HashMap<>();
 	    String value = null;
 
 	    if("UIN".equalsIgnoreCase(field.getId()) || "IDSchemaVersion".equalsIgnoreCase(field.getId()))
 	        return null;
-
+    
 	    if (RegistrationConstants.PROOF_OF_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
 	        value = getValue(registration.getDemographics().get(RegistrationConstants.SIGNATURE));
 	        try {
@@ -412,18 +413,27 @@ public class TemplateGenerator extends BaseService {
 	        }
 	    } else {
 	        value = getValue(registration.getDemographics().get(field.getId()));
+           // Helper condition to remove code values if any of these fields are null or empty
+          if(value == null || value.isEmpty()){
+            if("surname".equalsIgnoreCase(field.getId()) || "givenName".equalsIgnoreCase(field.getId())
+                || "applicantPlaceOfResidenceParish".equalsIgnoreCase(field.getId())
+                || "applicantPlaceOfResidenceVillage".equalsIgnoreCase(field.getId())
+                || "applicantForeignResidenceCountry".equalsIgnoreCase(field.getId())){
+              value = "N/A";
+            }
+          }
 	    }
 
 	    if (value != null && !value.isEmpty()) {
-			String fieldLabel = getFieldLabel(field);
-			String fieldValue = getFieldValue(field);
-			data.put("label", fieldLabel);
-			data.put("value", fieldValue);
+        String fieldLabel = getFieldLabel(field);
+        String fieldValue = "N/A".equals(value) ? value : getFieldValue(field);
+        data.put("label", fieldLabel);
+        data.put("value", fieldValue);
 
-			//Added for backward compatibility(1.1.5.5 & 1.1.4.*), this support will be removed from next version
-			data.put("primaryLabel", fieldLabel);
-			data.put("primaryValue", fieldValue);
-		}
+        //Added for backward compatibility(1.1.5.5 & 1.1.4.*), this support will be removed from next version
+        data.put("primaryLabel", fieldLabel);
+        data.put("primaryValue", fieldValue);
+      }
 	    return data;
 	}
 
