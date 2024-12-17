@@ -6,10 +6,14 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+
+import javax.print.PrintService;
 
 import com.sun.javafx.print.PrintHelper;
 import com.sun.javafx.print.Units;
+import io.mosip.registration.api.printer.PrinterServiceUtil;
 import javafx.collections.ObservableSet;
 import javafx.print.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,10 +72,10 @@ public class AckReceiptController extends BaseController implements Initializabl
 	@FXML
 	private ImageView newRegistrationBtnImgVw;
 	@FXML
-	private ImageView printImgVw;	
+	private ImageView printImgVw;
 	@FXML
 	private ImageView SendEmailImageView;
-;
+	;
 
 	@Autowired
 	private SendNotificationController sendNotificationController;
@@ -90,7 +94,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 		setImage(newRegistrationBtnImgVw, RegistrationConstants.NEW_REGISTRATION_IMG);
 		setImage(printImgVw, RegistrationConstants.PRINTER_IMG);
 		setImage(SendEmailImageView, RegistrationConstants.SEND_EMAIL_IMG);
-		
+
 		// setImagesOnHover();
 		String notificationType = getValueFromApplicationContext(RegistrationConstants.MODE_OF_COMMUNICATION);
 		/*
@@ -158,16 +162,46 @@ public class AckReceiptController extends BaseController implements Initializabl
 				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);
 			}
 			if(selectedPrinter != null){
-				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
-				PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
-				job.setPrinter(selectedPrinter);
-				job.getJobSettings().setPageLayout(pageLayout);
-				slipWebView.getEngine().print(job);
-				job.endJob();
+
+
+
+				String printerName = selectedPrinter.getName();
+
+				PrintService[] localPrinters = PrinterServiceUtil.getAvailableLocalPrinters();
+				PrintService correspondingService = Arrays.stream(localPrinters)
+						.filter(ps -> ps.getName().equalsIgnoreCase(printerName))
+						.findFirst()
+						.orElse(null);
+
+				if (correspondingService != null) {
+					boolean isThermalPrinterReady = PrinterServiceUtil.isPrinterReady(correspondingService);
+					if (isThermalPrinterReady) {
+						LOGGER.info("Thermal Printer '" + printerName + "' is ready.");
+						// Proceed with print job initiation
+						generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
+
+						PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
+						job.setPrinter(selectedPrinter);
+						job.getJobSettings().setPageLayout(pageLayout);
+						slipWebView.getEngine().print(job);
+						job.endJob();
+
+
+					} else {
+						generateAlert(RegistrationConstants.ALERT_INFORMATION,
+								RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+						LOGGER.info("Thermal Printer'" + printerName + "' is not ready.");
+					}
+				} else {
+					generateAlert(RegistrationConstants.ALERT_INFORMATION,
+							RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+					LOGGER.info("Thermal Printer '" + printerName + "' not found among local printers.");
+				}
+
 			}
 			else{
 				generateAlert(RegistrationConstants.ALERT_INFORMATION,
-						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_JOB));
 			}
 		}
 	}
@@ -183,7 +217,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			for (Printer printer : printers) {
 				LOGGER.info( "selected printer in the loop"+ printer.getName());
 				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
-				//if (printer.getName().contains("80mm Series Printer")) {
+					//if (printer.getName().contains("80mm Series Printer")) {
 					LOGGER.info("Skipping Thermal Printer: " + printer.getName());
 				}else{
 					// Attempt to use any other Printer but not Thermal

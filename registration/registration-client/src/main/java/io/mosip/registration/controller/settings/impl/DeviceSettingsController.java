@@ -3,8 +3,10 @@ package io.mosip.registration.controller.settings.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import java.util.Optional;
 
+import io.mosip.registration.api.printer.PrinterServiceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -91,6 +93,9 @@ public class DeviceSettingsController extends BaseController implements Settings
 	private SignatureFacade signatureFacade;
 
 	@Autowired
+	private PrinterServiceUtil printerServiceUtil;
+
+	@Autowired
 	private DocumentScanController documentScanController;
 
 	@Override
@@ -149,24 +154,24 @@ public class DeviceSettingsController extends BaseController implements Settings
 
 	private String getImageByDeviceStatus(String deviceType) {
 		switch (deviceType.toLowerCase()) {
-		case RegistrationConstants.FINGERPRINT_DEVICE_KEY:
-			if (isDeviceAvailable(deviceType)) {
-				return RegistrationConstants.FP_DEVICE_CONNECTED_IMG;
-			} else {
-				return RegistrationConstants.FP_DEVICE_DISCONNECTED_IMG;
-			}
-		case RegistrationConstants.IRIS_DEVICE_KEY:
-			if (isDeviceAvailable(deviceType)) {
-				return RegistrationConstants.IRIS_DEVICE_CONNECTED_IMG;
-			} else {
-				return RegistrationConstants.IRIS_DEVICE_DISCONNECTED_IMG;
-			}
-		case RegistrationConstants.FACE_DEVICE_KEY:
-			if (isDeviceAvailable(deviceType)) {
-				return RegistrationConstants.FACE_DEVICE_CONNECTED_IMG;
-			} else {
-				return RegistrationConstants.FACE_DEVICE_DISCONNECTED_IMG;
-			}
+			case RegistrationConstants.FINGERPRINT_DEVICE_KEY:
+				if (isDeviceAvailable(deviceType)) {
+					return RegistrationConstants.FP_DEVICE_CONNECTED_IMG;
+				} else {
+					return RegistrationConstants.FP_DEVICE_DISCONNECTED_IMG;
+				}
+			case RegistrationConstants.IRIS_DEVICE_KEY:
+				if (isDeviceAvailable(deviceType)) {
+					return RegistrationConstants.IRIS_DEVICE_CONNECTED_IMG;
+				} else {
+					return RegistrationConstants.IRIS_DEVICE_DISCONNECTED_IMG;
+				}
+			case RegistrationConstants.FACE_DEVICE_KEY:
+				if (isDeviceAvailable(deviceType)) {
+					return RegistrationConstants.FACE_DEVICE_CONNECTED_IMG;
+				} else {
+					return RegistrationConstants.FACE_DEVICE_DISCONNECTED_IMG;
+				}
 		}
 		return null;
 	}
@@ -218,7 +223,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 				return new Task<Boolean>() {
 					/*
 					 * (non-Javadoc)
-					 * 
+					 *
 					 * @see javafx.concurrent.Task#call()
 					 */
 					@Override
@@ -284,13 +289,29 @@ public class DeviceSettingsController extends BaseController implements Settings
 				++columnsCount;
 			}
 
+
+			List<DocScanDevice> printerDevices = printerServiceUtil.getConnectedThermal();
+			scannerDevices.addAll(printerDevices);
+			LOGGER.info("All thermal printers: " + printerDevices.toString());
+			if(!printerDevices.isEmpty()) {
+				++columnsCount;
+			}
+
+			List<DocScanDevice> NormalPrinters = printerServiceUtil.getListedPrinter();
+			LOGGER.info("All printers: " + printerDevices.toString());
+			scannerDevices.addAll(NormalPrinters);
+			if(!NormalPrinters.isEmpty()) {
+				++columnsCount;
+			}
+
+
 			if (applicationContext.isPrimaryLanguageRightToLeft()) {
 				subContentGridPane.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
 			}
 			GridPane gridPane = createGridPane(columnsCount);
 			addContentToGridPane(gridPane, biometricDevices, scannerDevices);
 			contentPane.setContent(gridPane);
-			
+
 			SessionContext.map().put(RegistrationConstants.ISPAGE_NAVIGATION_ALERT_REQ,
 					RegistrationConstants.ENABLE);
 		} catch (RegBaseCheckedException exception) {
@@ -333,7 +354,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 	}
 
 	private void addContentToGridPane(GridPane gridPane, Map<String, List<MdmBioDevice>> biometricDevices,
-			List<DocScanDevice> scannerDevices) throws RegBaseCheckedException {
+									  List<DocScanDevice> scannerDevices) throws RegBaseCheckedException {
 		int rowIndex = 0;
 		int columnIndex = 0;
 		for (Entry<String, List<MdmBioDevice>> entry : biometricDevices.entrySet()) {
@@ -357,7 +378,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 	}
 
 	private GridPane createDevicePane(String type, String key, List<MdmBioDevice> bioDevices,
-			List<DocScanDevice> scannerDevices) throws RegBaseCheckedException {
+									  List<DocScanDevice> scannerDevices) throws RegBaseCheckedException {
 		GridPane mainGridPane = new GridPane();
 		mainGridPane.getStyleClass().add(RegistrationConstants.SYNC_JOB_STYLE);
 
@@ -493,7 +514,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 					Label label = new Label();
 					label.setWrapText(true);
 					label.setPrefWidth(280);
-					
+
 					if (item == null || empty) {
 						setGraphic(null);
 					} else {
@@ -518,7 +539,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 		String selectedScanDevice = documentScanController.getSelectedScanDeviceName();
 		if (selectedScanDevice != null && !selectedScanDevice.isBlank()) {
 			Optional<DocScanDevice> docScanDevice = scannerDevices.stream().filter(device -> device.getId().equalsIgnoreCase(selectedScanDevice)).findFirst();
-			if (docScanDevice.isPresent()) 
+			if (docScanDevice.isPresent())
 				return convertToScanDeviceInfo(docScanDevice.get());
 		}
 		documentScanController.setSelectedScanDeviceName(scannerDevices.get(0).getName());
@@ -527,11 +548,29 @@ public class DeviceSettingsController extends BaseController implements Settings
 
 	private ScanDeviceInfo convertToScanDeviceInfo(DocScanDevice device) {
 		ScanDeviceInfo deviceInfo = new ScanDeviceInfo();
-		deviceInfo.setId(device.getId());
-		deviceInfo.setName(device.getName());
-		if (device.getDeviceType().equals(DeviceType.CAMERA)) {
+		if (device == null) {
+			System.out.println("DocScanDevice is null");
+			deviceInfo.setId(RegistrationConstants.HYPHEN);
+			deviceInfo.setName(RegistrationConstants.HYPHEN);
+			deviceInfo.setModel(RegistrationConstants.HYPHEN);
+			return deviceInfo;
+		}
+
+		deviceInfo.setId(device.getId() != null ? device.getId() : RegistrationConstants.UNKWOWN);
+		deviceInfo.setName(device.getName() != null ? device.getName() : RegistrationConstants.UNKWOWN);
+		if (device.getDeviceType() == null) {
+			LOGGER.error("DeviceType is null for device: " + device.getName());
+			deviceInfo.setModel(RegistrationConstants.HYPHEN);
+		}
+
+		else if (device.getDeviceType().equals(DeviceType.CAMERA)) {
 			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("webcam"));
-		} else {
+		} else if (device.getDeviceType().equals(DeviceType.THERMAL_PRINTER)) {
+			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("smartLabel"));
+		} else if (device.getDeviceType().equals(DeviceType.NORMAL_PRINTER)) {
+			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("normalPrinter"));
+		}
+		else {
 			deviceInfo.setModel(RegistrationConstants.HYPHEN);
 		}
 		return deviceInfo;

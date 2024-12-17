@@ -4,5 +4,7 @@ public enum DeviceType {
 
     CAMERA,
     SCANNER,
-    SIGNATURE_PAD;
+    SIGNATURE_PAD,
+    THERMAL_PRINTER,
+    NORMAL_PRINTER;
 }
