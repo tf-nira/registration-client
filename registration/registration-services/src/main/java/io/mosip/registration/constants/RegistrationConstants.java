@@ -1026,6 +1026,7 @@ public class RegistrationConstants {
 			"/UserOnboard/thumb/rightThumb/" };*/
 	public static final String COMMA = ",";
 	public static final String HYPHEN = "-";
+	public static final String UNKWOWN = "Un Known";
 	public static final String FINGERPRINT_PANES_SELECTED = "fingerPrintPanesSelected";
 	public static final String BIOMETRIC_PANES_SELECTED = "biometricPaneSelected";
 	public static final Set<String> BIO_TYPE = new HashSet<>(
