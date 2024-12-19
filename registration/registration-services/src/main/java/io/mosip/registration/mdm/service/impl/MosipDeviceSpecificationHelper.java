@@ -258,19 +258,25 @@ public class MosipDeviceSpecificationHelper {
 	public String getHttpClientResponseEntity(String url, String method, String body) throws IOException {
 		int timeout = getMDMConnectionTimeout(method);
 		LOGGER.debug("MDM HTTP CALL method : {}  with timeout {}", method, timeout);
+		LOGGER.info("MDM HTTP CALL method : {}  with timeout {}", method, timeout);
 		RequestConfig requestConfig = RequestConfig.custom()
 				.setConnectTimeout(timeout)
 				.setSocketTimeout(timeout)
 				.setConnectionRequestTimeout(timeout)
 				.build();
+		LOGGER.info("requestConfig: {}", requestConfig);
 		try (CloseableHttpClient client = HttpClients.createDefault()) {
+			LOGGER.info("client: {}", client);
 			StringEntity requestEntity = new StringEntity(body, ContentType.create("Content-Type", Consts.UTF_8));
+			LOGGER.info("requestEntity : {}",requestEntity );
 			HttpUriRequest httpUriRequest = RequestBuilder.create(method)
 					.setConfig(requestConfig)
 					.setUri(url)
 					.setEntity(requestEntity)
 					.build();
+			LOGGER.info("httpUriRequest : {}",httpUriRequest );
 			CloseableHttpResponse response = client.execute(httpUriRequest);
+			LOGGER.info("response : {}",response );
 			return EntityUtils.toString(response.getEntity());
 		}
 	}

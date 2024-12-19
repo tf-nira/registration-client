@@ -83,10 +83,14 @@ public class BioServiceImpl extends BaseService implements BioService {
 		List<BiometricsDto> list = new ArrayList<BiometricsDto>();
 
 		try {
+			LOGGER.info("mdmRequestDto details: {}", mdmRequestDto);
 			MdmBioDevice bioDevice = deviceSpecificationFactory.getDeviceInfoByModality(mdmRequestDto.getModality());
+			LOGGER.info("BioDevice details: {}", bioDevice);
 			MosipDeviceSpecificationProvider deviceSpecificationProvider = deviceSpecificationFactory
 					.getMdsProvider(bioDevice.getSpecVersion());
+			LOGGER.info("deviceSpecificationProvider details: {}", deviceSpecificationProvider);
 			List<BiometricsDto> biometricsDtos = deviceSpecificationProvider.rCapture(bioDevice, mdmRequestDto);
+			LOGGER.info("biometricsDtos: {}", biometricsDtos);
 
 			for (BiometricsDto biometricsDto : biometricsDtos) {
 				if (biometricsDto == null) {
