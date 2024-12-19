@@ -433,16 +433,19 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 			String requestBody = objectMapper.writeValueAsString(deviceDiscoveryRequest);
 
 			LOGGER.debug(loggerClassName, APPLICATION_NAME, APPLICATION_ID, "Request for device discovery...." + requestBody);
+			LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID, "Request for device discovery...." + requestBody);
 
 			String response = mosipDeviceSpecificationHelper.getHttpClientResponseEntity(
 					mosipDeviceSpecificationHelper.buildUrl(mdmBioDevice.getPort(), "device"),
 					"MOSIPDISC",
 					requestBody);
+			LOGGER.info("response  : {}",response );
 
 			LOGGER.info("Request completed {}. parsing device discovery response to 095 dto", System.currentTimeMillis());
 			List<DeviceDiscoveryMDSResponse> deviceList = (mosipDeviceSpecificationHelper.getMapper().readValue(response,
 					new TypeReference<List<DeviceDiscoveryMDSResponse>>() {}));
 
+			LOGGER.info("deviceList  : {}",deviceList );
 			isDeviceAvailable = deviceList.stream().anyMatch(device ->
 					Arrays.asList(device.getSpecVersion()).contains(SPEC_VERSION)
 							&& RegistrationConstants.DEVICE_STATUS_READY.equalsIgnoreCase(device.getDeviceStatus())
