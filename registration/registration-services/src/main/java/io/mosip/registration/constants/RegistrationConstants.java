@@ -284,6 +284,10 @@ public class RegistrationConstants {
 	public static final String CONFIRM_BUTTON_NAME = "confirm-button";
 	public static final String PROOF_OF_SIGNATURE = "POS";
 	public static final String PROOF_OF_INTRODUCER_SIGNATURE = "POIS";
+	public static final String PROOF_OF_SIGNATURE_ID = "applicantProofOfSignature";
+	public static final String PROOF_OF_INTRODUCER_SIGNATURE_ID = "introducerProofOfSignature";
+	public static final String UNABLE_SIGNATURE_ID = "applicantUnabletoSign";
+	public static final String UNABLE_INTRODUCER_SIGNATURE_ID = "introducerUnabletoSign";
 	public static final String RESIDENCE_STATUS = "residenceStatus";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
