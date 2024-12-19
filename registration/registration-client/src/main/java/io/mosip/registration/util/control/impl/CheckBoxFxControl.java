@@ -33,7 +33,7 @@ public class CheckBoxFxControl extends FxControl {
 	private static final Logger LOGGER = AppConfig.getLogger(CheckBoxFxControl.class);
 	public static final String HASH = "#";
 	private DemographicChangeActionHandler demographicChangeActionHandler;
-
+	
 	public CheckBoxFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
 		auditFactory = applicationContext.getBean(AuditManagerService.class);
@@ -95,7 +95,7 @@ public class CheckBoxFxControl extends FxControl {
 		
 		String text = io.mosip.registration.context.ApplicationContext.getStringValueFromApplicationMap(RegistrationConstants.SIGNATURE_TEXT);
 		
-		if(uiFieldDTO.getId().equals("applicantUnabletoSign") || uiFieldDTO.getId().equals("introducerUnabletoSign") ) {
+		if(uiFieldDTO.getId().equals(RegistrationConstants.UNABLE_SIGNATURE_ID) || uiFieldDTO.getId().equals(RegistrationConstants.UNABLE_INTRODUCER_SIGNATURE_ID) ) {
 			CheckBox checkBox = (CheckBox) getField(uiFieldDTO.getId());
 			getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), checkBox == null ? "N"
 									: checkBox.isSelected() ? text : "N");
@@ -138,6 +138,20 @@ public class CheckBoxFxControl extends FxControl {
 		CheckBox checkBox = (CheckBox) node;
 		checkBox.selectedProperty().addListener((options, oldValue, newValue) -> {
 			getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), newValue ? "Y" : "N");
+			
+			//remove Signature value
+			if(uiFieldDTO.getId().equals(RegistrationConstants.UNABLE_SIGNATURE_ID) ) {
+				FxControl fxControl = getFxControl(RegistrationConstants.PROOF_OF_SIGNATURE_ID);
+				if (fxControl != null) {
+					fxControl.clearValue();
+				}
+			} else if(uiFieldDTO.getId().equals(RegistrationConstants.UNABLE_INTRODUCER_SIGNATURE_ID)) {
+				FxControl fxControl = getFxControl(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE_ID);
+				if (fxControl != null) {
+					fxControl.clearValue();
+				}
+			}
+			
 			// handling other handlers
 			demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),
 					uiFieldDTO.getChangeAction());
