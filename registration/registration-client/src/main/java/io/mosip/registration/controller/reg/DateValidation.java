@@ -59,7 +59,7 @@ public class DateValidation extends BaseController {
 				return newValue.length() > 4 ? false : true;
 			case RegistrationConstants.AGE_FIELD:
 				int age = Integer.parseInt(newValue);
-				return (age < 1 || Integer.parseInt(newValue) > Integer
+				return (age < 0 || Integer.parseInt(newValue) > Integer
 						.parseInt(getValueFromApplicationContext(RegistrationConstants.MAX_AGE))) ? false : true;
 			}
 		}
