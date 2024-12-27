@@ -106,6 +106,18 @@ cp "${work_dir}"/build_files/logback.xml "${work_dir}"/registration-client/targe
 cp "${work_dir}"/registration-client/target/registration-client-${client_version_env}.jar "${work_dir}"/registration-client/target/lib/registration-client-${client_version_env}.jar
 
 echo "@echo off" > "${work_dir}"/registration-client/target/run.bat
+
+echo "for /f \"delims=\" %%i in ('powershell -command \"[Environment]::GetFolderPath(''Desktop'')\"') do set DESKTOP_PATH=%%i" >> "${work_dir}"/registration-client/target/run.bat
+echo "if not exist \"%DESKTOP_PATH%\regclient.lnk\" (" >> "${work_dir}"/registration-client/target/run.bat
+echo "set TARGET_PATH=%~dp0run.bat" >> "${work_dir}"/registration-client/target/run.bat
+echo "set WORKING_DIR=%~dp0" >> "${work_dir}"/registration-client/target/run.bat
+echo "set SHORTCUT_NAME=regclient.lnk" >> "${work_dir}"/registration-client/target/run.bat
+echo "set SHORTCUT_PATH=%DESKTOP_PATH%\%SHORTCUT_NAME%" >> "${work_dir}"/registration-client/target/run.bat
+echo "powershell -command \"$s=(New-Object -COM WScript.Shell).CreateShortcut('%SHORTCUT_PATH%');$s.TargetPath='%TARGET_PATH%';$s.WorkingDirectory='%WORKING_DIR%';$s.Save()\"" >> "${work_dir}"/registration-client/target/run.bat
+echo "attrib +r \"%SHORTCUT_PATH%\"" >> "${work_dir}"/registration-client/target/run.bat
+echo "echo Shortcut created on Desktop" >> "${work_dir}"/registration-client/target/run.bat
+echo ")" >> "${work_dir}"/registration-client/target/run.bat
+
 echo "if exist jre\jre (" >> "${work_dir}"/registration-client/target/run.bat
 echo "xcopy /s /k /y /q jre\jre jre && rmdir /s /q jre\jre" >> "${work_dir}"/registration-client/target/run.bat
 echo ")" >> "${work_dir}"/registration-client/target/run.bat
