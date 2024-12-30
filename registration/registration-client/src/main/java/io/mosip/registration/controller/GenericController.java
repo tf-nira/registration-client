@@ -1090,7 +1090,7 @@ public class GenericController extends BaseController {
 				groupFlowPane.setHgap(20);
 				groupFlowPane.setVgap(20);
 
-				if (screenDTO.getName().equals("DemographicDetails")) {
+				if (screenDTO.getName().equals("DemographicDetails") && !groupEntry.getKey().equals("Foundling Check")) {
 					groupFlowPane.getStyleClass().add("preRegParentPaneSection");
 
 //					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
