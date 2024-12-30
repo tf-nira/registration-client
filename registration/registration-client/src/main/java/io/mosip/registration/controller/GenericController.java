@@ -1090,13 +1090,13 @@ public class GenericController extends BaseController {
 				groupFlowPane.setHgap(20);
 				groupFlowPane.setVgap(20);
 
-				if (screenDTO.getName().equals("DemographicDetails") && !groupEntry.getKey().equals("Foundling Check")) {
+				if (screenDTO.getName().equals("DemographicDetails")) {
 					groupFlowPane.getStyleClass().add("preRegParentPaneSection");
 
 //					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 					groupFlowPane.setPadding(new Insets(20, 0, 20, 20));
 
-					if (!groupEntry.getKey().equals("Declaration")) {
+					if (!groupEntry.getKey().equals("Declaration")  && !groupEntry.getKey().equals("Foundling Check")) {
 						ColumnConstraints leftColumn = new ColumnConstraints();
 						leftColumn.setPercentWidth(33);
 						ColumnConstraints centerColumn = new ColumnConstraints();
