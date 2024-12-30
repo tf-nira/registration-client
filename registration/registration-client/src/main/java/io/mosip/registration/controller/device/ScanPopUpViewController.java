@@ -281,9 +281,9 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		zoomProperty.addListener(new InvalidationListener() {
 			@Override
 			public void invalidated(Observable arg0) {
-				if (getImageGroup().getChildren().size() > 0) {
-					((ImageView) getImageGroup().getChildren().get(0)).setFitWidth(zoomProperty.get() * 4);
-					((ImageView) getImageGroup().getChildren().get(0)).setFitHeight(zoomProperty.get() * 3);
+				if(getImageGroup().getChildren().size() > 0) {
+					((ImageView)getImageGroup().getChildren().get(0)).setFitWidth(zoomProperty.get() * 4);
+					((ImageView)getImageGroup().getChildren().get(0)).setFitHeight(zoomProperty.get() * 3);
 				}
 			}
 		});
