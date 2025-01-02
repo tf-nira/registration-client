@@ -6,10 +6,12 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import com.sun.javafx.print.PrintHelper;
 import com.sun.javafx.print.Units;
+import io.mosip.registration.api.printer.PrinterStatusChecker;
 import javafx.collections.ObservableSet;
 import javafx.print.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,11 +148,16 @@ public class AckReceiptController extends BaseController implements Initializabl
 			) {
 				//customPaper = PrintHelper.createPaper("A6 Paper", 75, Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
 				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
-				for (Printer printer : printers) {
-					//if (printer.getName().contains("80mm Series Printer")) {
-					if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {  //If it is Thermal Printer
-						LOGGER.info("Is Thermal Printer");
-						selectedPrinter = printer;
+
+				List<PrinterStatusChecker> connectedPrinters = PrinterStatusChecker.getPrintersWithStatus();
+				System.out.println(connectedPrinters.toString());
+				for (PrinterStatusChecker checker : connectedPrinters) {
+					if (checker.getPrinterName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
+						selectedPrinter = Printer.getAllPrinters()
+								.stream()
+								.filter(printer -> printer.getName().equalsIgnoreCase(checker.getPrinterName()))
+								.findFirst()
+								.orElse(null);
 						break;
 					}
 				}
@@ -167,7 +174,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			}
 			else{
 				generateAlert(RegistrationConstants.ALERT_INFORMATION,
-						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_THERMAL_NOT_CONNECTED));
 			}
 		}
 	}
@@ -178,32 +185,42 @@ public class AckReceiptController extends BaseController implements Initializabl
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
 		PrinterJob job = PrinterJob.createPrinterJob();
 		if (job != null) {
-			ObservableSet<Printer> printers = Printer.getAllPrinters();
+			ObservableSet<Printer> installedPrinters = Printer.getAllPrinters();
+			List<PrinterStatusChecker> connectedPrinters = PrinterStatusChecker.getPrintersWithStatus();
 			boolean printerSelected = false;
-			for (Printer printer : printers) {
+			for (Printer printer : installedPrinters) {
 				LOGGER.info( "selected printer in the loop"+ printer.getName());
 				if (printer.getName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
 				//if (printer.getName().contains("80mm Series Printer")) {
 					LOGGER.info("Skipping Thermal Printer: " + printer.getName());
-				}else{
-					// Attempt to use any other Printer but not Thermal
-					job.setPrinter(printer);
-					job.getJobSettings().setJobName(getRegistrationDTOFromSession().getRegistrationId() + "_Ack");
-					webView.getEngine().print(job);
-					job.endJob();
-					generateAlert(RegistrationConstants.ALERT_INFORMATION,
-							RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_SUCCESS));
-					printerSelected = true;
-					LOGGER.info("Successfully sent print job to printer: " + printer.getName());
-					break;
 				}
+				else{
+					boolean isConnected = connectedPrinters.stream().anyMatch(checker -> checker.getPrinterName().equalsIgnoreCase(printer.getName()));
+
+					if (isConnected) {
+						LOGGER.info("Using connected Normal printer: " + printer.getName());
+						job.setPrinter(printer);
+						job.getJobSettings().setJobName(getRegistrationDTOFromSession().getRegistrationId() + "_Ack");
+						webView.getEngine().print(job);
+						job.endJob();
+						generateAlert(RegistrationConstants.ALERT_INFORMATION,
+								RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_SUCCESS));
+						printerSelected = true;
+						LOGGER.info("Successfully sent print job to printer: " + printer.getName());
+
+					}
+					else {
+						LOGGER.error("No Normal Printer.");
+						generateAlert(RegistrationConstants.ALERT_INFORMATION,
+								RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_NORMAL_PRINTER_NOT_CONNECTED));
+					}
+					break;
 			}
-			if (!printerSelected) {
-				LOGGER.info("No Valid Printer is installed");
-				generateAlert(RegistrationConstants.ALERT_INFORMATION,
-						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
-			}
-		} else {
+
+
+		}
+	}
+		else {
 			LOGGER.error("Failed to create a print job.");
 			generateAlert(RegistrationConstants.ALERT_INFORMATION,
 					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_JOB));
