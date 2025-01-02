@@ -90,6 +90,9 @@ public class DeviceSettingsController extends BaseController implements Settings
 	private DocScannerFacade docScannerFacade;
 
 	@Autowired
+	private PrinterServiceUtil printerServiceUtil;
+
+	@Autowired
 	private SignatureFacade signatureFacade;
 
 	@Autowired
