@@ -237,7 +237,7 @@ public class DocumentFxControl extends FxControl {
 				.getBundle(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0), RegistrationConstants.LABELS);
 
 		/** Title label */
-		Label fieldTitle = getLabel(id + RegistrationConstants.DOC_TEXT_FIELD + RegistrationConstants.LABEL, titleText,
+		Label fieldTitle = (Label) getLabel(id + RegistrationConstants.DOC_TEXT_FIELD + RegistrationConstants.LABEL, titleText,
 				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, false, prefWidth);
 
 		simpleTypeVBox.getChildren().add(fieldTitle);
@@ -288,7 +288,7 @@ public class DocumentFxControl extends FxControl {
 		String titleText = String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO);
 
 		/** Title label */
-		Label fieldTitle = getLabel(fieldName + RegistrationConstants.LABEL, titleText,
+		Label fieldTitle = (Label) getLabel(fieldName + RegistrationConstants.LABEL, titleText,
 				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, false, prefWidth);
 		simpleTypeVBox.getChildren().add(fieldTitle);
 
@@ -343,7 +343,7 @@ public class DocumentFxControl extends FxControl {
 			}
 		}));
 
-		Label messageLabel = getLabel(uiFieldDTO.getId() + RegistrationConstants.MESSAGE, null,
+		Label messageLabel = (Label) getLabel(uiFieldDTO.getId() + RegistrationConstants.MESSAGE, null,
 				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, false, simpleTypeVBox.getPrefWidth());
 		messageLabel.setWrapText(true);
 		messageLabel.setPrefWidth(prefWidth);

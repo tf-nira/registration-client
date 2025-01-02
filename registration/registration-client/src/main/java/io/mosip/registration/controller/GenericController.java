@@ -1,6 +1,7 @@
 package io.mosip.registration.controller;
 
 import io.mosip.registration.enums.FlowType;
+import io.mosip.registration.util.control.impl.*;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.Initializable;
 
@@ -70,15 +71,6 @@ import io.mosip.registration.exception.RegistrationExceptionConstants;
 import io.mosip.registration.service.payments.PrnService;
 import io.mosip.registration.service.sync.PreRegistrationDataSyncService;
 import io.mosip.registration.util.control.FxControl;
-import io.mosip.registration.util.control.impl.BiometricFxControl;
-import io.mosip.registration.util.control.impl.ButtonFxControl;
-import io.mosip.registration.util.control.impl.CheckBoxFxControl;
-import io.mosip.registration.util.control.impl.DOBAgeFxControl;
-import io.mosip.registration.util.control.impl.DOBFxControl;
-import io.mosip.registration.util.control.impl.DocumentFxControl;
-import io.mosip.registration.util.control.impl.DropDownFxControl;
-import io.mosip.registration.util.control.impl.HtmlFxControl;
-import io.mosip.registration.util.control.impl.TextFieldFxControl;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -127,6 +119,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_DOB = "date";
 	private static final String CONTROLTYPE_DOB_AGE = "ageDate";
 	private static final String CONTROLTYPE_HTML = "html";
+	private static final String CONTROLTYPE_COMMENT = "comment";
 
 	/**
 	 * Top most Grid pane in FXML
@@ -1096,7 +1089,7 @@ public class GenericController extends BaseController {
 //					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 					groupFlowPane.setPadding(new Insets(20, 0, 20, 20));
 
-					if (!groupEntry.getKey().equals("Declaration")) {
+					if (!(groupEntry.getKey().equals("Declaration") )) {
 						ColumnConstraints leftColumn = new ColumnConstraints();
 						leftColumn.setPercentWidth(33);
 						ColumnConstraints centerColumn = new ColumnConstraints();
@@ -1464,40 +1457,45 @@ public class GenericController extends BaseController {
 
 		if (uiFieldDTO.getControlType() != null) {
 			switch (uiFieldDTO.getControlType()) {
-			case CONTROLTYPE_TEXTFIELD:
-				fxControl = new TextFieldFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_TEXTFIELD:
+					fxControl = new TextFieldFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_BIOMETRICS:
-				fxControl = new BiometricFxControl(/* getProofOfExceptionFields() */).build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_BIOMETRICS:
+					fxControl = new BiometricFxControl(/* getProofOfExceptionFields() */).build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_BUTTON:
-				fxControl = new ButtonFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_BUTTON:
+					fxControl = new ButtonFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_CHECKBOX:
-				fxControl = new CheckBoxFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_CHECKBOX:
+					fxControl = new CheckBoxFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_DOB:
-				fxControl = new DOBFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_DOB:
+					fxControl = new DOBFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_DOB_AGE:
-				fxControl = new DOBAgeFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_DOB_AGE:
+					fxControl = new DOBAgeFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_DOCUMENTS:
-				fxControl = new DocumentFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_DOCUMENTS:
+					fxControl = new DocumentFxControl().build(uiFieldDTO);
+					break;
 
-			case CONTROLTYPE_DROPDOWN:
-				fxControl = new DropDownFxControl().build(uiFieldDTO);
-				break;
-			case CONTROLTYPE_HTML:
-				fxControl = new HtmlFxControl().build(uiFieldDTO);
-				break;
+				case CONTROLTYPE_DROPDOWN:
+					fxControl = new DropDownFxControl().build(uiFieldDTO);
+					break;
+
+				case CONTROLTYPE_HTML:
+					fxControl = new HtmlFxControl().build(uiFieldDTO);
+					break;
+
+				case CONTROLTYPE_COMMENT:
+					fxControl = new CommentFxControl().build(uiFieldDTO);
+					break;
 			}
 		}
 
