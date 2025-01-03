@@ -30,7 +30,7 @@ public class CommentFxControl extends FxControl {
     public static final String HASH = "#";
 
     private AuditManagerService auditFactory;
-
+//comment
     public CommentFxControl() {
         ApplicationContext applicationContext = ClientApplication.getApplicationContext();
         auditFactory = applicationContext.getBean(AuditManagerService.class);
