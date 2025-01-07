@@ -16,6 +16,7 @@ import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.ClientApplication;
 import io.mosip.registration.controller.GenericController;
+import io.mosip.registration.controller.Initialization;
 import io.mosip.registration.dto.RegistrationDTO;
 import io.mosip.registration.dto.mastersync.GenericDto;
 import io.mosip.registration.dto.schema.UiFieldDTO;
@@ -296,14 +297,15 @@ public abstract class FxControl  {
 	}
 
 	/**
-     * @param id
-     * @param titleText
-     * @param styleClass
-     * @param isVisible
-     * @param prefWidth
-     * @return
-     */
-	protected Node getLabel(String id, String titleText, String styleClass, boolean isVisible, double prefWidth) {
+	 *
+	 * @param id
+	 * @param titleText
+	 * @param styleClass
+	 * @param isVisible
+	 * @param prefWidth
+	 * @return
+	 */
+	protected Label getLabel(String id, String titleText, String styleClass, boolean isVisible, double prefWidth) {
 		/** Field Title */
 		Label label = new Label();
 		label.setId(id);
@@ -370,7 +372,7 @@ public abstract class FxControl  {
 	}
 
 	protected void addValidationMessage(VBox vBox, String id, String langCode, String styleClass, boolean isVisible) {
-		Label validationMessage = (Label) getLabel(id + langCode + RegistrationConstants.MESSAGE, null,
+		Label validationMessage = getLabel(id + langCode + RegistrationConstants.MESSAGE, null,
 				styleClass, isVisible, 0);
 		validationMessage.setWrapText(false);
 		vBox.getChildren().add(validationMessage);

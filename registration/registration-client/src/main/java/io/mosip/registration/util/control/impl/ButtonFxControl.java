@@ -76,7 +76,7 @@ public class ButtonFxControl extends FxControl {
 		double prefWidth = simpleTypeVBox.getPrefWidth();
 
 		/** Title label */
-		Label fieldTitle = (Label) getLabel(fieldName + RegistrationConstants.LABEL, null, RegistrationConstants.BUTTONS_LABEL,
+		Label fieldTitle = getLabel(fieldName + RegistrationConstants.LABEL, null, RegistrationConstants.BUTTONS_LABEL,
 				true, prefWidth);
 		List<String> labels = new ArrayList<>();
 		getRegistrationDTo().getSelectedLanguagesByApplicant().forEach(lCode -> {
