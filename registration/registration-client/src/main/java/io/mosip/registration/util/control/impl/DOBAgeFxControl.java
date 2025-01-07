@@ -105,7 +105,7 @@ public class DOBAgeFxControl extends FxControl {
 //						resourceBundle.getString("ageOrDOBField"), RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, true,
 //						ageVBox.getWidth()));
 
-		Label label = (Label) getLabel(uiFieldDTO.getId() + "OR" + RegistrationConstants.LABEL,
+		Label label = getLabel(uiFieldDTO.getId() + "OR" + RegistrationConstants.LABEL,
 				resourceBundle.getString("ageOrDOBField"), RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, true, dobHBox.getWidth());
 		label.setMinWidth(Region.USE_PREF_SIZE);
 		label.setAlignment(Pos.CENTER);
