@@ -13,6 +13,7 @@ public class DocScanDevice {
     private String firmware;
     private String serial;
     private String model;
+    private String Status;
 
     private int dpi;
     //accepts 4 elements, x, y, width, height (in pixels)

@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import io.mosip.registration.api.printer.PrinterServiceUtil;
+import io.mosip.registration.api.printer.PrinterStatusChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -86,6 +88,9 @@ public class DeviceSettingsController extends BaseController implements Settings
 
 	@Autowired
 	private DocScannerFacade docScannerFacade;
+
+	@Autowired
+	private PrinterServiceUtil printerServiceUtil;
 
 	@Autowired
 	private SignatureFacade signatureFacade;
@@ -278,11 +283,34 @@ public class DeviceSettingsController extends BaseController implements Settings
 			if (!scannerDevices.isEmpty()) {
 				++columnsCount;
 			}
+			List<DocScanDevice> printerDevices = printerServiceUtil.getConnectedThermal();
+			if(printerDevices != null) {
+				LOGGER.info("All thermal printers: " + printerDevices.toString());
+				scannerDevices.addAll(printerDevices);
+				++columnsCount;
+			}
 			List<DocScanDevice> signatureScannerDevices = signatureFacade.getConnectedDevices();
 			if (!signatureScannerDevices.isEmpty()) {
 				scannerDevices.addAll(signatureScannerDevices);
 				++columnsCount;
 			}
+
+
+
+			List<PrinterStatusChecker> allPrinters = PrinterStatusChecker.getPrintersWithStatus();
+
+			if (allPrinters.size() > 1) {
+				List<DocScanDevice> normalPrinters = printerServiceUtil.getListedPrinter();
+
+				if (normalPrinters != null) {
+					LOGGER.info("All printers: " + normalPrinters.toString());
+					scannerDevices.addAll(normalPrinters);
+					++columnsCount;
+				}
+			} else {
+				LOGGER.info("Not enough printers to list or no normal printers found.");
+			}
+
 
 			if (applicationContext.isPrimaryLanguageRightToLeft()) {
 				subContentGridPane.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
@@ -527,12 +555,36 @@ public class DeviceSettingsController extends BaseController implements Settings
 
 	private ScanDeviceInfo convertToScanDeviceInfo(DocScanDevice device) {
 		ScanDeviceInfo deviceInfo = new ScanDeviceInfo();
-		deviceInfo.setId(device.getId());
-		deviceInfo.setName(device.getName());
-		if (device.getDeviceType().equals(DeviceType.CAMERA)) {
-			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("webcam"));
-		} else {
+		if (device == null) {
+			System.out.println("DocScanDevice is null");
+			deviceInfo.setId(RegistrationConstants.HYPHEN);
+			deviceInfo.setName(RegistrationConstants.HYPHEN);
+			deviceInfo.setStatus(RegistrationConstants.HYPHEN);
 			deviceInfo.setModel(RegistrationConstants.HYPHEN);
+
+			return deviceInfo;
+		}
+
+		deviceInfo.setId(device.getId() != null ? device.getId() : RegistrationConstants.UNKWOWN);
+		deviceInfo.setName(device.getName() != null ? device.getName() : RegistrationConstants.UNKWOWN);
+		deviceInfo.setModel(device.getId() != null ? device.getId() : RegistrationConstants.UNKWOWN);
+		deviceInfo.setStatus(RegistrationConstants.UNKWOWN);
+		if (device.getDeviceType() == null) {
+			LOGGER.error("DeviceType is null for device: " + device.getName());
+
+		}
+
+		else if (device.getDeviceType().equals(DeviceType.CAMERA)) {
+			deviceInfo.setStatus(applicationContext.getApplicationLanguageLabelBundle().getString("webcam"));
+		} else if (device.getDeviceType().equals(DeviceType.THERMAL_PRINTER)) {
+			deviceInfo.setStatus(device.getStatus());
+	}
+		else if (device.getDeviceType().equals(DeviceType.NORMAL_PRINTER)) {
+			//deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("normalPrinter"));
+			deviceInfo.setStatus(device.getStatus());
+		}
+		else {
+			deviceInfo.setStatus(RegistrationConstants.HYPHEN);
 		}
 		return deviceInfo;
 	}

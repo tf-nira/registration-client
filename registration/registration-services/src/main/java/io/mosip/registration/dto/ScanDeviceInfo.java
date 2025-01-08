@@ -9,6 +9,7 @@ public class ScanDeviceInfo {
 
 	private String id;
 	private String name;
+	private String status;
 	private String model;
 	
 	
@@ -19,6 +20,8 @@ public class ScanDeviceInfo {
 						.append(id).append(RegistrationConstants.NEW_LINE)
 						.append(ApplicationContext.getInstance().getApplicationLanguageLabelBundle().getString("deviceName"))
 						.append(name).append(RegistrationConstants.NEW_LINE)
+				.append(ApplicationContext.getInstance().getApplicationLanguageLabelBundle().getString("state"))
+				.append(status).append(RegistrationConstants.NEW_LINE)
 						.append(ApplicationContext.getInstance().getApplicationLanguageLabelBundle().getString("model"))
 						.append(model).toString();
 	}	
