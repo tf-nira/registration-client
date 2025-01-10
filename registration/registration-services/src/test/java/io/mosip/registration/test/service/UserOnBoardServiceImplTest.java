@@ -22,7 +22,6 @@ import javax.crypto.SecretKey;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,7 +84,6 @@ import io.mosip.registration.util.restclient.ServiceDelegateUtil;
 @PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "javax.management.*"})
 @PrepareForTest({ UserOnBoardServiceImplTest.class, RegistrationSystemPropertiesChecker.class, ApplicationContext.class,
 		RegistrationAppHealthCheckUtil.class, SecretKey.class, SessionContext.class, HMACUtils2.class, CryptoUtil.class, DigestUtils.class, KeyGeneratorUtils.class, KeyGenerator.class, SecretKey.class })
-@Ignore
 public class UserOnBoardServiceImplTest {
 	
 	@Rule
