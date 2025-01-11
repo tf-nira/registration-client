@@ -32,7 +32,7 @@ public  class PrinterStatusChecker {
         try {
             // Enhanced WMI query
             ProcessBuilder builder = new ProcessBuilder(
-                    "powershell.exe", "/c", "wmic printer get Name,WorkOffline"
+                    "powershell.exe", "/c", "Get-CimInstance -ClassName Win32_Printer | Select-Object Name, WorkOffline"
             );
             builder.redirectErrorStream(true);
             Process process = builder.start();
