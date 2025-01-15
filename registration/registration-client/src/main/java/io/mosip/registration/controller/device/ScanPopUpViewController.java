@@ -275,9 +275,6 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 
 	private void setScanImageViewZoomable() {
-		double minZoom = 30.0; // Minimum zoom level
-		double maxZoom = 300.0; // Maximum zoom level
-        
 		zoomProperty.addListener(new InvalidationListener() {
 			@Override
 			public void invalidated(Observable arg0) {
@@ -291,10 +288,10 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		docPreviewScrollPane.addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {
 			@Override
 			public void handle(ScrollEvent event) {
-				if (event.getDeltaY() > 0 && zoomProperty.get() < maxZoom) {
-					zoomProperty.set(Math.min(maxZoom, zoomProperty.get() * 1.1)); // Ensures it doesn't exceed maxZoom
-				} else if (event.getDeltaY() < 0 && zoomProperty.get() > minZoom) {
-					zoomProperty.set(Math.max(minZoom, zoomProperty.get() / 1.1)); // Ensures it doesn't go below minZoom
+				if (event.getDeltaY() > 0) {
+					zoomProperty.set(zoomProperty.get() * 1.1);
+				} else if (event.getDeltaY() < 0) {
+					zoomProperty.set(zoomProperty.get() / 1.1);
 				}
 			}
 		});
