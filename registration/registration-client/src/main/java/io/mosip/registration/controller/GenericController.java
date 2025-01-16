@@ -1,5 +1,6 @@
 package io.mosip.registration.controller;
 
+import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import javafx.beans.binding.Bindings;
@@ -120,6 +121,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_DOB_AGE = "ageDate";
 	private static final String CONTROLTYPE_HTML = "html";
 	private static final String CONTROLTYPE_COMMENT = "comment";
+	private ProcessSpecDto process;
 
 	/**
 	 * Top most Grid pane in FXML
@@ -179,6 +181,7 @@ public class GenericController extends BaseController {
 	public static Map<String, TreeMap<Integer, List<String>>> hierarchyLevels = new HashMap<String, TreeMap<Integer, List<String>>>();
 	public static Map<String, TreeMap<Integer, List<String>>> currentHierarchyMap = new HashMap<String, TreeMap<Integer, List<String>>>();
 	public static List<UiFieldDTO> fields = new ArrayList<>();
+	private LanguageSelectionController registrationDTO;
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
@@ -742,7 +745,6 @@ public class GenericController extends BaseController {
 
 					// Before changing the tab, validate the current screen using isScreenValid()
 					boolean isValid = isScreenValid(tabPane.getTabs().get(oldValue.intValue()).getId());
-
 					// If validation fails, prevent the tab change
 					if (!isValid) {
 						LOGGER.error("Current screen is not fully valid: {}", oldValue.intValue());
@@ -826,6 +828,7 @@ public class GenericController extends BaseController {
 										.get(newSelection)
 										.setDisable(!refreshScreenVisibility(newScreenName));
 								tabPane.getSelectionModel().select(newValue.intValue());
+								showHideGeneralNotification(null);
 							} else {
 								// If "Review Details" is clicked, remain on the current tab
 								ignoreChange[0] = false;
@@ -920,7 +923,7 @@ public class GenericController extends BaseController {
 		boolean isValid = true;
 		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
 		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
-		
+
 		if (result.isPresent()) {
 
 			if (!isAdditionalInfoRequestIdProvided(result.get())) {
@@ -931,20 +934,20 @@ public class GenericController extends BaseController {
 			}
 
 			for (UiFieldDTO field : result.get().getFields()) {
-				
-				 // Check if the field belongs to the "Notification of Change" group
-	            if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
-	                isNotificationOfChangePresent = true;		// Found relevant group fields on this screen
-	                FxControl control = getFxControl(field.getId());
-	                if (control != null) {
-	                    Object fieldValue = control.getData(); // Fetch the data
-	                    LOGGER.debug("Field ID: {}, Value: {}", field.getId(), fieldValue); 
-	                    if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
-	                        isNotificationOfChangeFilled = true;      // At least one non-empty value found
-	                    }
-	                }
-	            }
-				
+
+				// Check if the field belongs to the "Notification of Change" group
+				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
+					isNotificationOfChangePresent = true;		// Found relevant group fields on this screen
+					FxControl control = getFxControl(field.getId());
+					if (control != null) {
+						Object fieldValue = control.getData(); // Fetch the data
+						LOGGER.debug("Field ID: {}, Value: {}", field.getId(), fieldValue);
+						if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
+							isNotificationOfChangeFilled = true;      // At least one non-empty value found
+						}
+					}
+				}
+
 				// Validate PRN differently
 				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
 					LOGGER.error("PRN verification failed");
@@ -955,7 +958,7 @@ public class GenericController extends BaseController {
 					break;
 				}
 
-				
+
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
 					LOGGER.error("Screen validation , fieldId : {} has invalid value", field.getId());
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
@@ -966,18 +969,33 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
-		
+
 		if (isValid) {
 			showHideErrorNotification(null);
 			auditFactory.audit(AuditEvent.REG_NAVIGATION, Components.REGISTRATION_CONTROLLER,
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
+
+			// Only show the general notification if the screen is "Demographic Details"
+			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId() )) {
+				showHideGeneralNotification("Please Note: Maiden name and any Previous names will not appear on the card");
+
+			}
+
 		}
 		// Show error if fields from "Notification of Change" are present but none are filled
-	    if (isNotificationOfChangePresent && !isNotificationOfChangeFilled) {
-	        showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.");
-	        return false;
-	    }
+		if (isNotificationOfChangePresent && !isNotificationOfChangeFilled) {
+			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.");
+			return false;
+		}
 		return isValid;
+	}
+
+	private void showHideGeneralNotification(String message) {
+		Tooltip toolTip = new Tooltip(message);
+		toolTip.prefWidthProperty().bind(notification.widthProperty());
+		toolTip.setWrapText(true);
+		notification.setTooltip(toolTip);
+		notification.setText(message);
 	}
 
 	private void showHideErrorNotification(String fieldName) {
@@ -1041,6 +1059,8 @@ public class GenericController extends BaseController {
 		ProcessSpecDto processSpecDto = getProcessSpec(registrationDTO.getProcessId(),
 				registrationDTO.getIdSchemaVersion());
 		getScreens(processSpecDto.getScreens());
+
+		process = processSpecDto ;
 		TabPane tabPane = createTabPane(processSpecDto);
 
 		for (UiScreenDTO screenDTO : orderedScreens.values()) {
