@@ -1109,7 +1109,7 @@ public class GenericController extends BaseController {
 //					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 					groupFlowPane.setPadding(new Insets(20, 0, 20, 20));
 
-					if (!(groupEntry.getKey().equals("Declaration") )) {
+					if (!(groupEntry.getKey().equals("Foundling Check") || groupEntry.getKey().equals("Declaration"))) {
 						ColumnConstraints leftColumn = new ColumnConstraints();
 						leftColumn.setPercentWidth(33);
 						ColumnConstraints centerColumn = new ColumnConstraints();
