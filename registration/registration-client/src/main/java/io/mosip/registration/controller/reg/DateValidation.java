@@ -241,6 +241,10 @@ public class DateValidation extends BaseController {
 	private boolean isValidDate(Validator validator, Pane parentPane, String dd, String mm, String yyyy, String fieldId) {
 		if (isValidValue(dd) && isValidValue(mm) && isValidValue(yyyy)) {
 			try {
+				if (dd.length() != 2 || mm.length() != 2) {
+					return false;  // Invalid if dd or mm is not exactly two digits
+				}
+
 				// Format the day and month as two digits
 				String formattedDay = String.format("%02d", Integer.parseInt(dd));
 				String formattedMonth = String.format("%02d", Integer.parseInt(mm));
