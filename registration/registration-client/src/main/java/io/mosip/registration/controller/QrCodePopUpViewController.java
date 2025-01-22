@@ -11,8 +11,12 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.constants.RegistrationUIConstants;
+import io.mosip.registration.dto.ErrorResponseDTO;
 import io.mosip.registration.dto.RegistrationDTO;
+import io.mosip.registration.dto.ResponseDTO;
+import io.mosip.registration.dto.SuccessResponseDTO;
 import io.mosip.registration.dto.schema.ProcessSpecDto;
+import io.mosip.registration.service.sync.PreRegistrationDataSyncService;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -32,6 +36,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +66,8 @@ public class QrCodePopUpViewController extends BaseController implements
     private int height;
     @Autowired
     private GenericController genericController;
+    @Autowired
+	private PreRegistrationDataSyncService preRegistrationDataSyncService;
     @Autowired
     private PridValidator<String> pridValidatorImpl;
     private Stage popupStage;
@@ -211,9 +218,15 @@ public class QrCodePopUpViewController extends BaseController implements
         Thread.currentThread().interrupt();
         stopStreaming();
         popupStage.close();
-        generateAlert(RegistrationConstants.ALERT_INFORMATION,
+        ResponseDTO responseDTO = preRegistrationDataSyncService
+				.getPreRegistration(genericController.getRegistrationNumberTextField().getText(), false);
+        SuccessResponseDTO successResponseDTO = responseDTO.getSuccessResponseDTO();
+		List<ErrorResponseDTO> errorResponseDTOList = responseDTO.getErrorResponseDTOs();
+		if ((errorResponseDTOList == null || errorResponseDTOList.isEmpty()) || successResponseDTO != null ) {    
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,
                 RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.
                         QR_CODE_SCAN_SUCCESS));
+		}
         LOGGER.debug("Scanning QR code completed");
     }
     /**
