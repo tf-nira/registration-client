@@ -170,6 +170,7 @@ public class RegistrationUIConstants {
 	public static final String POR_DOCUMENT_EMPTY = "porDocuments";
 	public static final String DOB_DOCUMENT_EMPTY = "dobDocuments";
 	public static final String SCAN_DOCUMENT_ERROR = "SCAN_DOCUMENT_ERROR";
+	public static final String SCAN_SIGNATURE_ERROR = "SCAN_SIGNATURE_ERROR";
 	public static final String STREAMING_PREP_MESSAGE = "STREAMING_PREP_MESSAGE";
 	public static final String STREAMING_INIT_MESSAGE = "STREAMING_INIT_MESSAGE";
 	public static final String STREAMING_CLOSED_MESSAGE = "STREAMING_CLOSED_MESSAGE";

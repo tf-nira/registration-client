@@ -150,8 +150,13 @@ public class DocumentScanController extends BaseController {
 			}
 
 			if (bufferedImage == null) {
-				LOGGER.error("captured buffered image was null");
-				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
+				if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+					LOGGER.error("Captured buffered image was null and Signature process timed out.");
+					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_SIGNATURE_ERROR));
+				} else {
+					LOGGER.error("captured buffered image was null");
+					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
+				}
 				return;
 			}
 
