@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
 
@@ -96,56 +98,75 @@ public class HerofunScanServiceImpl implements SignatureService {
 		return bufferedImage;
 	}
 
-	public BufferedImage getSignatureImage(SignaturePad signaturepad) throws InterruptedException, ExecutionException {
-		// Create an ExecutorService to handle the thread and return the result
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
+	public BufferedImage getSignatureImage(SignaturePad signaturepad) throws InterruptedException, ExecutionException, TimeoutException {
+	    // Create an ExecutorService to handle the thread and return the result
+	    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-		// Define the task to be executed in the thread
-		Callable<BufferedImage> task = () -> {
-			try {
-				int statusCode = 0;
-				while (statusCode != 1) { // 0 indicates the user has signed (success)
-					// Check the status of the signature pad
-					statusCode = signaturepad.HWIsOK();
-					if (statusCode == 0) {
-						LOGGER.info("Signature pad not ready. Waiting...");
-					} else if (statusCode == 1) {
-						LOGGER.info("User has signed.");
-					} else {
-						LOGGER.info("Unknown status code: " + statusCode);
-					}
-					Thread.sleep(1000); // Wait for 1 second before checking again
-				}
+	    // Define the task to be executed in the thread
+	    Callable<BufferedImage> task = () -> {
+	        try {
+	            int statusCode = 0;
+	            int timeoutInSeconds = 60; // Set a maximum wait time (e.g., 1 minutes)
+	            int elapsedSeconds = 0;
 
-				byte[] outPng = new byte[1000000]; // Assume max size of 1000000 bytes/ 1 mb
-				int[] outPngLength = new int[1]; // This will hold the length of the data
-				int result = signaturepad.HWGetPng(outPng, outPngLength);
-				while (result == -3) { // If result is -2, buffer was too small
-					// Increase the buffer size by doubling it
-					LOGGER.info("Buffer too small. Increasing size...");
-					outPng = new byte[outPng.length * 2]; // Double the buffer size
-					result = signaturepad.HWGetPng(outPng, outPngLength); // Call again with larger buffer
-				}
+	            while (statusCode != 1 && elapsedSeconds < timeoutInSeconds) {
+	                // Check the status of the signature pad
+	                statusCode = signaturepad.HWIsOK();
+	                if (statusCode == 0) {
+	                    LOGGER.info("Signature pad not ready. Waiting...");
+	                } else if (statusCode == 1) {
+	                    LOGGER.info("User has signed.");
+	                    break; // Exit the loop when the user has signed
+	                } else {
+	                    LOGGER.info("Unknown status code: " + statusCode);
+	                }
+	                // Wait for 1 second before checking again
+	                Thread.sleep(1000);
+	                elapsedSeconds++;
 
-				// Convert byte array to BufferedImage
-				return byteArrayToBufferedImage(outPng);
+	    	    	System.out.println(elapsedSeconds);
+	            }
 
-			} catch (InterruptedException e) {
-				LOGGER.error("Failed to open serial port", e);
-				Thread.currentThread().interrupt();
-				return null;
-			}
-		};
+	            // Handle timeout
+	            if (elapsedSeconds >= timeoutInSeconds) {
+	                LOGGER.error("Timeout occurred. The applicant did not complete the signature process.");
+	                throw new TimeoutException("Signature process timed out.");
+	            }
 
-		// Submit the task to the executor service
-		Future<BufferedImage> future = executorService.submit(task);
+	            byte[] outPng = new byte[1000000]; // Assume max size of 1000000 bytes (1 MB)
+	            int[] outPngLength = new int[1]; // This will hold the length of the data
+	            int result = signaturepad.HWGetPng(outPng, outPngLength);
+	            while (result == -3) { // If result is -3, the buffer was too small
+	                LOGGER.info("Buffer too small. Increasing size...");
+	                outPng = new byte[outPng.length * 2]; // Double the buffer size
+	                result = signaturepad.HWGetPng(outPng, outPngLength); // Call again with a larger buffer
+	            }
 
-		// Wait for the task to complete and get the result
-		BufferedImage bufferedImage = future.get();
+	            // Convert byte array to BufferedImage
+	            return byteArrayToBufferedImage(outPng);
 
-		// Shutdown the executor service
-		executorService.shutdown();
+	        } catch (InterruptedException e) {
+	            LOGGER.error("Failed to complete the signature process due to interruption.", e);
+	            Thread.currentThread().interrupt();
+	            return null;
+	        }
+	    };
 
-		return bufferedImage;
+	    // Submit the task to the executor service
+	    Future<BufferedImage> future = executorService.submit(task);
+	    
+	    try {
+	        // Wait for the task to complete and get the result, with a timeout
+	        return future.get(60, TimeUnit.SECONDS); // Allow some buffer time for completion
+	    } catch (TimeoutException e) {
+	        LOGGER.error("Signature capture process timed out.", e);
+	        throw e; // Re-throw the exception for the caller to handle
+	    } finally {
+	        LOGGER.info("Closing the signature pad...");
+	        signaturepad.HWClose(); // Close the device to release resources
+	        // Shutdown the executor service to free resources
+	        executorService.shutdown();
+	    }
 	}
+
 }
