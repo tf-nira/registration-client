@@ -741,105 +741,113 @@ public class GenericController extends BaseController {
 				if (isKeyboardVisible() && keyboardStage != null) {
 					keyboardStage.close();
 				}
+
+				// Check if we are moving to the previous tab (oldValue > newValue)
+				boolean isMovingForward = newValue.intValue() > oldValue.intValue();
+
 				if (oldValue.intValue() >= 0 && newValue.intValue() != oldValue.intValue()) {
 
-					// Before changing the tab, validate the current screen using isScreenValid()
-					boolean isValid = isScreenValid(tabPane.getTabs().get(oldValue.intValue()).getId());
-					// If validation fails, prevent the tab change
-					if (!isValid) {
-						LOGGER.error("Current screen is not fully valid: {}", oldValue.intValue());
+					// Only validate the current screen if moving forward (to the next tab)
+					if (isMovingForward) {
+						// Validate the current screen using isScreenValid()
+						boolean isValid = isScreenValid(tabPane.getTabs().get(oldValue.intValue()).getId());
+						// If validation fails, prevent the tab change
+						if (!isValid) {
+							LOGGER.error("Current screen is not fully valid: {}", oldValue.intValue());
 
-						// Prevent the tab change
-						ignoreChange[0] = true;
-						tabPane.getSelectionModel().select(oldValue.intValue());
+							// Prevent the tab change
+							ignoreChange[0] = true;
+							tabPane.getSelectionModel().select(oldValue.intValue());
 
-						// Since showHideErrorNotification is called inside isScreenValid, no need to
-						// call it again here
-						return;
-					}
-					String oldTabName = tabPane.getTabs().get(oldValue.intValue()).getText();
-
-					if (DEMOGRAPHIC_DETAILS.equals(oldTabName) || DOCUMENT_UPLOAD.equals(oldTabName)) {
-						// Prevent the tab from changing immediately
-						ignoreChange[0] = true;
-						tabPane.getSelectionModel().select(oldValue.intValue());
-
-						// Create the confirmation dialog
-						Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
-						confirmationDialog.setTitle("Confirmation Required");
-						confirmationDialog.setHeaderText(null);
-						confirmationDialog.setContentText("Please review your details before proceeding to the next section.");
-
-						Stage dialogStage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
-						dialogStage.initModality(Modality.APPLICATION_MODAL);
-						dialogStage.initStyle(StageStyle.UTILITY);
-
-						DialogPane dialogPane = confirmationDialog.getDialogPane();
-
-						// Centering the text
-						Node contentLabel = dialogPane.lookup(".content.label");
-						if (contentLabel != null) {
-							contentLabel.setStyle("-fx-text-alignment: left; -fx-font-size: 14px;");
+							// Since showHideErrorNotification is called inside isScreenValid, no need to
+							// call it again here
+							return;
 						}
+						String oldTabName = tabPane.getTabs().get(oldValue.intValue()).getText();
 
-						// Adding buttons to the dialog
-						ButtonType proceedButton = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
-						ButtonType reviewButton = new ButtonType("Review Details", ButtonBar.ButtonData.CANCEL_CLOSE);
-						confirmationDialog.getButtonTypes().setAll(proceedButton, reviewButton);
+						if (DEMOGRAPHIC_DETAILS.equals(oldTabName) || DOCUMENT_UPLOAD.equals(oldTabName)) {
+							// Prevent the tab from changing immediately
+							ignoreChange[0] = true;
+							tabPane.getSelectionModel().select(oldValue.intValue());
 
-						// Customizing the button styles
-						Button proceedButtonNode = (Button) dialogPane.lookupButton(proceedButton);
-						if (proceedButtonNode != null) {
-							proceedButtonNode.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
-						}
+							// Create the confirmation dialog
+							Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+							confirmationDialog.setTitle("Confirmation Required");
+							confirmationDialog.setHeaderText(null);
+							confirmationDialog.setContentText("Please review your details before proceeding to the next section.");
 
-						Button reviewButtonNode = (Button) dialogPane.lookupButton(reviewButton);
-						if (reviewButtonNode != null) {
-							reviewButtonNode.setStyle("-fx-text-fill: black;");
-						}
+							Stage dialogStage = (Stage) confirmationDialog.getDialogPane().getScene().getWindow();
+							dialogStage.initModality(Modality.APPLICATION_MODAL);
+							dialogStage.initStyle(StageStyle.UTILITY);
 
-						// Aligning buttons to the center
-						Node buttonBar = dialogPane.lookup(".button-bar");
-						if (buttonBar != null) {
-							buttonBar.setStyle("-fx-alignment: center;");
-						}
+							DialogPane dialogPane = confirmationDialog.getDialogPane();
 
-						tabPane.toFront();
+							// Centering the text
+							Node contentLabel = dialogPane.lookup(".content.label");
+							if (contentLabel != null) {
+								contentLabel.setStyle("-fx-text-alignment: left; -fx-font-size: 14px;");
+							}
 
-						// Defer the dialog display to ensure TabPane is rendered first
-						Platform.runLater(() -> {
-							// Adding focus lost event to close the dialog if the window loses focus
-							dialogStage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-								if (!isNowFocused) {
-									confirmationDialog.close(); // Close the dialog if the application loses focus
+							// Adding buttons to the dialog
+							ButtonType proceedButton = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
+							ButtonType reviewButton = new ButtonType("Review Details", ButtonBar.ButtonData.CANCEL_CLOSE);
+							confirmationDialog.getButtonTypes().setAll(proceedButton, reviewButton);
+
+							// Customizing the button styles
+							Button proceedButtonNode = (Button) dialogPane.lookupButton(proceedButton);
+							if (proceedButtonNode != null) {
+								proceedButtonNode.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white; -fx-font-weight: bold;");
+							}
+
+							Button reviewButtonNode = (Button) dialogPane.lookupButton(reviewButton);
+							if (reviewButtonNode != null) {
+								reviewButtonNode.setStyle("-fx-text-fill: black;");
+							}
+
+							// Aligning buttons to the center
+							Node buttonBar = dialogPane.lookup(".button-bar");
+							if (buttonBar != null) {
+								buttonBar.setStyle("-fx-alignment: center;");
+							}
+
+							tabPane.toFront();
+
+							// Defer the dialog display to ensure TabPane is rendered first
+							Platform.runLater(() -> {
+								// Adding focus lost event to close the dialog if the window loses focus
+								dialogStage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+									if (!isNowFocused) {
+										confirmationDialog.close(); // Close the dialog if the application loses focus
+									}
+								});
+
+								Optional<ButtonType> result = confirmationDialog.showAndWait();
+								if (result.isPresent() && result.get() == proceedButton) {
+									// If "Proceed" is clicked, proceed to change the tab
+									ignoreChange[0] = true;
+									int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
+									final String newScreenName = tabPane.getTabs()
+											.get(newSelection)
+											.getId()
+											.replace("_tab", EMPTY);
+									tabPane.getTabs()
+											.get(newSelection)
+											.setDisable(!refreshScreenVisibility(newScreenName));
+									tabPane.getSelectionModel().select(newValue.intValue());
+									showHideGeneralNotification(null);
+								} else {
+									// If "Review Details" is clicked, remain on the current tab
+									ignoreChange[0] = false;
+									tabPane.getSelectionModel().select(oldValue.intValue());
 								}
 							});
 
-							Optional<ButtonType> result = confirmationDialog.showAndWait();
-							if (result.isPresent() && result.get() == proceedButton) {
-								// If "Proceed" is clicked, proceed to change the tab
-								ignoreChange[0] = true;
-								int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
-								final String newScreenName = tabPane.getTabs()
-										.get(newSelection)
-										.getId()
-										.replace("_tab", EMPTY);
-								tabPane.getTabs()
-										.get(newSelection)
-										.setDisable(!refreshScreenVisibility(newScreenName));
-								tabPane.getSelectionModel().select(newValue.intValue());
-								showHideGeneralNotification(null);
-							} else {
-								// If "Review Details" is clicked, remain on the current tab
-								ignoreChange[0] = false;
-								tabPane.getSelectionModel().select(oldValue.intValue());
-							}
-						});
-
-						return;
+							return;
+						}
 					}
-
 				}
+
+				// Continue with the tab selection logic
 				int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
 				final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
 
@@ -852,8 +860,7 @@ public class GenericController extends BaseController {
 					return;
 				}
 
-				// request to load Preview / Auth page, allowed only when no errors are found in
-				// visible screens
+				// request to load Preview / Auth page, allowed only when no errors are found in visible screens
 				if ((newScreenName.equals("AUTH") || newScreenName.equals("PREVIEW"))) {
 					String invalidScreenName = getInvalidScreenName(tabPane);
 					if (invalidScreenName.equals(EMPTY)) {
@@ -903,6 +910,7 @@ public class GenericController extends BaseController {
 			}
 		});
 	}
+
 
 	private int getNextSelection(TabPane tabPane, int oldSelection, int newSelection) {
 		if (newSelection - oldSelection <= 1) {
