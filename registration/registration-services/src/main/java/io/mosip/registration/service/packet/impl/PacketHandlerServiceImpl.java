@@ -192,6 +192,11 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			return responseDTO;
 		}
 
+		if (registrationDTO.getProcessId().equalsIgnoreCase("FIRSTID")) {
+			registrationDTO.setProcessId("UPDATE");
+			registrationDTO.setFlowType(FlowType.UPDATE);
+		}
+
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
 		
 		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {

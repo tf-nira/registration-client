@@ -8,7 +8,8 @@ public enum FlowType {
     UPDATE("Update", AuditEvent.NAV_UIN_UPDATE, "uinUpdateRoot", "U"),
     LOST("Lost", AuditEvent.NAV_LOST_UIN, "lostUINRoot", "L"),
     RENEWAL("Renewal", AuditEvent.NAV_RENEW_UIN, "renewUINRoot", "R"),
-    CORRECTION("Correction", AuditEvent.NAV_CORRECTION, "correctionRoot", "C");
+    CORRECTION("Correction", AuditEvent.NAV_CORRECTION, "correctionRoot", "C"),
+    FIRSTID("GetFirstId", AuditEvent.NAV_UIN_GETFIRSTID, "getFirstIdRoot", "G");
 
     FlowType(String category, AuditEvent auditEvent, String screenId, String registrationTypeCode) {
         this.category = category;
