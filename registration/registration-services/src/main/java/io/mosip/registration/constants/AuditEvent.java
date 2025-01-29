@@ -50,6 +50,7 @@ public enum AuditEvent {
 			"Navigation link: On-board Devices"),
 	NAV_DASHBOARD("REG-NAV-010", SYSTEM_EVENT.getCode(), "NAV_DASHBOARD",
 			"Navigation link: Dashboard"),
+	NAV_UIN_GETFIRSTID("REG-EVT-104", USER_EVENT.getCode(), "NAV_UIN_GETFIRSTID", "Navigation link: Get First Id"),
 
 	// Registration : Demographics Details
 	REG_DEMO_CAPTURE("REG-EVT-007", USER_EVENT.getCode(), "REG_DEMO_NEXT", "Started capturing demographic details"),

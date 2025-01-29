@@ -437,6 +437,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case CORRECTION:
 				case RENEWAL:
 				case UPDATE:
+				case FIRSTID:
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
