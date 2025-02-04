@@ -1837,6 +1837,7 @@ public class RegistrationConstants {
 	public static final String SCAN_BUTTON = "scan";
 	public static final String REF_NUMBER = "REF_NUMBER";
 	public static final String INVALID_AGE = "INVALID_AGE";
+	public static final String INVALID_AGE_MINOR = "INVALID_AGE_MINOR";
 	public static final String INVALID_DATE = "INVALID_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
@@ -2006,6 +2007,7 @@ public class RegistrationConstants {
 
 	public static final String AUDIT_TIMESTAMP = "mosip.registration.audit_timestamp";
 	public static final String AGE_GROUP_CONFIG = "mosip.regproc.packet.classifier.tagging.agegroup.ranges";
+	public static final String AGE_VAL="mosip.registration.age";
 
 	public static final String LOGOUT = "Logout";
 	public static final String ROLES_MODIFIED = "Roles Modified";

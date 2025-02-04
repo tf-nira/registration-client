@@ -854,7 +854,7 @@ public class BaseController {
 	 *
 	 * @return the registration DTO from session
 	 */
-	public RegistrationDTO getRegistrationDTOFromSession() {
+	public static RegistrationDTO getRegistrationDTOFromSession() {
 		RegistrationDTO registrationDTO = null;
 		if (SessionContext.map() != null && !SessionContext.map().isEmpty()) {
 			registrationDTO = (RegistrationDTO) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA);

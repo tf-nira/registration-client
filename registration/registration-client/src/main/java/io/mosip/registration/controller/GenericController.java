@@ -1,5 +1,6 @@
 package io.mosip.registration.controller;
 
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
@@ -92,6 +93,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javax.imageio.ImageIO;
+import io.mosip.registration.controller.BaseController;
 
 /**
  * {@code GenericController} is to capture the demographic/demo/Biometric
@@ -192,6 +194,7 @@ public class GenericController extends BaseController {
 	@Autowired
 	private QrCodePopUpViewController qrCodePopUpViewController;
 	List<String> updateFlowAllowedProcess = new ArrayList<>();
+
 
 	public TextField getRegistrationNumberTextField() {
 		return registrationNumberTextField;
@@ -1559,7 +1562,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 || screenDTO.getOrder() == 3){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1582,6 +1585,14 @@ public class GenericController extends BaseController {
 			}
 		}
 	}
+
+	public static boolean ageRestriction(int age){
+		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
+		List<SimpleDto> userService= (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
+		if (age<18 && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
+			return false;
+        return true;
+    }
 
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
