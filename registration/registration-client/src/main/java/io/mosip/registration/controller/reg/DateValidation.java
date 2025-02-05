@@ -95,18 +95,19 @@ public class DateValidation extends BaseController {
 				populateAge(parentPane, fieldId);
 			}
 		}
+		boolean err=true;
 		int enteredYear = Integer.parseInt(yyyy.getText());
 		int currentYear = LocalDate.now().getYear();
 		int yearDifference = currentYear-enteredYear;
 		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
 		if (yearDifference < highAge) {
 			isValid = GenericController.ageRestriction(yearDifference);
-
+         err=isValid;
 		}
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
 		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, defaultErrorMessage,
 				RegistrationConstants.EMPTY));
-		if (yearDifference < highAge){
+		if (!err){
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
 					maxAge));
 		}
