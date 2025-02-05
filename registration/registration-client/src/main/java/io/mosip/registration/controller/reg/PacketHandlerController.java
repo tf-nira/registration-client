@@ -464,24 +464,29 @@ public class PacketHandlerController extends BaseController implements Initializ
 			//slip acknowledgement
 			String slipAckTemplateText = null;
 
-			List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
+			if (!registrationDTO.getProcessId().equals("LOST")) {
+				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
-			String residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
-					? residenceStatusList.get(0).getValue()
-					: null;
+				String residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
+						? residenceStatusList.get(0).getValue()
+						: null;
 
-			LOGGER.info("Residence Status: " + residenceStatus);
+				LOGGER.info("Residence Status: " + residenceStatus);
 
-			if(residenceStatus != null && !residenceStatus.isEmpty()){
-				if ("In Uganda".equals(residenceStatus)) {
-					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+				if (residenceStatus != null && !residenceStatus.isEmpty()) {
+					if ("In Uganda".equals(residenceStatus)) {
+						slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 
 
-				} else {
-					slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
-					
+					} else {
+						slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
+
+					}
+
 				}
-
+			}
+			else {
+				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
