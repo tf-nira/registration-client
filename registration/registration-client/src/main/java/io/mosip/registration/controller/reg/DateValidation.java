@@ -101,7 +101,7 @@ public class DateValidation extends BaseController {
 		int yearDifference = currentYear-enteredYear;
 		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
 		if (yearDifference < highAge) {
-			isValid = GenericController.ageRestriction(yearDifference);
+			isValid = GenericController.ageRestriction(yearDifference,highAge);
          err=isValid;
 		}
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
@@ -140,7 +140,7 @@ public class DateValidation extends BaseController {
 		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
         //int highAge=16;
         if (ageVal < highAge) {
-            isValid = GenericController.ageRestriction(ageVal);
+            isValid = GenericController.ageRestriction(ageVal,highAge);
             err = isValid;
         }
 
