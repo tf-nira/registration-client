@@ -1,5 +1,6 @@
 package io.mosip.registration.controller;
 
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
@@ -92,6 +93,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javax.imageio.ImageIO;
+import io.mosip.registration.controller.BaseController;
 
 /**
  * {@code GenericController} is to capture the demographic/demo/Biometric
@@ -163,10 +165,10 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PrnService prnService;
-	
+
 	@Value("${nira.payment.gateway.statusCode}")
 	private String statusCode;
-	
+
 	private boolean isPrnValid = false;
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
@@ -192,6 +194,7 @@ public class GenericController extends BaseController {
 	@Autowired
 	private QrCodePopUpViewController qrCodePopUpViewController;
 	List<String> updateFlowAllowedProcess = new ArrayList<>();
+
 
 	public TextField getRegistrationNumberTextField() {
 		return registrationNumberTextField;
@@ -320,7 +323,7 @@ public class GenericController extends BaseController {
 									&& !responseDTO.getErrorResponseDTOs().isEmpty()
 									&& responseDTO.getErrorResponseDTOs().get(0).getMessage() != null
 									&& responseDTO.getErrorResponseDTOs().get(0).getMessage()
-											.equalsIgnoreCase(RegistrationConstants.CONSUMED_PRID_ERROR_CODE)) {
+									.equalsIgnoreCase(RegistrationConstants.CONSUMED_PRID_ERROR_CODE)) {
 								generateAlertLanguageSpecific(RegistrationConstants.ERROR,
 										RegistrationConstants.PRE_REG_CONSUMED_PACKET_ERROR);
 								return;
@@ -460,7 +463,7 @@ public class GenericController extends BaseController {
 
 		if (screenDTO.getOrder() < additionalInfoReqIdScreenOrder)
 			return true; // bypass check as current screen order is less than the screen it is displayed
-							// in.
+		// in.
 
 		if (!provided) {
 			showHideErrorNotification(ApplicationContext
@@ -494,44 +497,44 @@ public class GenericController extends BaseController {
 						case "documentType":
 							fxControl.selectAndSet(getRegistrationDTOFromSession().getDocuments().get(field.getId()));
 							var document = getRegistrationDTOFromSession().getDocuments().get(field.getId());
-							if (document != null &&"pdf".equals(document.getFormat())) {
+							if (document != null && "pdf".equals(document.getFormat())) {
 								try {
 									PDDocument pdfDoc = PDDocument.load(document.getDocument());
 									PDFRenderer pdfRenderer = new PDFRenderer(pdfDoc);
 									List<BufferedImage> list = new LinkedList<>();
-								    
-								    for (int page = 0; page < pdfDoc.getNumberOfPages(); page++) {
-								        BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300); // Convert PDF to image with 300 DPI
-								        list.add(image);
-								    }
-								    
-								    fxControl.setData(list);
-								    document.setFormat("pdf");
+
+									for (int page = 0; page < pdfDoc.getNumberOfPages(); page++) {
+										BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300); // Convert PDF to image with 300 DPI
+										list.add(image);
+									}
+
+									fxControl.setData(list);
+									document.setFormat("pdf");
 								} catch (IOException e) {
 									LOGGER.error("Buffered images conversion failed : {}", e);
 								}
 							}
-							else if(document != null && !"pdf".equals(document.getFormat())) {
-						        try (InputStream is = new ByteArrayInputStream(document.getDocument())) {
-						            BufferedImage image = ImageIO.read(is);
-						            List<BufferedImage> list = new LinkedList<>();						            
-						            if (image != null) {
-						                if ("png".equalsIgnoreCase(document.getFormat())) {
-						                    BufferedImage jpgImage = new BufferedImage(
-						                        image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-						                    jpgImage.createGraphics().drawImage(image, 0, 0, Color.WHITE, null);
-						                    list.add(jpgImage);
-						                    fxControl.setData(list);
-						                } else {
-						                    list.add(image);
-						                    fxControl.setData(list);
-						                }
-						                document.setFormat("pdf");
-						            }
-						        } catch (IOException e) {
-						            LOGGER.error("Image conversion failed: {}", e);
-						        }
-						    }
+							else if (document != null && !"pdf".equals(document.getFormat())) {
+								try (InputStream is = new ByteArrayInputStream(document.getDocument())) {
+									BufferedImage image = ImageIO.read(is);
+									List<BufferedImage> list = new LinkedList<>();
+									if (image != null) {
+										if ("png".equalsIgnoreCase(document.getFormat())) {
+											BufferedImage jpgImage = new BufferedImage(
+													image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+											jpgImage.createGraphics().drawImage(image, 0, 0, Color.WHITE, null);
+											list.add(jpgImage);
+											fxControl.setData(list);
+										} else {
+											list.add(image);
+											fxControl.setData(list);
+										}
+										document.setFormat("pdf");
+									}
+								} catch (IOException e) {
+									LOGGER.error("Image conversion failed: {}", e);
+								}
+							}
 							break;
 						default:
 
@@ -539,11 +542,11 @@ public class GenericController extends BaseController {
 							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null ? getRegistrationDTOFromSession().getDemographics().get(field.getId()) : demographicsCopy.get(field.getId()));
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
-						fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
-								? getRegistrationDTOFromSession().getDemographics().get(field.getId())
-								: demographicsCopy.get(field.getId()));
+							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
+									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
+									: demographicsCopy.get(field.getId()));
 
-						break;
+							break;
 					}
 				}
 			}
@@ -564,7 +567,7 @@ public class GenericController extends BaseController {
 		// Applies only during Update flow
 		if (getRegistrationDTOFromSession().getUpdatableFieldGroups() != null) {
 			screenFields = screenFields.stream().filter(f -> f.getGroup() != null
-					&& (getRegistrationDTOFromSession().getUpdatableFieldGroups().contains(f.getGroup())
+							&& (getRegistrationDTOFromSession().getUpdatableFieldGroups().contains(f.getGroup())
 							|| getRegistrationDTOFromSession().getDefaultUpdatableFieldGroups().contains(f.getGroup())))
 					.collect(Collectors.toList());
 			screenFields.forEach(f -> {
@@ -662,7 +665,7 @@ public class GenericController extends BaseController {
 		LOGGER.info("Screen refreshed, Screen: {} visible : {}", screenName, atLeastOneVisible);
 		return atLeastOneVisible;
 	}
-	
+
 	private boolean refreshScreenVisibilityForDependentFields(String screenName, List<String> dependentFields) {
 		boolean atLeastOneVisible = true;
 		Optional<UiScreenDTO> screenDTO = orderedScreens.values()
@@ -670,12 +673,12 @@ public class GenericController extends BaseController {
 				.filter(screen -> screen.getName().equals(screenName))
 				.findFirst();
 
-		if(screenDTO.isPresent()) {
+		if (screenDTO.isPresent()) {
 			LOGGER.info("Refreshing Screen: {}", screenName);
-			screenDTO.get().getFields().forEach( field -> {
-				if(dependentFields.contains(field.getId())) {
+			screenDTO.get().getFields().forEach(field -> {
+				if (dependentFields.contains(field.getId())) {
 					FxControl fxControl = getFxControl(field.getId());
-					if(fxControl != null)
+					if (fxControl != null)
 						fxControl.refreshDependentFields();
 				}
 			});
@@ -683,7 +686,7 @@ public class GenericController extends BaseController {
 			atLeastOneVisible = screenDTO.get()
 					.getFields()
 					.stream()
-					.anyMatch( field -> getFxControl(field.getId()) != null && getFxControl(field.getId()).getNode().isVisible() );
+					.anyMatch(field -> getFxControl(field.getId()) != null && getFxControl(field.getId()).getNode().isVisible());
 		}
 		LOGGER.info("Screen refreshed, Screen: {} visible : {}", screenName, atLeastOneVisible);
 		return atLeastOneVisible;
@@ -728,7 +731,7 @@ public class GenericController extends BaseController {
 	}
 
 	private void setTabSelectionChangeEventHandler(TabPane tabPane) {
-		final boolean[] ignoreChange = { false };
+		final boolean[] ignoreChange = {false};
 		tabPane.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -946,7 +949,7 @@ public class GenericController extends BaseController {
 
 				// Check if the field belongs to the "Notification of Change" group
 				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
-					isNotificationOfChangePresent = true;		// Found relevant group fields on this screen
+					isNotificationOfChangePresent = true;        // Found relevant group fields on this screen
 					FxControl control = getFxControl(field.getId());
 					if (control != null) {
 						Object fieldValue = control.getData(); // Fetch the data
@@ -958,7 +961,7 @@ public class GenericController extends BaseController {
 				}
 
 				// Validate PRN differently
-				if(field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
+				if (field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
 					LOGGER.error("PRN verification failed");
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
 							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
@@ -985,7 +988,7 @@ public class GenericController extends BaseController {
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
 			// Only show the general notification if the screen is "Demographic Details"
-			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId() )) {
+			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
 				showHideGeneralNotification("Please Note: Maiden name and any Previous names will not appear on the card");
 
 			}
@@ -1016,9 +1019,9 @@ public class GenericController extends BaseController {
 				.setText(
 						(fieldName == null) ? EMPTY
 								: ApplicationContext
-										.getBundle(ApplicationContext.applicationLanguage(),
-												RegistrationConstants.MESSAGES)
-										.getString("SCREEN_VALIDATION_ERROR") + " [ " + fieldName + " ]");
+								.getBundle(ApplicationContext.applicationLanguage(),
+										RegistrationConstants.MESSAGES)
+								.getString("SCREEN_VALIDATION_ERROR") + " [ " + fieldName + " ]");
 	}
 
 	private String getInvalidScreenName(TabPane tabPane) {
@@ -1114,8 +1117,6 @@ public class GenericController extends BaseController {
 
 				if (screenDTO.getName().equals("DemographicDetails")) {
 					groupFlowPane.getStyleClass().add("preRegParentPaneSection");
-
-//					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 					groupFlowPane.setPadding(new Insets(20, 0, 20, 20));
 
 					if (!(groupEntry.getKey().equals("Foundling Check") || groupEntry.getKey().equals("Declaration"))) {
@@ -1132,7 +1133,6 @@ public class GenericController extends BaseController {
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
-					//label.setPrefWidth(1200);
 					groupFlowPane.add(label, 0, 0, 2, 1);
 				}
 				int fieldIndex = 0;
@@ -1142,42 +1142,45 @@ public class GenericController extends BaseController {
 						if (fxControl.getNode() instanceof GridPane) {
 							((GridPane) fxControl.getNode()).prefWidthProperty().bind(groupFlowPane.widthProperty());
 						}
-
-						if (screenDTO.getName().equals("DemographicDetails")) {
-							fxControl.getNode().getStyleClass().add("demoGraphicCustomField");
-
-							groupFlowPane.add(fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
-							fieldIndex++;
-
-							// Only if field is PRN
-							if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
-									
-								Node node = fxControl.getNode();
-	
-								node.setOnKeyReleased(event -> {
-						            // Handle PRN verification
-					                handlePRNVerification(
-					                        fxControl.getData().toString(),
-					                        node,
-					                        processSpecDto.getFlow(),
-					                        registrationDTO.getRegistrationId(),
-					                        fxControl,
-					                        groupFlowPane
-					                    );
-
-						        });
-							}
-
+						// Check if the current field is pollingStationComment
+						if ((groupEntry.getKey().equals("Voters Information") && fieldDTO.getId().equals("pollingStationComment"))) {
+							// Dynamically adjust this specific field to span across the entire row (3 columns)
+							GridPane.setColumnSpan(fxControl.getNode(), 3); // Span 3 columns for the row
+							groupFlowPane.add(fxControl.getNode(), 0, (fieldIndex / 3) + 1, 3, 1); // Add it to the next available row with column span
 						} else {
-							if (screenDTO.getName().equals("Documents")) {
-								fxControl.getNode().getStyleClass().add(RegistrationConstants.DOCUMENT_COMBOBOX_FIELD);
+							if (screenDTO.getName().equals("DemographicDetails")) {
+								fxControl.getNode().getStyleClass().add("demoGraphicCustomField");
+								groupFlowPane.add(fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
+								fieldIndex++;
+							} else {
+								if (screenDTO.getName().equals("Documents")) {
+									fxControl.getNode().getStyleClass().add(RegistrationConstants.DOCUMENT_COMBOBOX_FIELD);
+								}
+								groupFlowPane.getChildren().add(fxControl.getNode());
 							}
-							groupFlowPane.getChildren().add(fxControl.getNode());
 						}
+
+						// Only if field is PRN
+						if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
+							Node node = fxControl.getNode();
+							node.setOnKeyReleased(event -> {
+								// Handle PRN verification
+								handlePRNVerification(
+										fxControl.getData().toString(),
+										node,
+										processSpecDto.getFlow(),
+										registrationDTO.getRegistrationId(),
+										fxControl,
+										groupFlowPane
+								);
+							});
+						}
+
 					} catch (Exception exception) {
 						LOGGER.error("Failed to build control " + fieldDTO.getId(), exception);
 					}
 				}
+
 				// Hide introducer grouping for adults
 				if (groupEntry.getKey().equals("Introducer")) {
 					groupFlowPane.visibleProperty()
@@ -1196,9 +1199,10 @@ public class GenericController extends BaseController {
 			tabPane.getTabs().add(screenTab);
 		}
 
-		// refresh to reflect the initial visibility configuration
+// refresh to reflect the initial visibility configuration
 		refreshFields();
 		addPreviewAndAuthScreen(tabPane);
+
 	}
 
 	/**
@@ -1582,6 +1586,14 @@ public class GenericController extends BaseController {
 			}
 		}
 	}
+
+	public boolean ageRestriction(int age, int highAge){
+		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
+		List<SimpleDto> userService= (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
+		if (age<highAge && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
+			return false;
+        return true;
+    }
 
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return

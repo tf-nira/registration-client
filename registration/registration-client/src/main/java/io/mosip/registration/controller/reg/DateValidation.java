@@ -23,10 +23,14 @@ import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.controller.BaseController;
 import io.mosip.registration.dto.schema.Validator;
+import io.mosip.registration.dto.schema.UiFieldDTO;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import io.mosip.registration.controller.GenericController;
+import io.mosip.registration.service.BaseService ;
+
 
 /**
  * Class for validating the date fields
@@ -90,72 +94,102 @@ public class DateValidation extends BaseController {
 				populateAge(parentPane, fieldId);
 			}
 		}
-
+		boolean err=true;
+		int enteredYear = Integer.parseInt(yyyy.getText());
+		int currentYear = LocalDate.now().getYear();
+		int yearDifference = currentYear-enteredYear;
+		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
+		GenericController controller = new GenericController();
+		if (yearDifference < highAge) {
+			isValid = controller.ageRestriction(yearDifference, highAge);
+         err=isValid;
+		}
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
 		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, defaultErrorMessage,
 				RegistrationConstants.EMPTY));
+		if (!err){
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
+					maxAge));
+		}
 		return isValid;
 	}
 
 	public boolean validateAge(Pane parentPane, String schemaId) {
-		String fieldId = schemaId;
-		resetFieldStyleClass(parentPane, fieldId, null);
+        String fieldId = schemaId;
+        resetFieldStyleClass(parentPane, fieldId, null);
 
-		TextField ageField = ((TextField) getFxElement(parentPane,
-				fieldId + RegistrationConstants.AGE_FIELD + RegistrationConstants.TEXT_FIELD));
-		if (ageField.getText().isBlank()) {
-			TextField dd = (TextField) getFxElement(parentPane,
-					fieldId + RegistrationConstants.DD + RegistrationConstants.TEXT_FIELD);
-			TextField mm = (TextField) getFxElement(parentPane,
-					fieldId + RegistrationConstants.MM + RegistrationConstants.TEXT_FIELD);
-			TextField yyyy = (TextField) getFxElement(parentPane,
-					fieldId + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
-			dd.setText(RegistrationConstants.EMPTY);
-			mm.setText(RegistrationConstants.EMPTY);
-			yyyy.setText(RegistrationConstants.EMPTY);
+        TextField ageField = ((TextField) getFxElement(parentPane,
+                fieldId + RegistrationConstants.AGE_FIELD + RegistrationConstants.TEXT_FIELD));
+        if (ageField.getText().isBlank()) {
+            TextField dd = (TextField) getFxElement(parentPane,
+                    fieldId + RegistrationConstants.DD + RegistrationConstants.TEXT_FIELD);
+            TextField mm = (TextField) getFxElement(parentPane,
+                    fieldId + RegistrationConstants.MM + RegistrationConstants.TEXT_FIELD);
+            TextField yyyy = (TextField) getFxElement(parentPane,
+                    fieldId + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
+            dd.setText(RegistrationConstants.EMPTY);
+            mm.setText(RegistrationConstants.EMPTY);
+            yyyy.setText(RegistrationConstants.EMPTY);
 
-		}
-		boolean isValid = ageField.getText().matches(RegistrationConstants.NUMBER_REGEX);
-		Validator validator = null;
+        }
+        boolean isValid = ageField.getText().matches(RegistrationConstants.NUMBER_REGEX);
+        Validator validator = null;
+        int ageVal = Integer.parseInt(ageField.getText());
+        boolean err = false;
 
-		if (isValid) {
-			int maxAge = Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.MAX_AGE));
-			try {
-				int age = Integer.parseInt(ageField.getText());
-				if (age > maxAge)
-					isValid = false;
-				else {
+		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
+		GenericController controller = new GenericController();
+        if (ageVal < highAge) {
+            isValid = controller.ageRestriction(ageVal, highAge);
+            err = isValid;
+        }
 
-					Calendar defaultDate = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("UTC")));
-					defaultDate.set(Calendar.DATE, 1);
-					defaultDate.set(Calendar.MONTH, 0);
-					defaultDate.add(Calendar.YEAR, -age);
+        if (isValid) {
+            int maxAge = Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.MAX_AGE));
+            try {
+                int age = Integer.parseInt(ageField.getText());
 
-					LocalDate date = LocalDate.of(defaultDate.get(Calendar.YEAR), defaultDate.get(Calendar.MONTH) + 1,
-							defaultDate.get(Calendar.DATE));
 
-					validator = validation.validateSingleString(fieldId,
-							getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0));
+                if (age > maxAge)
+                    isValid = false;
 
-					isValid = validator != null && validator.getValidator() != null
-							? (date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()))).matches(validator.getValidator())
-							: true;
 
-					if (isValid) {
-						populateDateFields(parentPane, fieldId, age);
-					}
-				}
-			} catch (Exception ex) {
-				LOGGER.error(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME, RegistrationConstants.APPLICATION_ID,
-						ExceptionUtils.getStackTrace(ex));
-				isValid = false;
-			}
-		}
+                else {
 
-		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE,
-				maxAge));
-		return isValid;
-	}
+                    Calendar defaultDate = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("UTC")));
+                    defaultDate.set(Calendar.DATE, 1);
+                    defaultDate.set(Calendar.MONTH, 0);
+                    defaultDate.add(Calendar.YEAR, -age);
+
+                    LocalDate date = LocalDate.of(defaultDate.get(Calendar.YEAR), defaultDate.get(Calendar.MONTH) + 1,
+                            defaultDate.get(Calendar.DATE));
+
+                    validator = validation.validateSingleString(fieldId,
+                            getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0));
+
+                    isValid = validator != null && validator.getValidator() != null
+                            ? (date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()))).matches(validator.getValidator())
+                            : true;
+
+                    if (isValid) {
+                        populateDateFields(parentPane, fieldId, age);
+                    }
+                }
+            } catch (Exception ex) {
+                LOGGER.error(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME, RegistrationConstants.APPLICATION_ID,
+                        ExceptionUtils.getStackTrace(ex));
+                isValid = false;
+            }
+        }
+
+            resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE,
+                    maxAge));
+		if(!err)
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
+					maxAge));
+
+        return isValid;
+    }
 
 	private String getErrorMessage(Validator validator, String defaultMessageKey, Object... args) {
 		ResourceBundle rb = ApplicationContext.getBundle(
