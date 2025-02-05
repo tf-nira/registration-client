@@ -1383,7 +1383,7 @@ public class RegistrationConstants {
 	public static final String ATTR_GENDER_TYPE = "genderCode";
 	public static final String ATTR_NON_FORINGER = "NFR";
 	public static final String ATTR_FORINGER = "FR";
-	public static final String ATTR_FORINGER_DOB_PARSING = "yyyy/MM/dd";
+	public static final String ATTR_FORINGER_DOB_PARSING = "dd/MM/yyyy";
 	public static final String ATTR_FORINGER_DOB_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 	public static final String SYNC_FAILURE = "SYNC_FAILURE";
