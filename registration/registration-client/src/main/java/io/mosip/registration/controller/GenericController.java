@@ -1587,7 +1587,7 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	public static boolean ageRestriction(int age,int highAge){
+	public boolean ageRestriction(int age, int highAge){
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 		List<SimpleDto> userService= (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
 		if (age<highAge && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))

@@ -1,7 +1,6 @@
 package io.mosip.registration.controller.reg;
 
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
-import static io.mosip.registration.controller.GenericController.ageRestriction;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -100,8 +99,9 @@ public class DateValidation extends BaseController {
 		int currentYear = LocalDate.now().getYear();
 		int yearDifference = currentYear-enteredYear;
 		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
+		GenericController controller = new GenericController();
 		if (yearDifference < highAge) {
-			isValid = GenericController.ageRestriction(yearDifference,highAge);
+			isValid = controller.ageRestriction(yearDifference, highAge);
          err=isValid;
 		}
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
@@ -138,9 +138,9 @@ public class DateValidation extends BaseController {
         boolean err = false;
 
 		int highAge=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
-        //int highAge=16;
+		GenericController controller = new GenericController();
         if (ageVal < highAge) {
-            isValid = GenericController.ageRestriction(ageVal,highAge);
+            isValid = controller.ageRestriction(ageVal, highAge);
             err = isValid;
         }
 
