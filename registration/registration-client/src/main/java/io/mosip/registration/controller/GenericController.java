@@ -1562,7 +1562,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2 ){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1586,10 +1586,10 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	public static boolean ageRestriction(int age){
+	public static boolean ageRestriction(int age,int highAge){
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 		List<SimpleDto> userService= (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
-		if (age<18 && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
+		if (age<highAge && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
 			return false;
         return true;
     }
