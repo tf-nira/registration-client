@@ -272,9 +272,9 @@ public class DOBAgeFxControl extends FxControl {
 
 		if (data instanceof String) {
 			String[] dobArray = ((String) data).split("/");
-			yyyy.setText(dobArray[0]);
+			yyyy.setText(dobArray[2]);
 			mm.setText(dobArray[1]);
-			dd.setText(dobArray[2]);
+			dd.setText(dobArray[0]);
 		}
 	}
 
