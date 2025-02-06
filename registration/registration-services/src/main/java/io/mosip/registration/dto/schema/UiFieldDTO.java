@@ -64,6 +64,7 @@ public class UiFieldDTO {
 	private List<String> dependentFields;
 	private RequiredOnExpr defaultValue;
 	private boolean setRequired;
+	private List<String> parentFields;
 
 
 	/**

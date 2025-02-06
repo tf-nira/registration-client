@@ -3,12 +3,14 @@ package io.mosip.registration.util.control.impl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -695,9 +697,27 @@ public class DocumentFxControl extends FxControl {
 				RegistrationConstants.APPLICANT_TYPE_MVEL_SCRIPT, SCRIPT_NAME), getRegistrationDTo());
 		LOGGER.info("Document field {}, for applicantType : {}", uiFieldDTO.getId(), applicantTypeCode);
 		if(applicantTypeCode != null) {
-			return validDocumentService.getDocumentCategories((String) applicantTypeCode,
-					this.uiFieldDTO.getSubType(),
-					getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
+			String applicantTypeCodeStr = (String) applicantTypeCode;
+            List<String> codes = new ArrayList<>(Arrays.asList(applicantTypeCodeStr.split(",")));
+            
+            List<DocumentCategoryDto> documentCategories = new ArrayList<>();
+            
+            for (String code : codes) {
+                documentCategories.addAll(validDocumentService.getDocumentCategories(
+                        code.trim(),
+                        this.uiFieldDTO.getSubType(),
+                        getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)
+                ));
+            }
+            
+            if (codes.size() > 1) {
+				documentCategories = documentCategories.stream()
+						.collect(Collectors.collectingAndThen(
+								Collectors.toMap(DocumentCategoryDto::getCode, dto -> dto, (dto1, dto2) -> dto1),
+								map -> new ArrayList<>(map.values())));
+			}
+            
+			return documentCategories;
 		}
 		return Collections.EMPTY_LIST;
 	}

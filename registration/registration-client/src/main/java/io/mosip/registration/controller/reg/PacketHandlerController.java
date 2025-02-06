@@ -467,9 +467,13 @@ public class PacketHandlerController extends BaseController implements Initializ
 			if (!registrationDTO.getProcessId().equals("LOST")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
-				String residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
-						? residenceStatusList.get(0).getValue()
-						: null;
+				String residenceStatus = null;
+
+				if (residenceStatusList != null) {
+					residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
+							? residenceStatusList.get(0).getValue()
+							: null;
+				}
 
 				LOGGER.info("Residence Status: " + residenceStatus);
 

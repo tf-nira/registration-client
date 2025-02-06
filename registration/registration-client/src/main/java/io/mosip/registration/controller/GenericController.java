@@ -123,6 +123,8 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_DOB_AGE = "ageDate";
 	private static final String CONTROLTYPE_HTML = "html";
 	private static final String CONTROLTYPE_COMMENT = "comment";
+	private static final String CONTROLTYPE_TITLE = "title";
+	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
 	private ProcessSpecDto process;
 
 	/**
@@ -165,10 +167,10 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PrnService prnService;
-
+	
 	@Value("${nira.payment.gateway.statusCode}")
 	private String statusCode;
-
+	
 	private boolean isPrnValid = false;
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
@@ -194,7 +196,6 @@ public class GenericController extends BaseController {
 	@Autowired
 	private QrCodePopUpViewController qrCodePopUpViewController;
 	List<String> updateFlowAllowedProcess = new ArrayList<>();
-
 
 	public TextField getRegistrationNumberTextField() {
 		return registrationNumberTextField;
@@ -951,12 +952,8 @@ public class GenericController extends BaseController {
 				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
 					isNotificationOfChangePresent = true;        // Found relevant group fields on this screen
 					FxControl control = getFxControl(field.getId());
-					if (control != null) {
-						Object fieldValue = control.getData(); // Fetch the data
-						LOGGER.debug("Field ID: {}, Value: {}", field.getId(), fieldValue);
-						if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
-							isNotificationOfChangeFilled = true;      // At least one non-empty value found
-						}
+					if (control != null && !control.isEmpty()) {
+						isNotificationOfChangeFilled = true;
 					}
 				}
 
@@ -1128,16 +1125,71 @@ public class GenericController extends BaseController {
 						rightColumn.setPercentWidth(33);
 						groupFlowPane.getColumnConstraints().addAll(leftColumn, centerColumn, rightColumn);
 					}
+					
+					if ("UPDATE".equalsIgnoreCase(processSpecDto.getFlow()) && groupEntry.getKey().equals("Declaration")) {
+						ColumnConstraints leftColumn = new ColumnConstraints();
+						leftColumn.setPercentWidth(30);
+						ColumnConstraints rightColumn = new ColumnConstraints();
+						rightColumn.setPercentWidth(70);
+						groupFlowPane.getColumnConstraints().addAll(leftColumn, rightColumn);
+					}
 
 					/* Adding Group label */
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
+					
+					if (groupEntry.getKey().equals("COP Categories and Services")) {
+						label.setPadding(new Insets(0, 0, 10, 0));
+					}
+					
 					groupFlowPane.add(label, 0, 0, 2, 1);
 				}
 				int fieldIndex = 0;
+				int gRowIndex = 0;
+				int gColIndex = 0;
 				for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
 					try {
+						if (fieldDTO.getParentFields() != null && !fieldDTO.getParentFields().isEmpty()) {
+							fieldDTO.getParentFields().forEach(parent -> {
+								FxControl control = getFxControl(parent);
+								VBox vbox = (VBox) control.getNode();
+								
+								for (Node node : vbox.getChildren()) {
+									if (node instanceof TitledPane) {
+										TitledPane titledPane = (TitledPane) node;
+										if (titledPane.getContent() instanceof GridPane) {
+											GridPane sectionPane = (GridPane) titledPane.getContent();
+											FxControl controlNode = null;
+											try {
+												controlNode = buildFxElement(fieldDTO);
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+											
+											int[] lastPosition = getLastPosition(sectionPane);
+									        int lastRow = lastPosition[0];
+									        int lastColumn = lastPosition[1];
+									        
+									        int nextColumn;
+									        int nextRow;
+									        if (lastRow == -1 && lastColumn == -1) {
+									            nextRow = 0;
+									            nextColumn = 0;
+									        } else {
+									        	nextColumn = (lastColumn + 1) % 3;
+										        nextRow = lastColumn == 2 ? lastRow + 1 : lastRow;
+									        }
+											
+											sectionPane.add(controlNode.getNode(), nextColumn, nextRow);
+											titledPane.setContent(sectionPane);
+										}
+									}
+								}
+							});
+							continue;
+						}
+						
 						FxControl fxControl = buildFxElement(fieldDTO);
 						if (fxControl.getNode() instanceof GridPane) {
 							((GridPane) fxControl.getNode()).prefWidthProperty().bind(groupFlowPane.widthProperty());
@@ -1150,7 +1202,31 @@ public class GenericController extends BaseController {
 						} else {
 							if (screenDTO.getName().equals("DemographicDetails")) {
 								fxControl.getNode().getStyleClass().add("demoGraphicCustomField");
-								groupFlowPane.add(fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
+								
+								if (fieldDTO.getControlType().equals(CONTROLTYPE_TITLE)) {
+									groupFlowPane.getColumnConstraints().clear();
+									groupFlowPane.setVgap(0);
+									groupFlowPane.add(fxControl.getNode(), 0, fieldIndex + 1);
+								} else if (fieldDTO.getAlignmentGroup().equals("COP Categories and Services")) {
+									if (fieldDTO.getControlType().equals(CONTROLTYPE_CHECKBOX)) {
+										groupFlowPane.setVgap(0);
+										gRowIndex++;
+										gColIndex = 0;
+										groupFlowPane.add(fxControl.getNode(), 0, gRowIndex);
+										gRowIndex++;
+									} else {
+										groupFlowPane.setVgap(0);
+										groupFlowPane.add(fxControl.getNode(), gColIndex, gRowIndex);
+										gColIndex++;
+										if (gColIndex >= 3) {
+											gColIndex = 0;
+											gRowIndex++;
+										}
+									}
+								} else {
+									groupFlowPane.add(fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
+								}
+								
 								fieldIndex++;
 							} else {
 								if (screenDTO.getName().equals("Documents")) {
@@ -1161,7 +1237,7 @@ public class GenericController extends BaseController {
 						}
 
 						// Only if field is PRN
-						if (fieldDTO.getId().equalsIgnoreCase("PRN")) {
+						if (fieldDTO.getId().equalsIgnoreCase("PRNId")) {
 							Node node = fxControl.getNode();
 							node.setOnKeyReleased(event -> {
 								// Handle PRN verification
@@ -1204,6 +1280,28 @@ public class GenericController extends BaseController {
 		addPreviewAndAuthScreen(tabPane);
 
 	}
+	
+	private int[] getLastPosition(GridPane gridPane) {
+        int lastRow = -1;
+        int lastColumn = -1;
+
+        for (Node node : gridPane.getChildren()) {
+            Integer rowIndex = GridPane.getRowIndex(node);
+            Integer columnIndex = GridPane.getColumnIndex(node);
+
+            if (rowIndex == null) rowIndex = 0;
+            if (columnIndex == null) columnIndex = 0;
+
+            if (rowIndex > lastRow) {
+                lastRow = rowIndex;
+                lastColumn = columnIndex;
+            } else if (rowIndex == lastRow && columnIndex > lastColumn) {
+                lastColumn = columnIndex;
+            }
+        }
+
+        return new int[]{lastRow, lastColumn};
+    }
 
 	/**
 	 * This method helps in verifying Payment Registration Numbers (PRNs) with the NIRA Payment Gateway service 
@@ -1528,6 +1626,14 @@ public class GenericController extends BaseController {
 
 				case CONTROLTYPE_COMMENT:
 					fxControl = new CommentFxControl().build(uiFieldDTO);
+					break;
+					
+				case CONTROLTYPE_TITLE:
+					fxControl = new TitleFxControl().build(uiFieldDTO);
+					break;
+					
+				case CONTROLTYPE_TOGGLE_BUTTON:
+					fxControl = new ToggleButtonFxControl().build(uiFieldDTO);
 					break;
 			}
 		}

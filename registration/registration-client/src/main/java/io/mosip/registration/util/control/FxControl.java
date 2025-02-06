@@ -171,6 +171,7 @@ public abstract class FxControl  {
 					}
 					break;
 				default:
+					fillData(null);
 					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
 					break;
 			}
