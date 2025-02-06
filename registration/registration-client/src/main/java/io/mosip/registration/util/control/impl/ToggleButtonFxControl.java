@@ -82,7 +82,7 @@ public class ToggleButtonFxControl extends FxControl {
 		button.setId(id);
 		button.setPrefWidth(prefWidth);
 		button.setDisable(isDisable);
-		button.getStyleClass().add("toggle-button");
+		button.getStyleClass().add("control-toggle-button");
 		return button;
 	}
 

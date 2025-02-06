@@ -2776,7 +2776,7 @@ Working on new Css by taleev
     -fx-border-radius: 10.0 10.0 10.0 10.0;
 }
 
-.toggle-button {
+.control-toggle-button {
 	-fx-background-color: #FFFFFF;
 	-fx-border-color: #005baa;
 	-fx-text-fill: #005baa;
@@ -2788,7 +2788,7 @@ Working on new Css by taleev
 	-fx-pref-width: 300px;
 }
 
-.toggle-button:selected {
+.control-toggle-button:selected {
 	-fx-background-color: #bf212f;
 	-fx-border-color: #005baa;
 	-fx-text-fill: #FFFFFF;
