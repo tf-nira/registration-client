@@ -1261,20 +1261,11 @@ public class GenericController extends BaseController {
 							validatePaymentButton
 									.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white;");
 
-							Label validationLabel = new Label();
-							validationLabel.setId("PRNengMessage");
-							validationLabel.setVisible(false); // initially hidden
-							validationLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
-
-							// Create a horizontal box for the components
-							HBox paymentHBox = new HBox(10);
-							paymentHBox.setAlignment(Pos.CENTER_LEFT);
-
 							VBox paymentVBox = new VBox(10);
 
-							paymentHBox.getChildren().addAll(node, validatePaymentButton);
-							paymentVBox.getChildren().addAll(paymentHBox, validationLabel);
-							groupFlowPane.add(paymentVBox, 0, fieldIndex + 1);
+							paymentVBox.getChildren().addAll(validatePaymentButton);
+							groupFlowPane.add(paymentVBox, (fieldIndex % 3), (fieldIndex / 3) + 1);
+							fieldIndex++;
 
 							validatePaymentButton.setOnAction(event -> {
 								handlePRNVerification(fxControl.getData().toString(), node,
@@ -1489,11 +1480,13 @@ public class GenericController extends BaseController {
 
 	                if (isPrnValid) {
 	                	PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
-	                    updatePRNIndicator(node, consumeResponse.isValid());
-	                    updatePRNValidationMessage(validationLabel, consumeResponse.getMessage(), consumeResponse.isValid());
+	                	showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
+	                    //updatePRNIndicator(node, consumeResponse.isValid());
+	                    //updatePRNValidationMessage(validationLabel, consumeResponse.getMessage(), consumeResponse.isValid());
 	                } else {
-	                    updatePRNIndicator(node, false);
-	                    updatePRNValidationMessage(validationLabel, verificationResponse.getMessage(), false);
+	                	showPaymentValidationPopup(parentGridPane, verificationResponse.getMessage(), false);
+	                    //updatePRNIndicator(node, false);
+	                    //updatePRNValidationMessage(validationLabel, verificationResponse.getMessage(), false);
 	                }
 	            });
 	        } catch (InterruptedException e) {
@@ -1502,7 +1495,40 @@ public class GenericController extends BaseController {
 	    }).start();
 	}
 
-
+	private void showPaymentValidationPopup(GridPane parent, String message, boolean isSuccess) {
+		Dialog<ButtonType> dialog = new Dialog<>();
+		dialog.initOwner(parent.getScene().getWindow());
+		dialog.setHeaderText("Payment Validation");
+		dialog.setResizable(false);
+ 
+		Label contentLabel = new Label(message);
+		contentLabel.setStyle("-fx-font-size: 14px;-fx-text-fill: black;");
+		contentLabel.setWrapText(true);
+ 
+		VBox dialogContent = new VBox(10, contentLabel);
+		dialogContent.setAlignment(Pos.CENTER);
+		dialog.getDialogPane().setContent(dialogContent);
+ 
+		if (isSuccess) {
+			dialog.getDialogPane().lookup(".header-panel")
+					.setStyle("-fx-background-color: #4CAF50; -fx-max-height: 20px;");
+			dialog.getDialogPane().lookup(".header-panel .label")
+					.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+ 
+			dialogContent.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20px; -fx-max-height: 50px");
+		} else {
+			dialog.getDialogPane().lookup(".header-panel")
+					.setStyle("-fx-background-color: #d32f2f; -fx-max-height: 20px; -fx-min-height:20px;");
+			dialog.getDialogPane().lookup(".header-panel .label")
+					.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+			dialogContent.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20px; -fx-max-height: 50px");
+		}
+ 
+		dialog.getDialogPane().setMinWidth(350);
+		dialog.getDialogPane().setMaxWidth(350);
+		dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+		dialog.showAndWait();
+	}
 
 	private void showLoadingPRNIndicator(Node node) {
 		node.getStyleClass().removeAll("success-indicator", "error-indicator");
