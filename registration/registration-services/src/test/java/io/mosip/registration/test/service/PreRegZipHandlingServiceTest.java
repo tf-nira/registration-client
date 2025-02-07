@@ -165,9 +165,9 @@ public class PreRegZipHandlingServiceTest {
 		Map<String, Object> appMap = new LinkedHashMap<>();
 		appMap.put("mosip.registration.registration_pre_reg_packet_location", "..//PreRegPacketStore");
 		appMap.put(RegistrationConstants.AGE_GROUP_CONFIG, "{'INFANT':'0-5','MINOR':'6-17','ADULT':'18-200'}");
-		appMap.put("mosip.default.date.format", "yyyy/MM/dd");
+		appMap.put("mosip.default.date.format", "dd/MM/yyyy");
 		Mockito.when(ApplicationContext.map()).thenReturn(appMap);
-		Mockito.when(ApplicationContext.getDateFormat()).thenReturn("yyyy/MM/dd");
+		Mockito.when(ApplicationContext.getDateFormat()).thenReturn("dd/MM/yyyy");
 		/*Mockito.doAnswer((idObject) -> {
 			return "Success";
 		}).when(idObjectValidator).validateIdObject(Mockito.any(), Mockito.any());*/

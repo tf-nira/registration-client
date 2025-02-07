@@ -171,10 +171,19 @@ public class RegistrationDTO {
 
 	public void setDateField(String fieldId, String dateString, String subType) {
 		if (isValidValue(dateString)) {
+			if(dateString.matches("\\d{4}/\\d{2}/\\d{2}")) {
+				 String[] dateParts = dateString.split("/");
+			     String formattedDate = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+			     LocalDate date = LocalDate.parse(formattedDate,
+			    		 DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
+			     setDateField(fieldId, String.valueOf(date.getDayOfMonth()), String.valueOf(date.getMonthValue()),
+							String.valueOf(date.getYear()), subType);
+			} else {
 			LocalDate date = LocalDate.parse(dateString,
 					DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
 			setDateField(fieldId, String.valueOf(date.getDayOfMonth()), String.valueOf(date.getMonthValue()),
 					String.valueOf(date.getYear()), subType);
+			}
 		}
 	}
 
