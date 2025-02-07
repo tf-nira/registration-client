@@ -171,7 +171,9 @@ public abstract class FxControl  {
 					}
 					break;
 				default:
-					fillData(null);
+					if (uiFieldDTO.getControlType().equals("toggleButton")) {
+						fillData(null);
+					}
 					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
 					break;
 			}

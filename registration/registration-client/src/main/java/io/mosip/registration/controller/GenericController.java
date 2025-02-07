@@ -4,6 +4,7 @@ import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
+import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.Initializable;
 
@@ -186,6 +187,7 @@ public class GenericController extends BaseController {
 	public static Map<String, TreeMap<Integer, List<String>>> currentHierarchyMap = new HashMap<String, TreeMap<Integer, List<String>>>();
 	public static List<UiFieldDTO> fields = new ArrayList<>();
 	private LanguageSelectionController registrationDTO;
+	private RequiredFieldValidator requiredFieldValidator;
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
@@ -952,7 +954,7 @@ public class GenericController extends BaseController {
 				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
 					isNotificationOfChangePresent = true;        // Found relevant group fields on this screen
 					FxControl control = getFxControl(field.getId());
-					if (control != null && !control.isEmpty()) {
+					if (control != null && isFieldVisible(field) && !control.isEmpty()) {
 						isNotificationOfChangeFilled = true;
 					}
 				}
@@ -997,6 +999,20 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		return isValid;
+	}
+	
+	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
+		if (requiredFieldValidator == null) {
+			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
+		}
+		try {
+			boolean isVisibleAccordingToSpec = requiredFieldValidator.isFieldVisible(schemaDTO, getRegistrationDTOFromSession());
+
+			return isVisibleAccordingToSpec;
+		} catch (Exception exception) {
+			LOGGER.error("Failed to check field visibility", exception);
+		}
+		return true;
 	}
 
 	private void showHideGeneralNotification(String message) {
@@ -1239,16 +1255,32 @@ public class GenericController extends BaseController {
 						// Only if field is PRN
 						if (fieldDTO.getId().equalsIgnoreCase("PRNId")) {
 							Node node = fxControl.getNode();
-							node.setOnKeyReleased(event -> {
-								// Handle PRN verification
-								handlePRNVerification(
-										fxControl.getData().toString(),
-										node,
-										processSpecDto.getFlow(),
-										registrationDTO.getRegistrationId(),
-										fxControl,
-										groupFlowPane
-								);
+
+							Button validatePaymentButton = new Button("Validate Payment");
+							validatePaymentButton.setPrefWidth(200);
+							validatePaymentButton
+									.setStyle("-fx-background-color: #d32f2f; -fx-text-fill: white;");
+
+							Label validationLabel = new Label();
+							validationLabel.setId("PRNengMessage");
+							validationLabel.setVisible(false); // initially hidden
+							validationLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;");
+
+							// Create a horizontal box for the components
+							HBox paymentHBox = new HBox(10);
+							paymentHBox.setAlignment(Pos.CENTER_LEFT);
+
+							VBox paymentVBox = new VBox(10);
+
+							paymentHBox.getChildren().addAll(node, validatePaymentButton);
+							paymentVBox.getChildren().addAll(paymentHBox, validationLabel);
+							groupFlowPane.add(paymentVBox, 0, fieldIndex + 1);
+
+							validatePaymentButton.setOnAction(event -> {
+								handlePRNVerification(fxControl.getData().toString(), node,
+										processSpecDto.getFlow(), registrationDTO.getRegistrationId(),
+										fxControl, groupFlowPane);
+
 							});
 						}
 
