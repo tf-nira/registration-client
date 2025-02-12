@@ -293,6 +293,7 @@ public abstract class FxControl  {
 			case NEW:
 			case RENEWAL:
 			case FIRSTID:
+			case LOST:
  				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
