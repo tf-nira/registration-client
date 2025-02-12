@@ -1,6 +1,7 @@
 package io.mosip.registration.dto.payments;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -43,6 +44,5 @@ public class CheckPRNStatusResponseDTO implements Serializable {
     private String taxPayerEmail;
     private String taxPayerName;
     private String villageName;
-	private String processFlow; // Helper field to verifying payments from MOSIP modules
-
+	private Map<String,String> eligiblePaidForServiceTypes;
 }
