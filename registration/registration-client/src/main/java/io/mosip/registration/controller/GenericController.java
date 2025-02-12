@@ -1341,7 +1341,7 @@ public class GenericController extends BaseController {
 
 	    if (responseDTO != null) {
 	        if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-	            if (responseDTO.getProcessFlow().equalsIgnoreCase(processFlow)) {
+	            if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
 	                Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	                if (prnCheck == null) {
 	                    return new PRNVerificationResponse(false, "Verification failed.");
@@ -1472,7 +1472,7 @@ public class GenericController extends BaseController {
 	            PRNVerificationResponse verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId);
 	            isPrnValid = verificationResponse.isValid();
 
-	            Platform.runLater(() -> {
+				Platform.runLater(() -> {
 	                removeLoadingPRNIndicator(node);
 
 	                // Locate the existing PRN validation label inside the GridPane
@@ -1527,6 +1527,20 @@ public class GenericController extends BaseController {
 		dialog.getDialogPane().setMinWidth(350);
 		dialog.getDialogPane().setMaxWidth(350);
 		dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+		okButton.setOnAction(event -> {
+			// Call your method when OK button is clicked
+			if (!isSuccess) {
+                try {
+                    BaseController.load(getClass().getResource(RegistrationConstants.HOME_PAGE));
+					clearOnboardData();
+					clearRegistrationData();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+		});
 		dialog.showAndWait();
 	}
 
