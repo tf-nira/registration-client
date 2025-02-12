@@ -1341,7 +1341,8 @@ public class GenericController extends BaseController {
 
 	    if (responseDTO != null) {
 	        if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-	            if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
+	            if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes") != null &&
+						responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
 	                Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	                if (prnCheck == null) {
 	                    return new PRNVerificationResponse(false, "Verification failed.");
