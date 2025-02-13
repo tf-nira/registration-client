@@ -32,10 +32,10 @@ public class NonEditableCopyActionHandler extends ChangeActionHandler {
                 if(!isValidNode(fromNode) || !isValidNode(toNode))
                     continue;
 
-                if(fromNode instanceof TextField) {
+                if(fromNode instanceof TextField && ((TextField) fromNode).getText() != null) {
                     copy(scene, (TextField) fromNode, (TextField) toNode, enabled);
                 }
-                else if(fromNode instanceof ComboBox) {
+                else if(fromNode instanceof ComboBox && ((ComboBox<?>) fromNode).getSelectionModel().getSelectedItem() != null) {
                     copy((ComboBox) fromNode, (ComboBox) toNode, enabled);
                 }
             }
