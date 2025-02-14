@@ -168,10 +168,10 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PrnService prnService;
-	
+
 	@Value("${nira.payment.gateway.statusCode}")
 	private String statusCode;
-	
+
 	private boolean isPrnValid = false;
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
@@ -1000,7 +1000,7 @@ public class GenericController extends BaseController {
 		}
 		return isValid;
 	}
-	
+
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
 		if (requiredFieldValidator == null) {
 			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
@@ -1141,24 +1141,17 @@ public class GenericController extends BaseController {
 						rightColumn.setPercentWidth(33);
 						groupFlowPane.getColumnConstraints().addAll(leftColumn, centerColumn, rightColumn);
 					}
-					
-					if ("UPDATE".equalsIgnoreCase(processSpecDto.getFlow()) && groupEntry.getKey().equals("Declaration")) {
-						ColumnConstraints leftColumn = new ColumnConstraints();
-						leftColumn.setPercentWidth(30);
-						ColumnConstraints rightColumn = new ColumnConstraints();
-						rightColumn.setPercentWidth(70);
-						groupFlowPane.getColumnConstraints().addAll(leftColumn, rightColumn);
-					}
+
 
 					/* Adding Group label */
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
-					
+
 					if (groupEntry.getKey().equals("COP Categories and Services")) {
 						label.setPadding(new Insets(0, 0, 10, 0));
 					}
-					
+
 					groupFlowPane.add(label, 0, 0, 2, 1);
 				}
 				int fieldIndex = 0;
@@ -1170,7 +1163,7 @@ public class GenericController extends BaseController {
 							fieldDTO.getParentFields().forEach(parent -> {
 								FxControl control = getFxControl(parent);
 								VBox vbox = (VBox) control.getNode();
-								
+
 								for (Node node : vbox.getChildren()) {
 									if (node instanceof TitledPane) {
 										TitledPane titledPane = (TitledPane) node;
@@ -1182,21 +1175,21 @@ public class GenericController extends BaseController {
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
-											
+
 											int[] lastPosition = getLastPosition(sectionPane);
-									        int lastRow = lastPosition[0];
-									        int lastColumn = lastPosition[1];
-									        
-									        int nextColumn;
-									        int nextRow;
-									        if (lastRow == -1 && lastColumn == -1) {
-									            nextRow = 0;
-									            nextColumn = 0;
-									        } else {
-									        	nextColumn = (lastColumn + 1) % 3;
-										        nextRow = lastColumn == 2 ? lastRow + 1 : lastRow;
-									        }
-											
+											int lastRow = lastPosition[0];
+											int lastColumn = lastPosition[1];
+
+											int nextColumn;
+											int nextRow;
+											if (lastRow == -1 && lastColumn == -1) {
+												nextRow = 0;
+												nextColumn = 0;
+											} else {
+												nextColumn = (lastColumn + 1) % 3;
+												nextRow = lastColumn == 2 ? lastRow + 1 : lastRow;
+											}
+
 											sectionPane.add(controlNode.getNode(), nextColumn, nextRow);
 											titledPane.setContent(sectionPane);
 										}
@@ -1205,7 +1198,7 @@ public class GenericController extends BaseController {
 							});
 							continue;
 						}
-						
+
 						FxControl fxControl = buildFxElement(fieldDTO);
 						if (fxControl.getNode() instanceof GridPane) {
 							((GridPane) fxControl.getNode()).prefWidthProperty().bind(groupFlowPane.widthProperty());
@@ -1218,7 +1211,7 @@ public class GenericController extends BaseController {
 						} else {
 							if (screenDTO.getName().equals("DemographicDetails")) {
 								fxControl.getNode().getStyleClass().add("demoGraphicCustomField");
-								
+
 								if (fieldDTO.getControlType().equals(CONTROLTYPE_TITLE)) {
 									groupFlowPane.getColumnConstraints().clear();
 									groupFlowPane.setVgap(0);
@@ -1242,7 +1235,7 @@ public class GenericController extends BaseController {
 								} else {
 									groupFlowPane.add(fxControl.getNode(), (fieldIndex % 3), (fieldIndex / 3) + 1);
 								}
-								
+
 								fieldIndex++;
 							} else {
 								if (screenDTO.getName().equals("Documents")) {
@@ -1303,33 +1296,33 @@ public class GenericController extends BaseController {
 		addPreviewAndAuthScreen(tabPane);
 
 	}
-	
+
 	private int[] getLastPosition(GridPane gridPane) {
-        int lastRow = -1;
-        int lastColumn = -1;
+		int lastRow = -1;
+		int lastColumn = -1;
 
-        for (Node node : gridPane.getChildren()) {
-            Integer rowIndex = GridPane.getRowIndex(node);
-            Integer columnIndex = GridPane.getColumnIndex(node);
+		for (Node node : gridPane.getChildren()) {
+			Integer rowIndex = GridPane.getRowIndex(node);
+			Integer columnIndex = GridPane.getColumnIndex(node);
 
-            if (rowIndex == null) rowIndex = 0;
-            if (columnIndex == null) columnIndex = 0;
+			if (rowIndex == null) rowIndex = 0;
+			if (columnIndex == null) columnIndex = 0;
 
-            if (rowIndex > lastRow) {
-                lastRow = rowIndex;
-                lastColumn = columnIndex;
-            } else if (rowIndex == lastRow && columnIndex > lastColumn) {
-                lastColumn = columnIndex;
-            }
-        }
+			if (rowIndex > lastRow) {
+				lastRow = rowIndex;
+				lastColumn = columnIndex;
+			} else if (rowIndex == lastRow && columnIndex > lastColumn) {
+				lastColumn = columnIndex;
+			}
+		}
 
-        return new int[]{lastRow, lastColumn};
-    }
+		return new int[]{lastRow, lastColumn};
+	}
 
 	/**
-	 * This method helps in verifying Payment Registration Numbers (PRNs) with the NIRA Payment Gateway service 
+	 * This method helps in verifying Payment Registration Numbers (PRNs) with the NIRA Payment Gateway service
 	 * and returns true or false if valid (status is paid and not consumed before)
-	 * 
+	 *
 	 * @param prnText
 	 * @param processFlow
 	 * @param regId
@@ -1337,102 +1330,102 @@ public class GenericController extends BaseController {
 	 */
 	public PRNVerificationResponse verifyPRN(final String prnText, final String processFlow, final String regId) {
 
-	    CheckPRNStatusResponseDTO responseDTO = prnService.checkPRNStatus(prnText);
+	 	CheckPRNStatusResponseDTO responseDTO = prnService.checkPRNStatus(prnText);
 
-	    if (responseDTO != null) {
-	        if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-	            if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes") != null &&
+		if (responseDTO != null) {
+			if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
+				if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes") != null &&
 						responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
-	                Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
-	                if (prnCheck == null) {
-	                    return new PRNVerificationResponse(false, "Verification failed.");
-	                }
+					Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
+					if (prnCheck == null) {
+						return new PRNVerificationResponse(false, "Verification failed.");
+					}
 
-	                if (!prnCheck) {
-	                    return new PRNVerificationResponse(true, "PRN is valid.");
-	                }
-	            } else {
-	                return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s usecase", processFlow));
-	            }
-	        } else {
-	            return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't paid"));
-	        }
-	    }
-	    return new PRNVerificationResponse(false, "Verification failed: PRN doesn't exist.");
+					if (!prnCheck) {
+						return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
+					}
+				} else {
+					return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s usecase", processFlow));
+				}
+			} else {
+				return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't paid"));
+			}
+		}
+		return new PRNVerificationResponse(false, "Invalid PRN. Please make the payment to continue with Application.");
 	}
 
 
 	/**
 	 * This method checks whether the PRN was consumed before / used before
-	 * 
-	 * 
+	 *
+	 *
 	 * @param prnText
 	 * @param regId
 	 * @return
 	 */
 	private PRNVerificationResponse checkPrnInTranscLogs(final String prnText, final String regId) {
-	    CheckPRNInTransLogsResponseDTO logsResponse = null;
+		CheckPRNInTransLogsResponseDTO logsResponse = null;
 
-	    try {
-	        logsResponse = prnService.checkPrnInTransLogs(prnText);
-	    } catch (Exception e) {
-	    	LOGGER.error("Transaction logs service unreachable: " + e.getMessage());
-	        return new PRNVerificationResponse(false, "Failed to reach PRN service");
-	    }
+		try {
+			logsResponse = prnService.checkPrnInTransLogs(prnText);
+		} catch (Exception e) {
+			LOGGER.error("Transaction logs service unreachable: " + e.getMessage());
+			return new PRNVerificationResponse(false, "Failed to reach PRN service");
+		}
 
-	    if (logsResponse != null) {
-	        if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
-	            if (regId.equals(logsResponse.getRegIdTagged())) {
-	            	LOGGER.info("PRN is present in logs but matches the current session regId.");
-	                return new PRNVerificationResponse(false, "PRN matches the current regId.");
-	            } else {
-	            	LOGGER.info(String.format("PRN is already consumed and tagged to a different regId: %s", logsResponse.getRegIdTagged()));
-	                return new PRNVerificationResponse(false, "PRN already used");
-	            }
-	        }
-	    }
+		if (logsResponse != null) {
+			if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
+				if (regId.equals(logsResponse.getRegIdTagged())) {
+					LOGGER.info("PRN is present in logs but matches the current session regId.");
+					return new PRNVerificationResponse(false, "PRN matches the current regId.");
+				} else {
+					LOGGER.info(String.format("PRN is already consumed and tagged to a different regId: %s", logsResponse.getRegIdTagged()));
+					return new PRNVerificationResponse(false, "PRN already used");
+				}
+			}
+		}
 
-	    return new PRNVerificationResponse(false, "PRN is not consumed.");
+		return new PRNVerificationResponse(false, "PRN is not consumed.");
 	}
 
 
 	/**
 	 * This method consumes a PRN as used
-	 * 
+	 *
 	 * @param prnText
 	 * @param regId
 	 * @return
 	 */
 	private PRNVerificationResponse consumePrnAsUsed(final String prnText, final String regId) {
-	    ConsumePRNResponseDTO consumeResponse = null;
+		ConsumePRNResponseDTO consumeResponse = null;
 
-	    try {
-	        consumeResponse = prnService.consumePrn(prnText, regId);
-	    } catch (Exception e) {
-	    	LOGGER.error("Failed to reach consume PRN service: " + e.getMessage());
-	        return new PRNVerificationResponse(false, "Failed to reach PRN service");
-	    }
+		try {
+			consumeResponse = prnService.consumePrn(prnText, regId);
+		} catch (Exception e) {
+			LOGGER.error("Failed to reach consume PRN service: " + e.getMessage());
+			return new PRNVerificationResponse(false, "Failed to reach PRN service");
+		}
 
-	    if (consumeResponse != null) {
-	        if (!consumeResponse.isConsumedSucess()) {
-	            if (consumeResponse.getRegIdTaggedToPrn() != null) {
-	                if (regId.equals(consumeResponse.getRegIdTaggedToPrn())) {
-	                	LOGGER.info("PRN is already tagged to the current session regId. PRN consumption successful");
-	                    return new PRNVerificationResponse(true, "PRN is valid");
-	                } else {
-	                	LOGGER.info(String.format("PRN is tagged to a different regId: %s", consumeResponse.getRegIdTaggedToPrn()));
-	                    return new PRNVerificationResponse(false, "PRN already used");
-	                }
-	            } else {
-	            	LOGGER.info("PRN consumption failed: No regId tagged to this PRN.");
-	                return new PRNVerificationResponse(false, "PRN consumption failed");
-	            }
-	        }
-	        LOGGER.info("PRN consumption successful");
-	        return new PRNVerificationResponse(true, "PRN is valid");
-	    }
-	    LOGGER.error("PRN consumption failed: No response from service.");
-	    return new PRNVerificationResponse(false, "PRN consumption failed");
+		if (consumeResponse != null) {
+			if (!consumeResponse.isConsumedSucess()) {
+				if (consumeResponse.getRegIdTaggedToPrn() != null) {
+					if (regId.equals(consumeResponse.getRegIdTaggedToPrn())) {
+						LOGGER.info("PRN is already tagged to the current session regId. PRN consumption successful");
+						return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
+					} else {
+						LOGGER.info(String.format("PRN is tagged to a different regId: %s", consumeResponse.getRegIdTaggedToPrn()));
+						return new PRNVerificationResponse(false, "PRN already used");
+					}
+				} else {
+					LOGGER.info("PRN consumption failed: No regId tagged to this PRN.");
+					return new PRNVerificationResponse(false, "PRN consumption failed");
+				}
+			}
+			LOGGER.info("PRN consumption successful");
+			return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
+		}
+		LOGGER.error("PRN consumption failed: No response from service.");
+		return new PRNVerificationResponse(false, "PRN consumption failed");
 	}
 
 
@@ -1455,7 +1448,7 @@ public class GenericController extends BaseController {
 
 	/**
 	 * This method handles the PRN verification overall and displays corresponding messages if PRN is valid or not
-	 * 
+	 *
 	 * @param prnText
 	 * @param node
 	 * @param processSpecFlow
@@ -1464,58 +1457,73 @@ public class GenericController extends BaseController {
 	 * @param parentGridPane
 	 */
 	private void handlePRNVerification(String prnText, Node node, String processSpecFlow, String registrationId, FxControl fxControl, GridPane parentGridPane) {
-	    showLoadingPRNIndicator(node);
+		showLoadingPRNIndicator(node);
 
-	    new Thread(() -> {
-	        try {
-	            Thread.sleep(3000);
+		new Thread(() -> {
+			try {
+				Thread.sleep(3000);
 
-	            PRNVerificationResponse verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId);
-	            isPrnValid = verificationResponse.isValid();
-
+				PRNVerificationResponse verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId);
+				isPrnValid = verificationResponse.isValid();
+				
 				Platform.runLater(() -> {
-	                removeLoadingPRNIndicator(node);
+					removeLoadingPRNIndicator(node);
 
-	                // Locate the existing PRN validation label inside the GridPane
-	                Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
+					// Locate the existing PRN validation label inside the GridPane
+					Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
 
-	                if (isPrnValid) {
-	                	PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
-	                	showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
-	                    //updatePRNIndicator(node, consumeResponse.isValid());
-	                    //updatePRNValidationMessage(validationLabel, consumeResponse.getMessage(), consumeResponse.isValid());
-	                } else {
-	                	showPaymentValidationPopup(parentGridPane, verificationResponse.getMessage(), false);
-	                    //updatePRNIndicator(node, false);
-	                    //updatePRNValidationMessage(validationLabel, verificationResponse.getMessage(), false);
-	                }
-	            });
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-	    }).start();
+					if (isPrnValid) {
+						PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
+						showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
+						//updatePRNIndicator(node, consumeResponse.isValid());
+						//updatePRNValidationMessage(validationLabel, consumeResponse.getMessage(), consumeResponse.isValid());
+					} else {
+						showPaymentValidationPopup(parentGridPane, verificationResponse.getMessage(), false);
+						//updatePRNIndicator(node, false);
+						//updatePRNValidationMessage(validationLabel, verificationResponse.getMessage(), false);
+					}
+				});
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 
 	private void showPaymentValidationPopup(GridPane parent, String message, boolean isSuccess) {
 		Dialog<ButtonType> dialog = new Dialog<>();
 		dialog.initOwner(parent.getScene().getWindow());
 		dialog.setHeaderText("Payment Validation");
+
+		// Styling the header text
+		Label headerLabel = (Label) dialog.getDialogPane().lookup(".header-panel .label");
+		if (headerLabel != null) {
+			headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;"); // Set font size and make bold
+		}
+
 		dialog.setResizable(false);
- 
+
+		// Prevent dialog from closing via close button
+		Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+		dialogStage.setOnCloseRequest(event -> {
+			event.consume(); // Prevents the dialog from closing via the close button
+		});
+
+		// Create content label
 		Label contentLabel = new Label(message);
 		contentLabel.setStyle("-fx-font-size: 14px;-fx-text-fill: black;");
 		contentLabel.setWrapText(true);
- 
+
+		// Set content layout
 		VBox dialogContent = new VBox(10, contentLabel);
 		dialogContent.setAlignment(Pos.CENTER);
 		dialog.getDialogPane().setContent(dialogContent);
- 
+
+		// Set styles based on success or failure
 		if (isSuccess) {
 			dialog.getDialogPane().lookup(".header-panel")
 					.setStyle("-fx-background-color: #4CAF50; -fx-max-height: 20px;");
 			dialog.getDialogPane().lookup(".header-panel .label")
 					.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
- 
 			dialogContent.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20px; -fx-max-height: 50px");
 		} else {
 			dialog.getDialogPane().lookup(".header-panel")
@@ -1524,26 +1532,33 @@ public class GenericController extends BaseController {
 					.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
 			dialogContent.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 20px; -fx-max-height: 50px");
 		}
- 
-		dialog.getDialogPane().setMinWidth(350);
-		dialog.getDialogPane().setMaxWidth(350);
+
+		// Set dialog width
+		dialog.getDialogPane().setMinWidth(450);
+		dialog.getDialogPane().setMaxWidth(450);
+
+		// Add OK button
 		dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+
+		// Get the OK button and set its action
 		Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
 		okButton.setOnAction(event -> {
-			// Call your method when OK button is clicked
+			// Method to call when OK button is clicked
 			if (!isSuccess) {
-                try {
-                    BaseController.load(getClass().getResource(RegistrationConstants.HOME_PAGE));
+				try {
+					BaseController.load(getClass().getResource(RegistrationConstants.HOME_PAGE));
 					clearOnboardData();
 					clearRegistrationData();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
 		});
+
+		// Show the dialog
 		dialog.showAndWait();
 	}
+
 
 	private void showLoadingPRNIndicator(Node node) {
 		node.getStyleClass().removeAll("success-indicator", "error-indicator");
@@ -1593,28 +1608,28 @@ public class GenericController extends BaseController {
 
 	private void loadPreviewOrAuthScreen(TabPane tabPane, Tab tab) {
 		switch (tab.getId()) {
-		case "PREVIEW":
-			try {
-				tabPane.getSelectionModel().select(tab);
-				tab.setContent(getPreviewContent(tabPane));
-			} catch (Exception exception) {
-				LOGGER.error("Failed to load preview page!!, clearing registration data.");
-				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants
-						.getMessageLanguageSpecific(RegistrationUIConstants.UNABLE_LOAD_PREVIEW_PAGE));
-			}
-			break;
+			case "PREVIEW":
+				try {
+					tabPane.getSelectionModel().select(tab);
+					tab.setContent(getPreviewContent(tabPane));
+				} catch (Exception exception) {
+					LOGGER.error("Failed to load preview page!!, clearing registration data.");
+					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants
+							.getMessageLanguageSpecific(RegistrationUIConstants.UNABLE_LOAD_PREVIEW_PAGE));
+				}
+				break;
 
-		case "AUTH":
-			try {
-				tabPane.getSelectionModel().select(tab);
-				tab.setContent(loadAuthenticationPage(tabPane));
-				authenticationController.initData(ProcessNames.PACKET.getType());
-			} catch (Exception exception) {
-				LOGGER.error("Failed to load auth page!!, clearing registration data.");
-				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants
-						.getMessageLanguageSpecific(RegistrationUIConstants.UNABLE_LOAD_APPROVAL_PAGE));
-			}
-			break;
+			case "AUTH":
+				try {
+					tabPane.getSelectionModel().select(tab);
+					tab.setContent(loadAuthenticationPage(tabPane));
+					authenticationController.initData(ProcessNames.PACKET.getType());
+				} catch (Exception exception) {
+					LOGGER.error("Failed to load auth page!!, clearing registration data.");
+					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants
+							.getMessageLanguageSpecific(RegistrationUIConstants.UNABLE_LOAD_APPROVAL_PAGE));
+				}
+				break;
 		}
 	}
 
@@ -1700,11 +1715,11 @@ public class GenericController extends BaseController {
 				case CONTROLTYPE_COMMENT:
 					fxControl = new CommentFxControl().build(uiFieldDTO);
 					break;
-					
+
 				case CONTROLTYPE_TITLE:
 					fxControl = new TitleFxControl().build(uiFieldDTO);
 					break;
-					
+
 				case CONTROLTYPE_TOGGLE_BUTTON:
 					fxControl = new ToggleButtonFxControl().build(uiFieldDTO);
 					break;
@@ -1723,11 +1738,11 @@ public class GenericController extends BaseController {
 			refreshScreenVisibility(screen.getName());
 		});
 	}
-	
+
 	public void refreshDependentFields(List<String> dependentFields) {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibilityForDependentFields(screen.getName(), dependentFields); });
 	}
-	
+
 	public void resetValue() {
 		if(preregFetching == false) {
 			for (UiScreenDTO screenDTO : orderedScreens.values()) {
@@ -1771,8 +1786,8 @@ public class GenericController extends BaseController {
 		List<SimpleDto> userService= (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
 		if (age<highAge && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
 			return false;
-        return true;
-    }
+		return true;
+	}
 
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
