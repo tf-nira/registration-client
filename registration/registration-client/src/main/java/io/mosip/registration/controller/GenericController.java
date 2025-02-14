@@ -471,7 +471,7 @@ public class GenericController extends BaseController {
 		if (!provided) {
 			showHideErrorNotification(ApplicationContext
 					.getBundle(ApplicationContext.applicationLanguage(), RegistrationConstants.MESSAGES)
-					.getString(RegistrationUIConstants.ADDITIONAL_INFO_REQ_ID_MISSING));
+					.getString(RegistrationUIConstants.ADDITIONAL_INFO_REQ_ID_MISSING),null);
 		}
 		return provided;
 	}
@@ -944,7 +944,7 @@ public class GenericController extends BaseController {
 			if (!isAdditionalInfoRequestIdProvided(result.get())) {
 				showHideErrorNotification(ApplicationContext
 						.getBundle(ApplicationContext.applicationLanguage(), RegistrationConstants.MESSAGES)
-						.getString(RegistrationUIConstants.ADDITIONAL_INFO_REQ_ID_MISSING));
+						.getString(RegistrationUIConstants.ADDITIONAL_INFO_REQ_ID_MISSING),null);
 				return false;
 			}
 
@@ -964,7 +964,7 @@ public class GenericController extends BaseController {
 					LOGGER.error("PRN verification failed");
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
 							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
-					showHideErrorNotification(label);
+					showHideErrorNotification(label,"");
 					isValid = false;
 					break;
 				}
@@ -974,7 +974,7 @@ public class GenericController extends BaseController {
 					LOGGER.error("Screen validation , fieldId : {} has invalid value", field.getId());
 					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
 							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
-					showHideErrorNotification(label);
+					showHideErrorNotification(label,field.getAlignmentGroup());
 					isValid = false;
 					break;
 				}
@@ -982,7 +982,7 @@ public class GenericController extends BaseController {
 		}
 
 		if (isValid) {
-			showHideErrorNotification(null);
+			showHideErrorNotification(null,null);
 			auditFactory.audit(AuditEvent.REG_NAVIGATION, Components.REGISTRATION_CONTROLLER,
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
@@ -995,7 +995,7 @@ public class GenericController extends BaseController {
 		}
 		// Show error if fields from "Notification of Change" are present but none are filled
 		if (isNotificationOfChangePresent && !isNotificationOfChangeFilled) {
-			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.");
+			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.",null);
 			return false;
 		}
 		return isValid;
@@ -1023,7 +1023,7 @@ public class GenericController extends BaseController {
 		notification.setText(message);
 	}
 
-	private void showHideErrorNotification(String fieldName) {
+	private void showHideErrorNotification(String fieldName, String groupName) {
 		Tooltip toolTip = new Tooltip(fieldName);
 		toolTip.prefWidthProperty().bind(notification.widthProperty());
 		toolTip.setWrapText(true);
@@ -1034,7 +1034,11 @@ public class GenericController extends BaseController {
 								: ApplicationContext
 								.getBundle(ApplicationContext.applicationLanguage(),
 										RegistrationConstants.MESSAGES)
-								.getString("SCREEN_VALIDATION_ERROR") + " [ " + fieldName + " ]");
+								.getString("SCREEN_VALIDATION_ERROR")
+								+ " [ " + fieldName + " ]"
+								+ (groupName == null ? "" : " of " + groupName + " group")
+				);
+
 	}
 
 	private String getInvalidScreenName(TabPane tabPane) {
@@ -1465,7 +1469,7 @@ public class GenericController extends BaseController {
 
 				PRNVerificationResponse verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId);
 				isPrnValid = verificationResponse.isValid();
-				
+
 				Platform.runLater(() -> {
 					removeLoadingPRNIndicator(node);
 
