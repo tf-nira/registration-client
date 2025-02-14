@@ -1024,22 +1024,33 @@ public class GenericController extends BaseController {
 	}
 
 	private void showHideErrorNotification(String fieldName, String groupName) {
+		// Check if the fieldName is equal to the specified message
+		if ("I have read and accept terms and conditions to share my Personal Identifying Information (PII)".equals(fieldName)) {
+			// If true, set the custom message
+			fieldName = "Please accept the terms and conditions to proceed with the application.";
+		}
+
 		Tooltip toolTip = new Tooltip(fieldName);
 		toolTip.prefWidthProperty().bind(notification.widthProperty());
 		toolTip.setWrapText(true);
 		notification.setTooltip(toolTip);
-		notification
-				.setText(
-						(fieldName == null) ? EMPTY
-								: ApplicationContext
-								.getBundle(ApplicationContext.applicationLanguage(),
-										RegistrationConstants.MESSAGES)
-								.getString("SCREEN_VALIDATION_ERROR")
-								+ " [ " + fieldName + " ]"
-								+ (groupName == null ? "" : " of " + groupName + " group")
-				);
 
+		// Only show the custom message if the fieldName matches the condition
+		if ("Please accept the terms and conditions to proceed with the application.".equals(fieldName)) {
+			notification.setText(fieldName); // Show the message if condition is met
+		} else {
+			notification.setText(
+					(fieldName == null) ? EMPTY
+							: ApplicationContext
+							.getBundle(ApplicationContext.applicationLanguage(),
+									RegistrationConstants.MESSAGES)
+							.getString("SCREEN_VALIDATION_ERROR")
+							+ " [ " + fieldName + " ]"
+							+ (groupName == null ? "" : " of " + groupName + " group")
+			);
+		}
 	}
+
 
 	private String getInvalidScreenName(TabPane tabPane) {
 		String errorScreen = EMPTY;
