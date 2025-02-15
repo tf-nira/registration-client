@@ -145,7 +145,7 @@
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <Button fx:id="cropButton" graphicTextGap="10.0" mnemonicParsing="false" onAction="#crop" styleClass="scanButton" text="%crop" GridPane.rowIndex="3">
+                            <!--  <Button fx:id="cropButton" graphicTextGap="10.0" mnemonicParsing="false" onAction="#crop" styleClass="scanButton" text="%crop" GridPane.rowIndex="3">
                                  <graphic>
                                     <ImageView fx:id="backImageView1" fitHeight="20.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -153,26 +153,26 @@
                                        </image>
                                     </ImageView>
                                  </graphic>
-                              </Button>
-                              <Button fx:id="cancelBtn" graphicTextGap="10.0" mnemonicParsing="false" onAction="#cancel" styleClass="scanButton" text="%cancel" GridPane.rowIndex="4">
+                              </Button> -->
+                              <Button fx:id="cancelBtn" graphicTextGap="10.0" mnemonicParsing="false" onAction="#cancel" styleClass="scanButton" text="%cancel" GridPane.rowIndex="3">
                                  <graphic>
-                                    <ImageView fx:id="cancelImageView" fitHeight="22.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="cancelImageView" fitHeight="20.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../images/reject.png" />
                                        </image>
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <Button fx:id="previewBtn" graphicTextGap="10.0" mnemonicParsing="false" onAction="#preview" styleClass="scanButton" text="%view" GridPane.rowIndex="5">
+                              <Button fx:id="previewBtn" graphicTextGap="10.0" mnemonicParsing="false" onAction="#preview" styleClass="scanButton" text="%view" GridPane.rowIndex="4">
                                  <graphic>
-                                    <ImageView fx:id="previewImageView" fitHeight="26.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="previewImageView" fitHeight="22.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../images/hover.png" />
                                        </image>
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <Text fx:id="scanningMsg" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="alertContext" GridPane.rowIndex="6" />
+                              <Text fx:id="scanningMsg" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="alertContext" GridPane.rowIndex="5" />
                            </children>
                            <columnConstraints>
                               <ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0" />

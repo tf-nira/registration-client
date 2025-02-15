@@ -428,7 +428,7 @@ public class TemplateGenerator extends BaseService {
         String fieldLabel = getFieldLabel(field);
         String fieldValue = "N/A".equals(value) ? value : getFieldValue(field);
         data.put("label", fieldLabel);
-        data.put("value", fieldValue);
+        data.put("value", fieldValue.toUpperCase());
 
         //Added for backward compatibility(1.1.5.5 & 1.1.4.*), this support will be removed from next version
         data.put("primaryLabel", fieldLabel);

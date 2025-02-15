@@ -182,7 +182,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		setImage(streamImageView	, RegistrationConstants.STREAM_IMG);
 		setImage(captureImageView	, RegistrationConstants.SCAN_IMG);
 		setImage(saveImageView	, RegistrationConstants.DWLD_PRE_REG_DATA_IMG);
-		setImage(backImageView1	, RegistrationConstants.CROP_IMG);
+		//setImage(backImageView1	, RegistrationConstants.CROP_IMG);
 		setImage(cancelImageView	, RegistrationConstants.REJECT_IMG);
 		setImage(previewImageView	, RegistrationConstants.HOVER_IMG);
 	}
@@ -213,7 +213,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			Parent scanPopup = BaseController.load(getClass().getResource(RegistrationConstants.SCAN_PAGE));
 			scanImage.setPreserveRatio(true);
 			//popupTitle.setText(title);
-			cropButton.setDisable(true);
+			//cropButton.setDisable(true);
 			cancelBtn.setDisable(true);
 			previewOption.setVisible(false);
 
@@ -225,13 +225,13 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 				previewBtn.setDisable(false);
 			} else {
 				saveBtn.setDisable(true);
-				cropButton.setDisable(true);
+				//cropButton.setDisable(true);
 				cancelBtn.setDisable(true);
 				previewBtn.setDisable(true);
 			}
 			if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				streamBtn.setDisable(true);
-				cropButton.setDisable(true);
+				//cropButton.setDisable(true);
 				cancelBtn.setDisable(false);
 				previewBtn.setDisable(false);
 			}
@@ -322,7 +322,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		showPreview(false);
 		showStream(true);
 		cancelBtn.setDisable(true);
-		cropButton.setDisable(true);
+		//cropButton.setDisable(true);
 
 		if(getImageGroup().getChildren().isEmpty())
 			getImageGroup().getChildren().add(new ImageView());
@@ -361,10 +361,10 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		}
 		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 			streamBtn.setDisable(true);
-			cropButton.setDisable(true);
 			cancelBtn.setDisable(false);
 			previewBtn.setDisable(false);
 		}
+		//cropButton.setDisable(false);
 		saveBtn.setDisable(false);
 	}
 
@@ -395,14 +395,14 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		showPagination();
 	}
 
-	@FXML
-	public void crop() {
-		setWebCamStream(false);
-		clearSelection();
-		scanImage.setVisible(true);
-		rectangleSelection = new RectangleSelection(imageGroup);
-		LOGGER.debug("Shown stage for crop");
-	}
+//	@FXML
+//	public void crop() {
+//		setWebCamStream(false);
+//		clearSelection();
+//		scanImage.setVisible(true);
+//		rectangleSelection = new RectangleSelection(imageGroup);
+//		LOGGER.debug("Shown stage for crop");
+//	}
 
 
 	@FXML
@@ -480,7 +480,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			previewBtn.setDisable(true);
 			saveBtn.setDisable(true);
 			cancelBtn.setDisable(true);
-			cropButton.setDisable(true);
+			//cropButton.setDisable(false);
 		}
 	}
 
@@ -692,7 +692,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		previewOption.setVisible(isVisible);
 		scanImage.setVisible(true);
 		cancelBtn.setDisable(false);
-		cropButton.setDisable(true);
+		//cropButton.setDisable(true);
 	}
 
 	private void showStream(boolean isVisible) {
@@ -715,7 +715,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		captureBtn.setDisable(true);
 		streamBtn.setDisable(true);
 		cancelBtn.setDisable(true);
-		cropButton.setDisable(true);
+		//cropButton.setDisable(true);
 		previewBtn.setDisable(true);
 	}
 }
