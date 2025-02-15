@@ -82,7 +82,7 @@ public class PreRegZipHandlingServiceImpl extends BaseService implements PreRegZ
 	@Value("${mosip.registration.prereg.packet.entires.limit:15}")
 	private int THRESHOLD_ENTRIES;
 
-	@Value("${mosip.registration.prereg.packet.size.limit:200000}")
+	@Value("${mosip.registration.prereg.packet.size.limit:600000}")
 	private long THRESHOLD_SIZE;
 
 	@Value("${mosip.registration.prereg.packet.threshold.ratio:10}")
