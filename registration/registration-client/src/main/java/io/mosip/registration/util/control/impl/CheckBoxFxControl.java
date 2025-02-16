@@ -151,6 +151,10 @@ public class CheckBoxFxControl extends FxControl {
 					fxControl.clearValue();
 				}
 			}
+
+			if (uiFieldDTO.isSetRequired()){
+				resetValue();
+			}
 			
 			// handling other handlers
 			demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),

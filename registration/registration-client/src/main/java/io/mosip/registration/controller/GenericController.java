@@ -1772,7 +1772,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && !("UPDATE".equals(process.getId()))){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1783,8 +1783,7 @@ public class GenericController extends BaseController {
 										fxControl.selectAndSet("Y");
 										fxControl.getNode().setDisable(true);
 									} else {
-										fxControl.selectAndSet("N");
-										//fxControl.setData("N");
+										fxControl.selectAndSet(null);
 										fxControl.getNode().setDisable(false);
 									}
 								}
