@@ -223,6 +223,7 @@ public class DOBAgeFxControl extends FxControl {
 			boolean isValid = RegistrationConstants.AGE_FIELD.equalsIgnoreCase(dateTyep)
 					? dateValidation.validateAge((Pane) node, uiFieldDTO.getId())
 					: dateValidation.validateDate((Pane) node, uiFieldDTO.getId());
+			resetValue();
 			if (isValid) {
 				setData(null);
 				if(uiFieldDTO.getDependentFields() != null && !uiFieldDTO.getDependentFields().isEmpty()) {

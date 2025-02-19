@@ -1770,7 +1770,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && !("UPDATE".equals(process.getId()))){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId()))){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
