@@ -2,6 +2,8 @@ package io.mosip.registration.controller;
 
 import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.reg.LanguageSelectionController;
+import io.mosip.registration.dto.*;
+import io.mosip.registration.dto.schema.ValuesDTO;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
@@ -57,10 +59,6 @@ import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.auth.AuthenticationController;
 import io.mosip.registration.controller.reg.RegistrationPreviewController;
 import io.mosip.registration.dao.MasterSyncDao;
-import io.mosip.registration.dto.ErrorResponseDTO;
-import io.mosip.registration.dto.RegistrationDTO;
-import io.mosip.registration.dto.ResponseDTO;
-import io.mosip.registration.dto.SuccessResponseDTO;
 import io.mosip.registration.dto.payments.CheckPRNInTransLogsResponseDTO;
 import io.mosip.registration.dto.payments.CheckPRNStatusResponseDTO;
 import io.mosip.registration.dto.payments.ConsumePRNResponseDTO;
@@ -954,7 +952,7 @@ public class GenericController extends BaseController {
 				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
 					isNotificationOfChangePresent = true;        // Found relevant group fields on this screen
 					FxControl control = getFxControl(field.getId());
-					if (control != null && isFieldVisible(field) && !control.isEmpty()) {
+					if (control != null && isFieldVisible(field) && !control.isEmpty() && !field.getId().trim().substring(0, 7).equals("isError") && !field.getId().trim().substring(0, 12).equals("changeReason")) {
 						isNotificationOfChangeFilled = true;
 					}
 				}
@@ -1772,7 +1770,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && !("UPDATE".equals(process.getId()))){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId()))){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
