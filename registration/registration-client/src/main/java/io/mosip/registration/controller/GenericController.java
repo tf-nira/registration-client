@@ -1793,6 +1793,10 @@ public class GenericController extends BaseController {
 		}
 	}
 
+	public String processCheck(){
+		return process.getId() ;
+	}
+
 	public boolean ageRestriction(int age, int highAge){
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 
