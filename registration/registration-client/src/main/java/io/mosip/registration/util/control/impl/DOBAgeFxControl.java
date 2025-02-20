@@ -224,12 +224,10 @@ public class DOBAgeFxControl extends FxControl {
 			boolean isValid = RegistrationConstants.AGE_FIELD.equalsIgnoreCase(dateTyep)
 					? dateValidation.validateAge((Pane) node, uiFieldDTO.getId())
 					: dateValidation.validateDate((Pane) node, uiFieldDTO.getId());
-			GenericController controller = new GenericController();
-			String processCheck= controller.processCheck();
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 
-			if(processCheck.equalsIgnoreCase("UPDATE")){
-			resetValue();
-			}
+			genericController.checkResetValueforDOBAgeControl();
+
 
 			if (isValid) {
 				setData(null);
