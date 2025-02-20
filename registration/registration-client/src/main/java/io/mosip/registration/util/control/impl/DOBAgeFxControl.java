@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import io.mosip.registration.controller.ClientApplication;
+import io.mosip.registration.controller.GenericController;
 import org.springframework.context.ApplicationContext;
 
 import io.mosip.kernel.core.logger.spi.Logger;
@@ -223,7 +224,13 @@ public class DOBAgeFxControl extends FxControl {
 			boolean isValid = RegistrationConstants.AGE_FIELD.equalsIgnoreCase(dateTyep)
 					? dateValidation.validateAge((Pane) node, uiFieldDTO.getId())
 					: dateValidation.validateDate((Pane) node, uiFieldDTO.getId());
+			GenericController controller = new GenericController();
+			String processCheck= controller.processCheck();
+
+			if(processCheck.equalsIgnoreCase("UPDATE")){
 			resetValue();
+			}
+
 			if (isValid) {
 				setData(null);
 				if(uiFieldDTO.getDependentFields() != null && !uiFieldDTO.getDependentFields().isEmpty()) {
