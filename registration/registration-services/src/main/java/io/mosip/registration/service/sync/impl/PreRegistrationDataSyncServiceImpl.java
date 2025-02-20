@@ -44,6 +44,7 @@ import io.mosip.registration.entity.PreRegistrationList;
 import io.mosip.registration.entity.SyncTransaction;
 import io.mosip.registration.exception.ConnectionException;
 import io.mosip.registration.exception.RegBaseCheckedException;
+import io.mosip.registration.exception.RegistrationExceptionConstants;
 import io.mosip.registration.jobs.SyncManager;
 import io.mosip.registration.service.BaseService;
 import io.mosip.registration.service.external.PreRegZipHandlingService;
@@ -242,42 +243,50 @@ public class PreRegistrationDataSyncServiceImpl extends BaseService implements P
 				requestParamMap, true,	RegistrationConstants.JOB_TRIGGER_POINT_SYSTEM);
 		MainResponseDTO<PreRegArchiveDTO> mainResponseDTO = new ObjectMapper()
 				.convertValue(response, new TypeReference<MainResponseDTO<PreRegArchiveDTO>>() {});
+		
+		if(mainResponseDTO.getResponse().getAppointmentDate() != null && !mainResponseDTO.getResponse().getAppointmentDate().isEmpty()) {
+			//successfully downloaded pre-reg packet
+			if(mainResponseDTO.getResponse() != null && mainResponseDTO.getResponse().getZipBytes() != null) {
+				PreRegistrationDTO preRegistrationDTO = preRegZipHandlingService
+						.encryptAndSavePreRegPacket(preRegistrationId, mainResponseDTO.getResponse().getZipBytes());
 
-		//successfully downloaded pre-reg packet
-		if(mainResponseDTO.getResponse() != null && mainResponseDTO.getResponse().getZipBytes() != null) {
-			PreRegistrationDTO preRegistrationDTO = preRegZipHandlingService
-					.encryptAndSavePreRegPacket(preRegistrationId, mainResponseDTO.getResponse().getZipBytes());
+				// Transaction
+				SyncTransaction syncTransaction = syncManager.createSyncTransaction(
+						RegistrationConstants.RETRIEVED_PRE_REG_ID, RegistrationConstants.RETRIEVED_PRE_REG_ID,
+						RegistrationConstants.JOB_TRIGGER_POINT_SYSTEM, RegistrationConstants.OPT_TO_REG_PDS_J00003);
 
-			// Transaction
-			SyncTransaction syncTransaction = syncManager.createSyncTransaction(
-					RegistrationConstants.RETRIEVED_PRE_REG_ID, RegistrationConstants.RETRIEVED_PRE_REG_ID,
-					RegistrationConstants.JOB_TRIGGER_POINT_SYSTEM, RegistrationConstants.OPT_TO_REG_PDS_J00003);
+				// save in Pre-Reg List
+				PreRegistrationList preRegistrationList = preparePreRegistration(syncTransaction, preRegistrationDTO);
 
-			// save in Pre-Reg List
-			PreRegistrationList preRegistrationList = preparePreRegistration(syncTransaction, preRegistrationDTO);
+				if(mainResponseDTO.getResponse().getAppointmentDate() != null)
+					preRegistrationList.setAppointmentDate(DateUtils.parseUTCToDate(mainResponseDTO.getResponse().getAppointmentDate(),
+						"yyyy-MM-dd"));
 
-			if(mainResponseDTO.getResponse().getAppointmentDate() != null)
-				preRegistrationList.setAppointmentDate(DateUtils.parseUTCToDate(mainResponseDTO.getResponse().getAppointmentDate(),
-					"yyyy-MM-dd"));
+				preRegistrationList.setLastUpdatedPreRegTimeStamp(lastUpdatedTimeStamp == null ?
+						Timestamp.valueOf(DateUtils.getUTCCurrentDateTime()) : lastUpdatedTimeStamp);
+				 preRegistrationList.setPreRegType(mainResponseDTO.getResponse().getBookingType());
 
-			preRegistrationList.setLastUpdatedPreRegTimeStamp(lastUpdatedTimeStamp == null ?
-					Timestamp.valueOf(DateUtils.getUTCCurrentDateTime()) : lastUpdatedTimeStamp);
-			 preRegistrationList.setPreRegType(mainResponseDTO.getResponse().getBookingType());
-
-			if (preRegistration == null) {
-				preRegistration = preRegistrationDAO.save(preRegistrationList);
-			} else {
-				preRegistrationList.setId(preRegistration.getId());
-				preRegistrationList.setUpdBy(getUserIdFromSession());
-				preRegistrationList.setUpdDtimes(new Timestamp(System.currentTimeMillis()));
-				preRegistration = preRegistrationDAO.update(preRegistrationList);
+				if (preRegistration == null) {
+					preRegistration = preRegistrationDAO.save(preRegistrationList);
+				} else {
+					preRegistrationList.setId(preRegistration.getId());
+					preRegistrationList.setUpdBy(getUserIdFromSession());
+					preRegistrationList.setUpdDtimes(new Timestamp(System.currentTimeMillis()));
+					preRegistration = preRegistrationDAO.update(preRegistrationList);
+				}
+			} else if (mainResponseDTO.getErrors() != null && !mainResponseDTO.getErrors().isEmpty()) {
+				PreRegistrationExceptionJSONInfoDTO errorResponse = mainResponseDTO.getErrors().get(0);
+				LOGGER.info("Pre-reg-id {} errors from response {}", preRegistrationId,
+						errorResponse.getErrorCode(), errorResponse.getMessage());
+				throw new RegBaseCheckedException(errorResponse.getErrorCode(), errorResponse.getMessage());
 			}
-		} else if (mainResponseDTO.getErrors() != null && !mainResponseDTO.getErrors().isEmpty()) {
-			PreRegistrationExceptionJSONInfoDTO errorResponse = mainResponseDTO.getErrors().get(0);
-			LOGGER.info("Pre-reg-id {} errors from response {}", preRegistrationId,
-					errorResponse.getErrorCode(), errorResponse.getMessage());
-			throw new RegBaseCheckedException(errorResponse.getErrorCode(), errorResponse.getMessage());
+		} else {
+			Object appoinment_Date = mainResponseDTO.getResponse().getAppointmentDate();
+			LOGGER.info("Pre-reg-id {} Appoinment not completed  {}", preRegistrationId, appoinment_Date);
+			throw new RegBaseCheckedException(RegistrationExceptionConstants.PRE_REG_FETCH_FAIL.getErrorCode(),
+					RegistrationExceptionConstants.PRE_REG_FETCH_FAIL.getErrorMessage());
 		}
+		
 		return preRegistration;
 	}
 

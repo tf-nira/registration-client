@@ -231,7 +231,8 @@ public enum RegistrationExceptionConstants {
 	
 	//PRE-REG EXCEPTION CONSTANTS
 	PRE_REG_SYNC_FAIL("REG-PREREG-001", "Pre Registration sync Failed"),
-
+	PRE_REG_FETCH_FAIL("REG-PREREG-002", "Pre Registration fetch Failed"),
+	
 	ACCESS_ERROR("REG_ACCESS_ERR", "Failed to access server"),
 	
 	INVALID_LANGUAGE_CONFIGURED("REG-INIT-002", "**** ResourceBundle is not availabe for configured language(s) ! ****"),

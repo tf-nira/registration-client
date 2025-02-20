@@ -291,7 +291,7 @@ public class DocumentFxControl extends FxControl {
 
 		/** Title label */
 		Label fieldTitle = (Label) getLabel(fieldName + RegistrationConstants.LABEL, titleText,
-				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, false, prefWidth);
+				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, true, prefWidth);
 		simpleTypeVBox.getChildren().add(fieldTitle);
 
 		/** comboBox Field */
@@ -345,6 +345,7 @@ public class DocumentFxControl extends FxControl {
 			}
 		}));
 
+		fieldTitle.setText(titleText);
 		Label messageLabel = (Label) getLabel(uiFieldDTO.getId() + RegistrationConstants.MESSAGE, null,
 				RegistrationConstants.DEMOGRAPHIC_FIELD_LABEL, false, simpleTypeVBox.getPrefWidth());
 		messageLabel.setWrapText(true);
@@ -526,7 +527,7 @@ public class DocumentFxControl extends FxControl {
 		//VBox vbox = new VBox();
 		field.setId(id);
 		field.setPrefWidth(prefWidth);
-		field.setPromptText(titleText);
+//		field.setPromptText(titleText);
 		field.setDisable(isDisable);
 		field.setConverter((StringConverter<DocumentCategoryDto>) uiRenderForComboBox);
 		field.getStyleClass().add(styleClass);
