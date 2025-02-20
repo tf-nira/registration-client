@@ -1793,6 +1793,14 @@ public class GenericController extends BaseController {
 		}
 	}
 
+	public void checkResetValueforDOBAgeControl(){
+		if (process!=null && process.getId().equalsIgnoreCase("UPDATE")){
+			resetValue();
+		}
+
+	}
+
+
 	public String processCheck(){
 		return process.getId() ;
 	}
