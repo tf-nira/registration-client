@@ -1805,15 +1805,30 @@ public class GenericController extends BaseController {
 		return process.getId() ;
 	}
 
-	public boolean ageRestriction(int age, int highAge){
+	public HashMap<String, Object> ageRestriction(int age, int highAgeNew, int highAgeFirstId){
+
+		HashMap<String, Object> result = new HashMap<>();
+
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 
 		if ("NEW".equals(registrationDTO.getProcessId())) {
 			List<SimpleDto> userService = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
-			if (age < highAge && "By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))
-				return false;
+			if (age < highAgeNew && ("By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))) {
+				result.put("isValid", false);
+				result.put("errVal", highAgeNew);
+				return result;
+			}
+
 		}
-		return true;
+		else if ("FIRSTID".equals(registrationDTO.getProcessId()) && age < highAgeFirstId) {
+			result.put("isValid", false);
+			result.put("errVal", highAgeFirstId);
+			return result;
+		};
+
+		result.put("isValid", true);
+		result.put("errVal", "");
+		return result;
 	}
 
 	/*
