@@ -43,7 +43,7 @@ public class RegistrationUIConstants {
 	public static final String DEMOGRAPHIC_DETAILS = "Demographic Details";
 	public static final String DOCUMENT_UPLOAD = "Document Upload";
 
-	// ALERT
+	// ALERT for error
 	public static final String ERROR_CONSTANT = "ERROR";
 	public static final String INFORMATION = "INFORMATION";
 	public static final String SUCCESS = "SUCCESS";
