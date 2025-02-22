@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#check
 search_directory=$1
 settings_file=$2
 version=$3
