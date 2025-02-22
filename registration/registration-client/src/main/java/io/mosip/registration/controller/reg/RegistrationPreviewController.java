@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import io.mosip.registration.controller.ClientApplication;
+import io.mosip.registration.controller.GenericController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.w3c.dom.Document;
@@ -172,13 +174,23 @@ public class RegistrationPreviewController extends BaseController implements Ini
 		LOGGER.info("REGISTRATION - UI - REGISTRATION_PREVIEW_CONTROLLER", APPLICATION_NAME, APPLICATION_ID,
 				"Setting up preview content has been started");
 		try {
-			String ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
-					ApplicationContext.applicationLanguage());
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			String processCheck=genericController.processCheck();
+			String ackTemplateText = "" ;
+
+			if(processCheck.equalsIgnoreCase("UPDATE")) {
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_COP,
+						ApplicationContext.applicationLanguage());
+			}
+			else{
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
+						ApplicationContext.applicationLanguage());
+			}
 
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(ackTemplateText,
 						getRegistrationDTOFromSession(), templateManagerBuilder,
-						RegistrationConstants.TEMPLATE_PREVIEW, getImagePath(RegistrationConstants.CROSS_IMG, true));
+						RegistrationConstants.TEMPLATE_PREVIEW, getImagePath(RegistrationConstants.CROSS_IMG, true),false);
 				if (templateResponse != null && templateResponse.getSuccessResponseDTO() != null) {
 					Writer stringWriter = (Writer) templateResponse.getSuccessResponseDTO().getOtherAttributes()
 							.get(RegistrationConstants.TEMPLATE_NAME);
@@ -204,13 +216,23 @@ public class RegistrationPreviewController extends BaseController implements Ini
 	public String getPreviewContent() {
 		LOGGER.info("Setting up preview content has been started");
 		try {
-			String ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
-					ApplicationContext.applicationLanguage());
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			String prcessCheck=genericController.processCheck();
+			String ackTemplateText = "" ;
+
+			if(prcessCheck.equalsIgnoreCase("UPDATE")) {
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_COP,
+						ApplicationContext.applicationLanguage());
+			}
+			else{
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
+						ApplicationContext.applicationLanguage());
+			}
 
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(ackTemplateText,
 						getRegistrationDTOFromSession(), templateManagerBuilder,
-						RegistrationConstants.TEMPLATE_PREVIEW, getImagePath(RegistrationConstants.CROSS_IMG, true));
+						RegistrationConstants.TEMPLATE_PREVIEW, getImagePath(RegistrationConstants.CROSS_IMG, true),false);
 				if (templateResponse != null && templateResponse.getSuccessResponseDTO() != null) {
 					Writer stringWriter = (Writer) templateResponse.getSuccessResponseDTO().getOtherAttributes()
 							.get(RegistrationConstants.TEMPLATE_NAME);

@@ -795,6 +795,7 @@ public class RegistrationConstants {
 
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";//for A4 Ack
 	public static final String PREVIEW_TEMPLATE_CODE = "reg-preview-template-part";
+	public static final String PREVIEW_TEMPLATE_CODE_COP = "reg-cop-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
 
