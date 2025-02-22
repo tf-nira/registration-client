@@ -104,21 +104,20 @@ public class DateValidation extends BaseController {
 		int highAgeFirstId = 16;
 
 		GenericController controller = new GenericController();
-		HashMap<String, Object> ageRestrictionResponse = new HashMap<>();
+		HashMap<String, Object> ageRestrictionResponse;
 
-		if (yearDifference < highAgeNew) {
-			ageRestrictionResponse = controller.ageRestriction(yearDifference, highAgeNew, highAgeFirstId) ;
-			isValid = (Boolean) ageRestrictionResponse.get("isValid");
+		ageRestrictionResponse = controller.ageRestriction(yearDifference, highAgeNew, highAgeFirstId) ;
+		isValid = (Boolean) ageRestrictionResponse.get("isValid");
          err=isValid;
-		}
+
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
 		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, defaultErrorMessage,
 				RegistrationConstants.EMPTY));
 
-		if(ageRestrictionResponse.get("errValue").equals(highAgeNew))
+		if(ageRestrictionResponse.get("errVal").equals(highAgeNew))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
 					maxAge));
-		else if(ageRestrictionResponse.get("errValue").equals(highAgeFirstId))
+		else if(ageRestrictionResponse.get("errVal").equals(highAgeFirstId))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR_FIRSTID,
 					maxAge));
 		return isValid;
