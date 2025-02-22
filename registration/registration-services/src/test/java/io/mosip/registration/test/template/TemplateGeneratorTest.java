@@ -174,7 +174,7 @@ public class TemplateGeneratorTest {
 	@Test
 	public void generateTemplateWithEmptyFieldsTest() throws RegBaseCheckedException {
 		ResponseDTO response = templateGenerator.generateTemplate("sample text", registrationDTO, template,
-				RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, "");
+				RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, "",false);
 		assertNotNull(response.getSuccessResponseDTO());
 	}
 	
@@ -182,7 +182,7 @@ public class TemplateGeneratorTest {
 	public void generateTemplateWithDemographicFieldsTest() throws  RegBaseCheckedException {
 		registrationDTO = DataProvider.getFilledPacketDTO(Arrays.asList("eng", "ara"));
 		Mockito.when(identitySchemaService.getAllFieldSpec(Mockito.anyString(),Mockito.anyDouble())).thenReturn(DataProvider.getFields());
-		ResponseDTO response = templateGenerator.generateTemplate("sample text", registrationDTO, template, RegistrationConstants.TEMPLATE_PREVIEW, "");
+		ResponseDTO response = templateGenerator.generateTemplate("sample text", registrationDTO, template, RegistrationConstants.TEMPLATE_PREVIEW, "",false);
 		assertNotNull(response.getSuccessResponseDTO());
 	}
 	

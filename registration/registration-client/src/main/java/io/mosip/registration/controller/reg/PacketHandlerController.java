@@ -496,7 +496,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
 
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(slipAckTemplateText, registrationDTO,
-						templateManagerBuilder, RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, getImagePath(RegistrationConstants.CROSS_IMG, true));
+						templateManagerBuilder, RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, getImagePath(RegistrationConstants.CROSS_IMG, true),true);
 				if (templateResponse != null && templateResponse.getSuccessResponseDTO() != null) {
 					Writer stringWriter = (Writer) templateResponse.getSuccessResponseDTO().getOtherAttributes()
 							.get(RegistrationConstants.TEMPLATE_NAME);
@@ -511,7 +511,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(ackTemplateText, registrationDTO,
-						templateManagerBuilder, RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, getImagePath(RegistrationConstants.CROSS_IMG, true));
+						templateManagerBuilder, RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, getImagePath(RegistrationConstants.CROSS_IMG, true),false);
 				if (templateResponse != null && templateResponse.getSuccessResponseDTO() != null) {
 					Writer stringWriter = (Writer) templateResponse.getSuccessResponseDTO().getOtherAttributes()
 							.get(RegistrationConstants.TEMPLATE_NAME);

@@ -130,7 +130,7 @@ public class TemplateGenerator extends BaseService {
 	private SoftwareUpdateHandler softwareUpdateHandler;
 
 	public ResponseDTO generateTemplate(String templateText, RegistrationDTO registration, TemplateManagerBuilder
-			templateManagerBuilder, String templateType, String crossImagePath) throws RegBaseCheckedException {
+			templateManagerBuilder, String templateType, String crossImagePath,boolean slipTemplateCheck) throws RegBaseCheckedException {
 		ResponseDTO response = new ResponseDTO();
 
 		try {
@@ -158,7 +158,7 @@ public class TemplateGenerator extends BaseService {
 				switch (field.getType()) {
 					case "documentType":
 						if(RegistrationConstants.PROOF_OF_SIGNATURE.equalsIgnoreCase(field.getSubType()) || RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE.equalsIgnoreCase(field.getSubType())) {
-							Map<String, Object> demo_data = getDemographicData(registration, field);
+							Map<String, Object> demo_data = getDemographicData(registration, field,slipTemplateCheck);
 							if(demo_data != null) { demographicsData.put(field.getId(), demo_data); }
 							break;
 						} else {
@@ -172,7 +172,7 @@ public class TemplateGenerator extends BaseService {
 						break;
 
 					default:
-						Map<String, Object> demo_data = getDemographicData(registration, field);
+						Map<String, Object> demo_data = getDemographicData(registration, field,slipTemplateCheck);
 						if(demo_data != null) { demographicsData.put(field.getId(), demo_data); }
 						break;
 				}
@@ -383,7 +383,7 @@ public class TemplateGenerator extends BaseService {
 		return String.join(RegistrationConstants.SLASH, labels);
 	}
 
-	private Map<String, Object> getDemographicData(RegistrationDTO registration, UiFieldDTO field) {
+	private Map<String, Object> getDemographicData(RegistrationDTO registration, UiFieldDTO field,boolean slipTemplateCheck) {
 
 	    Map<String, Object> data = new HashMap<>();
 	    String value = null;
@@ -414,7 +414,7 @@ public class TemplateGenerator extends BaseService {
 	    } else {
 	        value = getValue(registration.getDemographics().get(field.getId()));
            // Helper condition to remove code values if any of these fields are null or empty
-          if(value == null || value.isEmpty()){
+			if( slipTemplateCheck && (value == null || value.isEmpty())){
             if("surname".equalsIgnoreCase(field.getId()) || "givenName".equalsIgnoreCase(field.getId())
                 || "applicantPlaceOfResidenceParish".equalsIgnoreCase(field.getId())
                 || "applicantPlaceOfResidenceVillage".equalsIgnoreCase(field.getId())
