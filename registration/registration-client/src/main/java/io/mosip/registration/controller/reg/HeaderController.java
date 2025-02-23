@@ -240,7 +240,6 @@ public class HeaderController extends BaseController {
 			settingsByRole.clear();
 			List<SettingsSchema> settingsSchema = identitySchemaService
 					.getSettingsSchema(identitySchemaService.getLatestEffectiveSchemaVersion());
-			/* commiting
 			settingsSchema = Arrays.asList(
 					new SettingsSchema(
 							"scheduledjobs",
@@ -272,7 +271,7 @@ public class HeaderController extends BaseController {
 							"3",
 							Arrays.asList("REGISTRATION_SUPERVISOR", "REGISTRATION_OFFICER")
 					)
-			);*/
+			);
 			if (settingsSchema != null && !settingsSchema.isEmpty()) {
 				List<String> userRoles = userDetailService.getUserRoleByUserId(SessionContext.userId());
 				settingsByRole = settingsSchema.stream()

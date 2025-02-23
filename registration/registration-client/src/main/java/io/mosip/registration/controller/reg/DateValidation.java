@@ -106,20 +106,20 @@ public class DateValidation extends BaseController {
 		GenericController controller = new GenericController();
 		HashMap<String, Object> ageRestrictionResponse;
 
-		ageRestrictionResponse = controller.ageRestriction(yearDifference, highAgeNew, highAgeFirstId) ;
-		isValid = (Boolean) ageRestrictionResponse.get("isValid");
+		/*ageRestrictionResponse = controller.ageRestriction(yearDifference, highAgeNew, highAgeFirstId) ;
+		isValid = (Boolean) ageRestrictionResponse.get("isValid");*/
          err=isValid;
 
 		String defaultErrorMessage = dd.getText().isEmpty() && mm.getText().isEmpty() && yyyy.getText().isEmpty() ? RegistrationConstants.DOB_REQUIRED : RegistrationConstants.INVALID_DATE;
 		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, defaultErrorMessage,
 				RegistrationConstants.EMPTY));
 
-		if(ageRestrictionResponse.get("errVal").equals(highAgeNew))
+		/*if(ageRestrictionResponse.get("errVal").equals(highAgeNew))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
 					maxAge));
 		else if(ageRestrictionResponse.get("errVal").equals(highAgeFirstId))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR_FIRSTID,
-					maxAge));
+					maxAge));*/
 		return isValid;
 	}
 
@@ -147,12 +147,12 @@ public class DateValidation extends BaseController {
         boolean err = false;
 
 		int highAgeNew =Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL)) ;
-//		int highAgeFirstId=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL_FIRSTID)) ;
+		//int highAgeFirstId=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL_FIRSTID)) ;
 		int highAgeFirstId = 16;
 
 		GenericController controller = new GenericController();
-		HashMap<String, Object> ageRestrictionResponse = controller.ageRestriction(ageVal, highAgeNew, highAgeFirstId) ;
-		isValid = (Boolean) ageRestrictionResponse.get("isValid");
+		/*HashMap<String, Object> ageRestrictionResponse = controller.ageRestriction(ageVal, highAgeNew, highAgeFirstId) ;
+		isValid = (Boolean) ageRestrictionResponse.get("isValid");*/
 		err = isValid;
 
         if (isValid) {
@@ -195,12 +195,12 @@ public class DateValidation extends BaseController {
 
             resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE,
                     maxAge));
-		if(ageRestrictionResponse.get("errVal").equals(highAgeNew))
+		/*if(ageRestrictionResponse.get("errVal").equals(highAgeNew))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR,
 					maxAge));
 		else if(ageRestrictionResponse.get("errVal").equals(highAgeFirstId))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR_FIRSTID,
-					maxAge));
+					maxAge));*/
 
         return isValid;
     }
