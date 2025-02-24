@@ -49,15 +49,18 @@ public class SignatureScannerStubImpl implements SignatureService  {
 		}
 
 		@Override
-		public List<DocScanDevice> getConnectedDevices() {
-			DocScanDevice docScanDevice = new DocScanDevice();
-			docScanDevice.setServiceName(getServiceName());
-			docScanDevice.setHeight(120);
-			docScanDevice.setWidth(240);
-			docScanDevice.setDeviceType(DeviceType.SIGNATURE_PAD);
-			docScanDevice.setName(DEVICE_NAME);
-			docScanDevice.setId(DEVICE_NAME);
-			return Arrays.asList(docScanDevice);
+		public List<DocScanDevice> getConnectedDevices(String enabled) {
+			if ("Yes".equalsIgnoreCase(enabled)) {
+				DocScanDevice docScanDevice = new DocScanDevice();
+				docScanDevice.setServiceName(getServiceName());
+				docScanDevice.setHeight(120);
+				docScanDevice.setWidth(240);
+				docScanDevice.setDeviceType(DeviceType.SIGNATURE_PAD);
+				docScanDevice.setName(DEVICE_NAME);
+				docScanDevice.setId(DEVICE_NAME);
+				return Arrays.asList(docScanDevice);
+			}
+			return null;
 		}
 
 		@Override

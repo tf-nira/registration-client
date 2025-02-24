@@ -279,7 +279,8 @@ public class DeviceSettingsController extends BaseController implements Settings
 			});
 			Map<String, List<MdmBioDevice>> biometricDevices = MosipDeviceSpecificationFactory.getAvailableDeviceInfo();
 			columnsCount = biometricDevices.size();
-			List<DocScanDevice> scannerDevices = docScannerFacade.getConnectedDevices();
+			String enabled = String.valueOf(ApplicationContext.map().get(RegistrationConstants.DOC_SCANNER_ENABLED));
+			List<DocScanDevice> scannerDevices = docScannerFacade.getConnectedDevices(enabled);
 			if (!scannerDevices.isEmpty()) {
 				++columnsCount;
 			}
@@ -289,7 +290,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 				scannerDevices.addAll(printerDevices);
 				++columnsCount;
 			}
-			List<DocScanDevice> signatureScannerDevices = signatureFacade.getConnectedDevices();
+			List<DocScanDevice> signatureScannerDevices = signatureFacade.getConnectedDevices(enabled);
 			if (!signatureScannerDevices.isEmpty()) {
 				scannerDevices.addAll(signatureScannerDevices);
 				++columnsCount;

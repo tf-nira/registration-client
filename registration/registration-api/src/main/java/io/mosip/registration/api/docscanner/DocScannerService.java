@@ -11,7 +11,7 @@ public interface DocScannerService {
 
     BufferedImage scan(DocScanDevice docScanDevice, String deviceType);
 
-    List<DocScanDevice> getConnectedDevices();
+    List<DocScanDevice> getConnectedDevices(String enabled);
 
     void stop(DocScanDevice docScanDevice);
 }

@@ -23,32 +23,32 @@ public class DocScannerFacadeTest {
 
     @Test
     public void getConnectedDevicesTest() {
-        DocScannerFacade facade = new DocScannerFacade();
+    	DocScannerFacade facade = new DocScannerFacade();
         DocScannerService serviceImpl = getMockDocScannerService();
         ReflectionTestUtils.setField(facade, "docScannerServiceList", Collections.singletonList(serviceImpl));
-        List<DocScanDevice> identifiedDevices = facade.getConnectedDevices();
+        List<DocScanDevice> identifiedDevices = facade.getConnectedDevices("Yes");
         Assert.assertEquals(2, identifiedDevices.size());
     }
 
     @Test
     public void getConnectedCameraDevicesTest() {
-        DocScannerFacade facade = new DocScannerFacade();
+    	DocScannerFacade facade = new DocScannerFacade();
         DocScannerService serviceImpl = getMockDocScannerService();
         ReflectionTestUtils.setField(facade, "docScannerServiceList", Collections.singletonList(serviceImpl));
-        List<DocScanDevice> identifiedDevices = facade.getConnectedCameraDevices();
+        List<DocScanDevice> identifiedDevices = facade.getConnectedCameraDevices("Yes");
         Assert.assertEquals(1, identifiedDevices.size());
     }
 
     @Test
     public void getConnectedDevicesNoImplTest() {
-        DocScannerFacade facade = new DocScannerFacade();
-        facade.getConnectedDevices();
+    	DocScannerFacade facade = new DocScannerFacade();
+        facade.getConnectedDevices("Yes");
     }
 
     @Test
     public void getConnectedCameraDevicesNoImplTest() {
         DocScannerFacade facade = new DocScannerFacade();
-        List<DocScanDevice> identifiedDevices = facade.getConnectedCameraDevices();
+        List<DocScanDevice> identifiedDevices = facade.getConnectedCameraDevices("Yes");
         Assert.assertEquals(0, identifiedDevices.size());
     }
 
@@ -165,7 +165,7 @@ public class DocScannerFacadeTest {
     }
 
     private DocScannerService getMockDocScannerService() {
-        return new DocScannerService() {
+    	return new DocScannerService() {
             @Override
             public String getServiceName() {
                 return "Test-Scanner";
@@ -181,7 +181,7 @@ public class DocScannerFacadeTest {
             }
 
             @Override
-            public List<DocScanDevice> getConnectedDevices() {
+            public List<DocScanDevice> getConnectedDevices(String enabled) {
                 List<DocScanDevice> devices = new ArrayList<>();
                 DocScanDevice device1 = new DocScanDevice();
                 device1.setDeviceType(DeviceType.SCANNER);

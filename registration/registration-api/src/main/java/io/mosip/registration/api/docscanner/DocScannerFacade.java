@@ -43,7 +43,7 @@ public class DocScannerFacade {
      *
      * @return
      */
-    public List<DocScanDevice> getConnectedDevices() {
+    public List<DocScanDevice> getConnectedDevices(String enabled) {
         List<DocScanDevice> allDevices = new ArrayList<>();
         if (docScannerServiceList == null || docScannerServiceList.isEmpty()) {
             LOGGER.warn("** NO DOCUMENT SCANNER SERVICE IMPLEMENTATIONS FOUND!! **");
@@ -52,7 +52,7 @@ public class DocScannerFacade {
 
         for (DocScannerService service : docScannerServiceList) {
             try {
-                Objects.requireNonNull(service.getConnectedDevices()).forEach(device -> {
+                Objects.requireNonNull(service.getConnectedDevices(enabled)).forEach(device -> {
                     allDevices.add(setDefaults(device));
                 });
             } catch (Throwable t) {
@@ -67,7 +67,7 @@ public class DocScannerFacade {
      *
      * @return
      */
-    public List<DocScanDevice> getConnectedCameraDevices() {
+    public List<DocScanDevice> getConnectedCameraDevices(String enabled) {
         List<DocScanDevice> allDevices = new ArrayList<>();
         if (docScannerServiceList == null || docScannerServiceList.isEmpty()) {
             LOGGER.warn("** NO DOCUMENT SCANNER SERVICE IMPLEMENTATIONS FOUND!! **");
@@ -75,7 +75,7 @@ public class DocScannerFacade {
         }
 
         for (DocScannerService service : docScannerServiceList) {
-            allDevices.addAll(service.getConnectedDevices()
+            allDevices.addAll(service.getConnectedDevices(enabled)
                     .stream()
                     .filter(d -> d.getDeviceType().equals(DeviceType.CAMERA))
                     .map(this::setDefaults)

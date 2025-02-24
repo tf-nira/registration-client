@@ -30,7 +30,7 @@ public class SignatureFacade {
 	     *
 	     * @return
 	     */
-	    public List<DocScanDevice> getConnectedDevices() {
+	    public List<DocScanDevice> getConnectedDevices(String enabled) {
 	        List<DocScanDevice> allDevices = new ArrayList<>();
 	        if (signatureServiceList == null || signatureServiceList.isEmpty()) {
 	            LOGGER.warn("** NO SIGNATURE SCANNER SERVICE IMPLEMENTATIONS FOUND!! **");
@@ -39,7 +39,7 @@ public class SignatureFacade {
 
 	        for (SignatureService service : signatureServiceList) {
 	            try {
-	                Objects.requireNonNull(service.getConnectedDevices()).forEach(device -> {
+	                Objects.requireNonNull(service.getConnectedDevices(enabled)).forEach(device -> {
 						allDevices.add(device);
 	                });
 	            } catch (Throwable t) {

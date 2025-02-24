@@ -69,7 +69,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 	}
 
 	@Override
-	public List<DocScanDevice> getConnectedDevices() {
+	public List<DocScanDevice> getConnectedDevices(String enabled) {
 		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
 		var deviceIndexList = returnCameraIndexes();
 
