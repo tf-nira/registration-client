@@ -1842,6 +1842,7 @@ public class RegistrationConstants {
 	public static final String INVALID_AGE_MINOR_FIRSTID = "INVALID_AGE_MINOR_FIRSTID";
 	public static final String INVALID_DATE = "INVALID_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
+	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
 
 	public static final String ICONS_HBOX = "iconsHBox";
@@ -2010,6 +2011,7 @@ public class RegistrationConstants {
 	public static final String AUDIT_TIMESTAMP = "mosip.registration.audit_timestamp";
 	public static final String AGE_GROUP_CONFIG = "mosip.regproc.packet.classifier.tagging.agegroup.ranges";
 	public static final String AGE_VAL="mosip.registration.age";
+	public static final String CARD_EXP="mosip.registration.expireCard" ;
 	public static final String AGE_VAL_FIRSTID="ote ";
 
 	public static final String LOGOUT = "Logout";

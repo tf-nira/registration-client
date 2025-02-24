@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 
+import io.mosip.registration.controller.ClientApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -385,6 +386,7 @@ public class DateValidation extends BaseController {
 
 		boolean isValid = false;
 		Validator validator = null;
+		boolean checkCardExpire = false;
 		if (dd.getText().matches(RegistrationConstants.NUMBER_REGEX)
 				&& mm.getText().matches(RegistrationConstants.NUMBER_REGEX)
 				&& yyyy.getText().matches(RegistrationConstants.NUMBER_REGEX)
@@ -402,6 +404,17 @@ public class DateValidation extends BaseController {
 
 			String dob = localDate.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
 			isValid = validator != null && validator.getValidator() != null ? dob.matches(validator.getValidator()) : true;
+
+            String comparisonDate = getValueFromApplicationContext(RegistrationConstants.CARD_EXP);
+            String dateFormat = "dd/MM/yyyy";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+            checkCardExpire = false;
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			if (genericController.processCheck().equalsIgnoreCase("Renewal") && LocalDate.parse(dob, formatter).isBefore(LocalDate.parse(comparisonDate, formatter))) {
+                isValid = false;
+                checkCardExpire = true;
+            }
+
 			if (isValid) {
 				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
 				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
@@ -410,6 +423,11 @@ public class DateValidation extends BaseController {
 		}
 		resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
+        if (checkCardExpire) {
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
+
+        }
+
 		return isValid;
 	}
 }

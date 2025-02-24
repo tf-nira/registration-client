@@ -346,6 +346,7 @@ public class GenericController extends BaseController {
 
 							try {
 								loadPreRegSync(responseDTO);
+								resetValue();
 								if (responseDTO.getSuccessResponseDTO() != null) {
 									getRegistrationDTOFromSession().setPreRegistrationId(textField.getText());
 									getRegistrationDTOFromSession().setAppId(textField.getText());
@@ -952,8 +953,10 @@ public class GenericController extends BaseController {
 				if ("Notification of Change".equalsIgnoreCase(field.getAlignmentGroup())) {
 					isNotificationOfChangePresent = true;        // Found relevant group fields on this screen
 					FxControl control = getFxControl(field.getId());
-					if (control != null && isFieldVisible(field) && !control.isEmpty() && !field.getId().trim().substring(0, 7).equals("isError") && !field.getId().trim().substring(0, 12).equals("changeReason")) {
-						isNotificationOfChangeFilled = true;
+					int fieldIdSize= field.getId().length();
+					if (control != null && isFieldVisible(field) && !control.isEmpty() ){
+						if( !field.getId().trim().startsWith("isError") && !field.getId().trim().startsWith("changeReason"))
+							isNotificationOfChangeFilled = true;
 					}
 				}
 
@@ -1785,7 +1788,25 @@ public class GenericController extends BaseController {
 										fxControl.getNode().setDisable(false);
 									}
 								}
-								break;
+						}
+					}
+				}
+			}
+		}
+		else{
+			for (UiScreenDTO screenDTO : orderedScreens.values()) {
+				for (UiFieldDTO field : screenDTO.getFields()) {
+					FxControl fxControl = getFxControl(field.getId());
+					if (fxControl != null) {
+						if (field.getDefaultValue() != null) {
+							boolean check = fxControl.isFieldDefaultValue(field);
+							if (check) {
+								fxControl.selectAndSet("Y");
+								fxControl.getNode().setDisable(true);
+							} else {
+								fxControl.selectAndSet(null);
+								fxControl.getNode().setDisable(false);
+							}
 						}
 					}
 				}
