@@ -26,6 +26,7 @@ import io.mosip.registration.api.signaturescanner.SignatureFacade;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.constants.RegistrationUIConstants;
+import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.BaseController;
 import io.mosip.registration.controller.device.ScanPopUpViewController;
@@ -124,10 +125,11 @@ public class DocumentScanController extends BaseController {
 			} catch (Exception e){};
 			
 			Optional<DocScanDevice> result = null;
+			String enabled = String.valueOf(ApplicationContext.map().get(RegistrationConstants.STUB_SCANNER_ENABLED));
 			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-				result = signatureFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
+				result = signatureFacade.getConnectedDevices(enabled).stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
 			} else {
-				result =  docScannerFacade.getConnectedDevices().stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
+				result =  docScannerFacade.getConnectedDevices(enabled).stream().filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
 			}
 
 			
@@ -178,7 +180,8 @@ public class DocumentScanController extends BaseController {
 	}
 
 	public byte[] captureAndConvertBufferedImage() throws Exception {
-		List<DocScanDevice> devices = docScannerFacade.getConnectedCameraDevices();
+		String enabled = String.valueOf(ApplicationContext.map().get(RegistrationConstants.STUB_SCANNER_ENABLED));
+		List<DocScanDevice> devices = docScannerFacade.getConnectedCameraDevices(enabled);
 
 		byte[] byteArray = new byte[0];
 		if(!devices.isEmpty()) {
@@ -199,10 +202,12 @@ public class DocumentScanController extends BaseController {
 	 */
 	private void initializeAndShowScanPopup(boolean isPreviewOnly,String subType) {
 		List<DocScanDevice> devices = null;
+		String enabled = String.valueOf(ApplicationContext.map().get(RegistrationConstants.STUB_SCANNER_ENABLED));
+		LOGGER.info("Checking the StubScanner enable/disable : {}", enabled);
 		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
-			devices = signatureFacade.getConnectedDevices();
+			devices = signatureFacade.getConnectedDevices(enabled);
 		} else {
-			devices = docScannerFacade.getConnectedDevices();
+			devices = docScannerFacade.getConnectedDevices(enabled);
 		}
 		
 		LOGGER.info("Connected devices : {}", devices);
@@ -316,10 +321,11 @@ public class DocumentScanController extends BaseController {
 		this.fxControl = fxControl;
 	}
 	public BufferedImage saveSignature() throws Exception {
+		String enabled = String.valueOf(ApplicationContext.map().get(RegistrationConstants.STUB_SCANNER_ENABLED));
 		if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE))
 			try {
 				{
-					Optional<DocScanDevice> result = signatureFacade.getConnectedDevices().stream()
+					Optional<DocScanDevice> result = signatureFacade.getConnectedDevices(enabled).stream()
 							.filter(d -> d.getId().equals(selectedScanDeviceName)).findFirst();
 					if (result == null || !result.isPresent()) {
 						LOGGER.error("No scan devices found");

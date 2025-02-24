@@ -54,13 +54,16 @@ public class ScannerStubImpl implements DocScannerService {
 	}
 
 	@Override
-	public List<DocScanDevice> getConnectedDevices() {
-		DocScanDevice docScanDevice = new DocScanDevice();
-		docScanDevice.setServiceName(getServiceName());
-		docScanDevice.setDeviceType(DeviceType.SCANNER);
-		docScanDevice.setName(DEVICE_NAME);
-		docScanDevice.setId(DEVICE_NAME);
-		return Arrays.asList(docScanDevice);
+	public List<DocScanDevice> getConnectedDevices(String enabled) {
+		if ("Yes".equalsIgnoreCase(enabled)) {
+			DocScanDevice docScanDevice = new DocScanDevice();
+			docScanDevice.setServiceName(getServiceName());
+			docScanDevice.setDeviceType(DeviceType.SCANNER);
+			docScanDevice.setName(DEVICE_NAME);
+			docScanDevice.setId(DEVICE_NAME);
+			return Arrays.asList(docScanDevice);
+		}
+		return null;
 	}
 
 	@Override

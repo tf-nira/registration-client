@@ -58,7 +58,7 @@ public class HerofunScanServiceImpl implements SignatureService {
 	}
 
 	@Override
-	public List<DocScanDevice> getConnectedDevices() {
+	public List<DocScanDevice> getConnectedDevices(String enabled) {
 		SignaturePad signaturepad = SignaturePad.INSTANCE;
 		LOGGER.info("JNA loader path--------------" + System.getProperty("jna.library.path"));
 		List<DocScanDevice> devices = new ArrayList<>();

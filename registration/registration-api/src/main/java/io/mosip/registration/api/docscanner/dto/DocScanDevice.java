@@ -20,5 +20,6 @@ public class DocScanDevice {
     private int[] frame;
     private int height;
     private int width;
+    private String enabled;
     private String mode;
 }

@@ -742,7 +742,7 @@ public class BaseServiceTest {
 	            }
 
 	            @Override
-	            public List<DocScanDevice> getConnectedDevices() {
+	            public List<DocScanDevice> getConnectedDevices(String enabled) {
 	                List<DocScanDevice> devices = new ArrayList<>();
 	                DocScanDevice device1 = new DocScanDevice();
 	                device1.setDeviceType(DeviceType.SCANNER);
