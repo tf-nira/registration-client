@@ -606,7 +606,12 @@ public class PacketUploadController extends BaseController implements Initializa
 			packetStatusVO.setPacketClientStatus(packet.getPacketClientStatus());
 			packetStatusVO.setPacketPath(packet.getPacketPath());
 			packetStatusVO.setPacketServerStatus(packet.getPacketServerStatus());
-			packetStatusVO.setPacketStatus(packet.getPacketStatus());
+			if(packet.getPacketStatus().equals("LOST")) {
+				packetStatusVO.setPacketStatus("LOST/REPLACEMENT");
+			}
+			else {
+				packetStatusVO.setPacketStatus(packet.getPacketStatus());
+			}
 			packetStatusVO.setStatus(false);
 			packetStatusVO.setUploadStatus(packet.getUploadStatus());
 			packetStatusVO.setSupervisorStatus(packet.getSupervisorStatus());
