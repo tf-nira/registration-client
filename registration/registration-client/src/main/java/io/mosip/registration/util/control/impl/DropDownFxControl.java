@@ -246,17 +246,18 @@ public class DropDownFxControl extends FxControl {
 
 	@Override
 	public boolean isValid() {
-		ComboBox<GenericDto> appComboBox = (ComboBox<GenericDto>) getField(uiFieldDTO.getId());
-		boolean isValid = appComboBox != null && appComboBox.getSelectionModel().getSelectedItem() != null;
-		if (appComboBox != null) {
-			appComboBox.getStyleClass().removeIf((s) -> {
+	    ComboBox<GenericDto> appComboBox = (ComboBox<GenericDto>) getField(uiFieldDTO.getId());
+	    boolean isValid = appComboBox != null && appComboBox.getSelectionModel().getSelectedItem() != null;
+	    boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
+	    if (appComboBox != null) {
+	    	appComboBox.getStyleClass().removeIf((s) -> {
 				return s.equals("demographicComboboxFocused");
 			});
-			if(!isValid) { 
-				appComboBox.getStyleClass().add("demographicComboboxFocused"); 
-			}
-		}
-		return isValid;
+	        if (!isValid && (uiFieldDTO.isRequired() || isRequiredField)) { 
+	            appComboBox.getStyleClass().add("demographicComboboxFocused"); 
+	        }
+	    }
+	    return isValid;
 	}
 
 	@Override
