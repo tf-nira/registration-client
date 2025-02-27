@@ -374,8 +374,7 @@ public class DateValidation extends BaseController {
 	 * @return <code>true</code>, if successful, else <code>false</code>
 	 * @throws ParseException
 	 */
-	public boolean validateDateWithMaxAndMinDays(Pane parentPane, UiFieldDTO uiFieldDTO, int minDays, int maxDays) {
-		String fieldId = uiFieldDTO.getId();
+	public boolean validateDateWithMaxAndMinDays(Pane parentPane, String fieldId, int minDays, int maxDays) {
 		resetFieldStyleClass(parentPane, fieldId, null);
 
 		TextField dd = (TextField) getFxElement(parentPane,
@@ -422,7 +421,7 @@ public class DateValidation extends BaseController {
 				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
 			}
 		}
-		if(uiFieldDTO.isRequired())
+		if(!dd.getText().isEmpty() || !mm.getText().isEmpty() || !yyyy.getText().isEmpty())
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
 		else
