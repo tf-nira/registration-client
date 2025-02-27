@@ -218,6 +218,7 @@ public class PreRegZipHandlingServiceImpl extends BaseService implements PreRegZ
 				SessionContext.map().put(RegistrationConstants.REGISTRATION_DATA_DEMO, new HashMap<String,Object>());
 				//Always use latest schema, ignoring missing / removed fields
 				RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
+				LOGGER.info("parse Demographic Json input  : {}", jsonObject );
 				List<UiFieldDTO> fieldList = identitySchemaService.getAllFieldSpec(registrationDTO.getProcessId(), registrationDTO.getIdSchemaVersion());
 				getRegistrationDTOFromSession().clearRegistrationDto();
 
