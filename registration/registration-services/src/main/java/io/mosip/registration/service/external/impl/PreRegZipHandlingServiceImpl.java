@@ -256,6 +256,7 @@ public class PreRegZipHandlingServiceImpl extends BaseService implements PreRegZ
 								case CONTROLTYPE_DOB_AGE:
 								case CONTROLTYPE_DOB:
 									getRegistrationDTOFromSession().setDateField(field.getId(), (String)fieldValue, field.getSubType());
+									setDateRegistrationDTODemographics(field.getId(), (String)fieldValue);
 									break;
 								default:
 									getRegistrationDTOFromSession().getDemographics().put(field.getId(), fieldValue);
