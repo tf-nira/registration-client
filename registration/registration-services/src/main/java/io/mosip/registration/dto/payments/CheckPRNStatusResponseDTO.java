@@ -44,5 +44,6 @@ public class CheckPRNStatusResponseDTO implements Serializable {
     private String taxPayerEmail;
     private String taxPayerName;
     private String villageName;
-	private Map<String,String> eligiblePaidForServiceTypes;
+	private String subServiceTypePaidFor;
+    private String processFlowPaidFor ;
 }

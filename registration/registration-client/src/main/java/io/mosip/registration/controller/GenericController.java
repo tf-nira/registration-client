@@ -171,6 +171,7 @@ public class GenericController extends BaseController {
 	private String statusCode;
 
 	private boolean isPrnValid = false;
+	public boolean paymentCheck =false ;
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
 
@@ -547,7 +548,7 @@ public class GenericController extends BaseController {
 						Object data =getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
 									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
 									: demographicsCopy.get(field.getId());
-							
+
 							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
 									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
 									: demographicsCopy.get(field.getId()));
@@ -966,14 +967,16 @@ public class GenericController extends BaseController {
 				}
 
 				// Validate PRN differently
-				if (field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
-					LOGGER.error("PRN verification failed");
-					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
-							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
-					showHideErrorNotification(label,"");
-					isValid = false;
-					break;
-				}
+				FxControl fxControl = getFxControl(field.getId());
+				if (field.getId().equalsIgnoreCase("PRNId") )
+					if((field.isRequired() || fxControl.isFieldRequired(field)) && !paymentCheck &&!isPrnValid) {
+						LOGGER.error("PRN verification failed");
+						String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
+								.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
+						showHideErrorNotification(label, "");
+						isValid = false;
+						break;
+					}
 
 
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
@@ -1355,8 +1358,8 @@ public class GenericController extends BaseController {
 
 		if (responseDTO != null) {
 			if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-				if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes") != null &&
-						responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
+				if (responseDTO.getProcessFlowPaidFor() != null &&
+						responseDTO.getProcessFlowPaidFor().equalsIgnoreCase(processFlow)) {
 					Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 					if (prnCheck == null) {
 						return new PRNVerificationResponse(false, "Verification failed.");
