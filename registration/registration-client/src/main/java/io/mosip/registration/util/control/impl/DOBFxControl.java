@@ -142,7 +142,7 @@ public class DOBFxControl extends FxControl {
 
 	@Override
 	public boolean isValid() {
-		return dateValidation.validateDateWithMaxAndMinDays((Pane) getNode(), uiFieldDTO.getId(),
+		return dateValidation.validateDateWithMaxAndMinDays((Pane) getNode(), uiFieldDTO,
 				getUiSchemaDTO().getMinimum(), getUiSchemaDTO().getMaximum());
 	}
 
@@ -188,7 +188,7 @@ public class DOBFxControl extends FxControl {
 			if (!dateValidation.isNewValueValid(nv, dateType)) {
 				textField.setText(ov);
 			}
-			boolean isValid = dateValidation.validateDateWithMaxAndMinDays((Pane) getNode(), uiFieldDTO.getId(),
+			boolean isValid = dateValidation.validateDateWithMaxAndMinDays((Pane) getNode(), uiFieldDTO,
 					getUiSchemaDTO().getMinimum(), getUiSchemaDTO().getMaximum());
 			if (isValid) {
 				setData(null);
