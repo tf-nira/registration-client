@@ -374,7 +374,8 @@ public class DateValidation extends BaseController {
 	 * @return <code>true</code>, if successful, else <code>false</code>
 	 * @throws ParseException
 	 */
-	public boolean validateDateWithMaxAndMinDays(Pane parentPane, String fieldId, int minDays, int maxDays) {
+	public boolean validateDateWithMaxAndMinDays(Pane parentPane, UiFieldDTO uiFieldDTO, int minDays, int maxDays) {
+		String fieldId = uiFieldDTO.getId();
 		resetFieldStyleClass(parentPane, fieldId, null);
 
 		TextField dd = (TextField) getFxElement(parentPane,
@@ -421,15 +422,13 @@ public class DateValidation extends BaseController {
 				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
 			}
 		}
-		if(!dd.getText().isEmpty() || !mm.getText().isEmpty() || !yyyy.getText().isEmpty())
+		if (checkCardExpire) {
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
+        }
+		if(uiFieldDTO.isRequired() && (dd.getText().isEmpty() || mm.getText().isEmpty() || yyyy.getText().isEmpty()) ) {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
-		else
-			 return true;
-        if (checkCardExpire) {
-			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
-
-        }
+		}
 
 		return isValid;
 	}
