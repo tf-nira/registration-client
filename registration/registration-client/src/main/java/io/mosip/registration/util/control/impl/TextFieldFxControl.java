@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.mosip.registration.controller.*;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.layout.*;
 import org.springframework.context.ApplicationContext;
@@ -524,7 +525,14 @@ public class TextFieldFxControl extends FxControl {
 					runtimeException.getMessage() + ExceptionUtils.getStackTrace(runtimeException));
 		}
 	}
-	
+
+
+	private void closeVirtualKeyboard() {
+		if (genericController.isKeyboardVisible()) {
+			genericController.getKeyboardStage().close();
+			genericController.setKeyboardVisible(false);
+		}
+	}
 	private void openKeyBoard(VirtualKeyboard keyBoard, String langCode, TextField textField, Node parentNode) {
 		if (genericController.getKeyboardStage() != null)  {
 			genericController.getKeyboardStage().close();
@@ -559,6 +567,12 @@ public class TextFieldFxControl extends FxControl {
 		try {
 			Stage keyBoardStage = new Stage();
 			genericController.setKeyboardStage(keyBoardStage);
+			keyBoardStage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+				if (!isNowFocused) {
+					closeVirtualKeyboard(); // Close the dialog if the application loses focus
+				}
+			});
+
 			keyBoardStage.setAlwaysOnTop(true);
 			keyBoardStage.initStyle(StageStyle.UNDECORATED);
 			keyBoardStage.setX(300);
