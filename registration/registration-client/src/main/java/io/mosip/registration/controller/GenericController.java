@@ -43,6 +43,9 @@ import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+
+import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.bridj.objc.FoundationLibrary;
@@ -1394,38 +1397,15 @@ public class GenericController extends BaseController {
 	    // Check transaction logs for PRN
 	    Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	    if (prnCheck == null) {
-	        return new PRNVerificationResponse(false, "Verification failed.");
+	        return new PRNVerificationResponse(false, "Verification failed: Unable to verify PRN logs.");
 	    }
 
-	    return prnCheck
-	            ? new PRNVerificationResponse(false, "Verification failed: PRN already used.")
-	            : new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
+	    if (!prnCheck) {
+	        return new PRNVerificationResponse(false, "Verification failed: PRN already used.");
+	    }
+
+	    return new PRNVerificationResponse(true, "PRN validation is Successful. Continue with Application");
 	}
-
-
-		if (responseDTO != null) {
-			if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-				if (responseDTO.getProcessFlowPaidFor() != null &&
-						responseDTO.getProcessFlowPaidFor().equalsIgnoreCase(processFlow)) {
-					Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
-					if (prnCheck == null) {
-						return new PRNVerificationResponse(false, "Verification failed.");
-					}
-
-					if (!prnCheck) {
-						return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
-					}
-				} else {
-					return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s usecase", processFlow));
-				}
-			} else {
-				return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't paid"));
-			}
-		}
-		return new PRNVerificationResponse(false, "Invalid PRN. Please make the payment to continue with Application.");
-	}
-
-
 
 	/**
 	 * This method checks whether the PRN was consumed before / used before
@@ -1568,6 +1548,7 @@ public class GenericController extends BaseController {
 	                removeLoadingPRNIndicator(node);
 
 	                Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
+	 
 
 	                if (isValid) {
 	                    PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
