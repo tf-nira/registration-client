@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -534,6 +535,22 @@ public class BaseService {
 
 	protected Map<String, Object> getRegistrationDTODemographics() {
 		return (Map<String, Object>)SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
+	}
+
+	protected void setDateRegistrationDTODemographics(String fieldId, String dateString) {
+		if (dateString != null && !dateString.isEmpty()) {
+			if(dateString.matches("\\d{4}/\\d{2}/\\d{2}")) {
+				String[] dateParts = dateString.split("/");
+				String formattedDate = dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0];
+				LocalDate date = LocalDate.parse(formattedDate,
+						DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
+				getRegistrationDTODemographics().put(fieldId, date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat())));
+			} else {
+				LocalDate date = LocalDate.parse(dateString,
+						DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
+				getRegistrationDTODemographics().put(fieldId, date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat())));
+			}
+		}
 	}
 
 	/**

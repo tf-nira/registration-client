@@ -367,6 +367,24 @@ public abstract class FxControl  {
 		return false; // Default to false if something goes wrong
 	}
 
+	public boolean isFieldRequired(UiFieldDTO schemaDTO) {
+		if (requiredFieldValidator == null) {
+			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
+		}
+		try {
+			// Determine if the field is required according to some specifications
+			boolean isRequiredAccordingToSpec = requiredFieldValidator.isRequiredField(schemaDTO, getRegistrationDTo());
+
+			return isRequiredAccordingToSpec;
+		} catch (Exception e) {
+			// Handle exception gracefully
+			e.printStackTrace();
+			return false; // In case of exception, return false (field is not required by default)
+		}
+	}
+
+
+
 
 	protected void changeNodeOrientation(Node node, String langCode) {
 

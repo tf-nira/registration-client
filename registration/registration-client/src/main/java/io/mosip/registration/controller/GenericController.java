@@ -177,8 +177,8 @@ public class GenericController extends BaseController {
 	private String statusCode;
 
 	private boolean isPrnValid = false;
-	
 	private static ObjectMapper objectMapper = new ObjectMapper();
+	public boolean paymentCheck =false ;
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
 
@@ -552,10 +552,15 @@ public class GenericController extends BaseController {
 							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null ? getRegistrationDTOFromSession().getDemographics().get(field.getId()) : demographicsCopy.get(field.getId()));
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
+						Object data =getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
+									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
+									: demographicsCopy.get(field.getId());
+
 							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
 									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
 									: demographicsCopy.get(field.getId()));
-
+							if (field.getId().equalsIgnoreCase("spouseDateOfMarriage"))
+								LOGGER.info("spouse data : {}", data);
 							break;
 					}
 				}
@@ -969,14 +974,16 @@ public class GenericController extends BaseController {
 				}
 
 				// Validate PRN differently
-				if (field.getId().equalsIgnoreCase("PRN") && !isPrnValid) {
-					LOGGER.error("PRN verification failed");
-					String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
-							.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
-					showHideErrorNotification(label,"");
-					isValid = false;
-					break;
-				}
+				FxControl fxControl = getFxControl(field.getId());
+				if (field.getId().equalsIgnoreCase("PRNId") )
+					if((field.isRequired() || fxControl.isFieldRequired(field)) && !paymentCheck &&!isPrnValid) {
+						LOGGER.error("PRN verification failed");
+						String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
+								.getOrDefault(ApplicationContext.applicationLanguage(), field.getId());
+						showHideErrorNotification(label, "");
+						isValid = false;
+						break;
+					}
 
 
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
@@ -1395,6 +1402,28 @@ public class GenericController extends BaseController {
 	            : new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
 	}
 
+
+		if (responseDTO != null) {
+			if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
+				if (responseDTO.getProcessFlowPaidFor() != null &&
+						responseDTO.getProcessFlowPaidFor().equalsIgnoreCase(processFlow)) {
+					Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
+					if (prnCheck == null) {
+						return new PRNVerificationResponse(false, "Verification failed.");
+					}
+
+					if (!prnCheck) {
+						return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
+					}
+				} else {
+					return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s usecase", processFlow));
+				}
+			} else {
+				return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't paid"));
+			}
+		}
+		return new PRNVerificationResponse(false, "Invalid PRN. Please make the payment to continue with Application.");
+	}
 
 
 

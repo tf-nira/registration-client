@@ -194,6 +194,12 @@ public class PreRegistrationDataSyncServiceImpl extends BaseService implements P
 			preRegistration = getPreRegistration(preRegistrationId, preRegistration == null ? null :
 					forceDownload ? null : preRegistration.getLastUpdatedPreRegTimeStamp());
 
+			if(preRegistration.getStatusCode().equalsIgnoreCase(RegistrationConstants.PREREGISTRATION_ID_HAS_BEEN_CONSUMED))
+			{
+				setErrorResponse(responseDTO, RegistrationConstants.CONSUMED_PRID_ERROR_CODE, null);
+				return responseDTO;
+			}
+
 			if (preRegistration != null) {
 				byte[] decryptedPacket = preRegZipHandlingService.decryptPreRegPacket(
 						preRegistration.getPacketSymmetricKey(),
@@ -217,6 +223,26 @@ public class PreRegistrationDataSyncServiceImpl extends BaseService implements P
 		PreRegistrationList preRegistration = null;
 		/* Check in Database whether required record already exists or not */
 		preRegistration = preRegistrationDAO.get(preRegistrationId);
+
+		Map<String, String> requestParamMap = new HashMap<>();
+		requestParamMap.put(RegistrationConstants.PRE_REGISTRATION_ID, preRegistrationId);
+		requestParamMap.put(RegistrationConstants.USER_STATION_ID, getStationId());
+		LOGGER.debug("Downloading pre-reg packet {}", requestParamMap);
+
+		LinkedHashMap<String, Object> response = (LinkedHashMap<String, Object>) serviceDelegateUtil.get(RegistrationConstants.GET_PRE_REGISTRATION,
+				requestParamMap, true,	RegistrationConstants.JOB_TRIGGER_POINT_SYSTEM);
+
+		List<LinkedHashMap<String, Object>> errors = (List<LinkedHashMap<String, Object>>) response.get("errors");
+		if(errors!=null){
+			for (LinkedHashMap<String, Object> error : errors) {
+				String message = (String) error.get("message");
+				if (RegistrationConstants.PREREGISTRATION_ID_HAS_BEEN_CONSUMED.equals(message)) {
+					preRegistration.setStatusCode(message) ;
+					return preRegistration ;
+				}
+			}
+		}
+
 		if(preRegistration == null || !FileUtils.getFile(preRegistration.getPacketPath()).exists()) {
 			LOGGER.info("Pre-Registration ID is not present downloading {}", preRegistrationId);
 			return downloadAndSavePacket(preRegistration, preRegistrationId, lastUpdatedTimeStamp);
