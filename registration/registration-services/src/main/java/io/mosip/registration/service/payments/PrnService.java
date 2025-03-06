@@ -1,6 +1,9 @@
 package io.mosip.registration.service.payments;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -13,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.mosip.kernel.core.exception.ServiceError;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.dto.payments.CheckPRNInTransLogsRequestDTO;
@@ -53,79 +57,76 @@ public class PrnService {
 	@Autowired
 	ObjectMapper objectMapper;
 
-	public CheckPRNStatusResponseDTO checkPRNStatus(String prn) {
+	
+	public PrnMainResponseWrapperDTO<CheckPRNStatusResponseDTO> checkPRNStatus(String prn) {
 	    CheckPRNStatusRequestDTO requestDTO = new CheckPRNStatusRequestDTO();
 	    requestDTO.setPrn(prn);
 
-	    CheckPRNStatusResponseDTO response = null;
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 
-	    PrnMainResponseWrapperDTO<?> returnedResponse = null;
-
 	    try {
-	        returnedResponse = sendHttpRequest(
-	            urlCheckPrnStatus, HttpMethod.POST, headers, requestDTO, PrnMainResponseWrapperDTO.class
-	        );
+	        LOGGER.info("Sending request to check PRN status for PRN: {}", prn);
 
-	        if (returnedResponse == null) {
-	            LOGGER.warn("The returned response is null, unable to process PRN status.");
-	            return null;
-	        }
+	        @SuppressWarnings("unchecked")
+	        PrnMainResponseWrapperDTO<CheckPRNStatusResponseDTO> responseWrapper = 
+	            (PrnMainResponseWrapperDTO<CheckPRNStatusResponseDTO>) sendHttpRequest(
+	                urlCheckPrnStatus, HttpMethod.POST, headers, requestDTO, PrnMainResponseWrapperDTO.class
+	            );
 
-	        if (returnedResponse.getResponse() == null && returnedResponse.getErrors() != null
-	            && !returnedResponse.getErrors().isEmpty()) {
-	            LOGGER.error("Errors in the returned response: {}", returnedResponse.getErrors().get(0).getMessage());
-	            return null;
-	        }
+	        LOGGER.info("Received response from PRN status check: {}", responseWrapper);
+	        return responseWrapper;
 
-	        if (returnedResponse.getResponse() != null && !"".equals(returnedResponse.getResponse())) {
-	            response = objectMapper.convertValue(returnedResponse.getResponse(), CheckPRNStatusResponseDTO.class);
-	        }
 	    } catch (Exception e) {
-	        LOGGER.error("Error occurred while checking PRN status: {}", e.getMessage(), e);
-	    }
+	        LOGGER.error("Unexpected error occurred while checking PRN status for PRN: {}", prn, e);
 
-	    return response;
+	        // Return an error response
+	        return createErrorResponse("Internal Server Error");
+	    }
+	}
+
+	private <T> PrnMainResponseWrapperDTO<T> createErrorResponse(String errorMessage) {
+	    PrnMainResponseWrapperDTO<T> errorResponse = new PrnMainResponseWrapperDTO<>();
+	    List<ServiceError> errors = new ArrayList<>();
+	    ServiceError exception = new ServiceError();
+	    exception.setMessage(errorMessage);
+	    errors.add(exception);
+	    errorResponse.setErrors(errors);
+	    return errorResponse;
 	}
 	
-	public CheckPRNInTransLogsResponseDTO checkPrnInTransLogs(String prn) {
-		CheckPRNInTransLogsRequestDTO requestDTO = new CheckPRNInTransLogsRequestDTO();
+	public PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO> checkPrnInTransLogs(String prn) {
+	    CheckPRNInTransLogsRequestDTO requestDTO = new CheckPRNInTransLogsRequestDTO();
 	    requestDTO.setPrn(prn);
 
-	    CheckPRNInTransLogsResponseDTO response = null;
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 
-	    PrnMainResponseWrapperDTO<?> returnedResponse = null;
-
 	    try {
-	        returnedResponse = sendHttpRequest(
-	            urlCheckTransLog, HttpMethod.POST, headers, requestDTO, PrnMainResponseWrapperDTO.class
-	        );
+	        LOGGER.info("Sending request to check PRN in transaction logs for PRN: {}", prn);
 
-	        if (returnedResponse == null) {
-	            LOGGER.warn("The returned response is null, unable to check PRN in transc logs.");
-	            return null;
+	        @SuppressWarnings("unchecked")
+	        PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO> responseWrapper = 
+	            (PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO>) sendHttpRequest(
+	                urlCheckTransLog, HttpMethod.POST, headers, requestDTO, PrnMainResponseWrapperDTO.class
+	            );
+
+	        LOGGER.info("Received response from transaction logs check: {}", responseWrapper);
+
+	        // Handle response errors
+	        if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
+	            LOGGER.error("Errors in the returned response: {}", responseWrapper.getErrors());
+	            return createErrorResponse("PRN Transaction Log Check Failed");
 	        }
 
-	        if (returnedResponse.getResponse() == null && returnedResponse.getErrors() != null
-	            && !returnedResponse.getErrors().isEmpty()) {
-	            LOGGER.error("Errors in the returned response: {}", returnedResponse.getErrors().get(0).getMessage());
-	            return null;
-	        }
+	        return responseWrapper;
 
-	        if (returnedResponse.getResponse() != null && !"".equals(returnedResponse.getResponse())) {
-	            response = objectMapper.convertValue(returnedResponse.getResponse(), CheckPRNInTransLogsResponseDTO.class);
-	        }
 	    } catch (Exception e) {
-	        LOGGER.error("Error occurred while checking PRN status: {}", e.getMessage(), e);
+	        LOGGER.error("Unexpected error while checking PRN in transaction logs for PRN: {}", prn, e);
+	        return createErrorResponse("Internal Server Error");
 	    }
-
-	    return response;
-		
-		
 	}
+
 	
 	public ConsumePRNResponseDTO consumePrn(String prn, String registrationId) {
 		ConsumePRNRequestDTO requestDTO = new ConsumePRNRequestDTO();

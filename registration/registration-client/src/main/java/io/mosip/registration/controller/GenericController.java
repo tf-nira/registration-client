@@ -3,6 +3,7 @@ package io.mosip.registration.controller;
 import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.dto.*;
+import io.mosip.registration.dto.mastersync.GenericDto;
 import io.mosip.registration.dto.schema.ValuesDTO;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
@@ -23,6 +24,7 @@ import static io.mosip.registration.constants.RegistrationConstants.HASH;
 import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAGE;
 import static io.mosip.registration.constants.RegistrationUIConstants.DEMOGRAPHIC_DETAILS;
 import static io.mosip.registration.constants.RegistrationUIConstants.DOCUMENT_UPLOAD;
+import static org.mockito.ArgumentMatchers.nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +45,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.bridj.objc.FoundationLibrary;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
 import io.mosip.kernel.core.idvalidator.spi.PridValidator;
@@ -63,6 +67,7 @@ import io.mosip.registration.dto.payments.CheckPRNInTransLogsResponseDTO;
 import io.mosip.registration.dto.payments.CheckPRNStatusResponseDTO;
 import io.mosip.registration.dto.payments.ConsumePRNResponseDTO;
 import io.mosip.registration.dto.payments.PRNVerificationResponse;
+import io.mosip.registration.dto.payments.PrnMainResponseWrapperDTO;
 import io.mosip.registration.dto.schema.ProcessSpecDto;
 import io.mosip.registration.dto.schema.UiFieldDTO;
 import io.mosip.registration.dto.schema.UiScreenDTO;
@@ -83,6 +88,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -171,6 +177,8 @@ public class GenericController extends BaseController {
 	private String statusCode;
 
 	private boolean isPrnValid = false;
+	
+	private static ObjectMapper objectMapper = new ObjectMapper();
 
 	private final Map<Node, Label> nodePrnLabelMap = new HashMap<>();
 
@@ -1344,31 +1352,50 @@ public class GenericController extends BaseController {
 	 * @param regId
 	 * @return
 	 */
-	public PRNVerificationResponse verifyPRN(final String prnText, final String processFlow, final String regId) {
+	public PRNVerificationResponse verifyPRN(final String prnText, final String processFlow, final String regId, final String replaceTypeCode) {
+	    PrnMainResponseWrapperDTO<?> responseWrapper = prnService.checkPRNStatus(prnText);
 
-	 	CheckPRNStatusResponseDTO responseDTO = prnService.checkPRNStatus(prnText);
+	    if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
+	        return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
+	    }
 
-		if (responseDTO != null) {
-			if (responseDTO.getStatusCode().equalsIgnoreCase(statusCode)) {
-				if (responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes") != null &&
-						responseDTO.getEligiblePaidForServiceTypes().get("eligiblePaidForServiceTypes").equalsIgnoreCase(processFlow)) {
-					Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
-					if (prnCheck == null) {
-						return new PRNVerificationResponse(false, "Verification failed.");
-					}
+	    if (responseWrapper == null) {
+	        return new PRNVerificationResponse(false, "Verification failed: Internal Server Error");
+	    }
 
-					if (!prnCheck) {
-						return new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
-					}
-				} else {
-					return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s usecase", processFlow));
-				}
-			} else {
-				return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't paid"));
-			}
-		}
-		return new PRNVerificationResponse(false, "Invalid PRN. Please make the payment to continue with Application.");
+	    CheckPRNStatusResponseDTO responseDTO = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNStatusResponseDTO.class);
+
+	   
+	    // Validate process flow
+	    if (!processFlow.equalsIgnoreCase(responseDTO.getProcessFlowPaidFor())) {
+	        return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s use case", processFlow));
+	    }
+
+	    // Validate replaceTypeCode if provided	    
+	    if ("LOST".equals(processFlow) && replaceTypeCode != null &&
+	            (responseDTO.getSubServiceTypePaidFor() == null || 
+	            !replaceTypeCode.equalsIgnoreCase(responseDTO.getSubServiceTypePaidFor()))) {
+	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't for replacement type selected.");
+	    }
+	    
+	    // Validate PRN status
+	    if (!statusCode.equalsIgnoreCase(responseDTO.getStatusCode())) {
+	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't paid");
+	    }
+
+
+	    // Check transaction logs for PRN
+	    Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
+	    if (prnCheck == null) {
+	        return new PRNVerificationResponse(false, "Verification failed.");
+	    }
+
+	    return prnCheck
+	            ? new PRNVerificationResponse(false, "Verification failed: PRN already used.")
+	            : new PRNVerificationResponse(true, "PRN validation is Success. Continue with Application");
 	}
+
+
 
 
 	/**
@@ -1380,29 +1407,30 @@ public class GenericController extends BaseController {
 	 * @return
 	 */
 	private PRNVerificationResponse checkPrnInTranscLogs(final String prnText, final String regId) {
-		CheckPRNInTransLogsResponseDTO logsResponse = null;
+	    PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO> responseWrapper = prnService.checkPrnInTransLogs(prnText);
 
-		try {
-			logsResponse = prnService.checkPrnInTransLogs(prnText);
-		} catch (Exception e) {
-			LOGGER.error("Transaction logs service unreachable: " + e.getMessage());
-			return new PRNVerificationResponse(false, "Failed to reach PRN service");
-		}
+	    if (responseWrapper == null || (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty())) {
+	    	return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
+	    }
 
-		if (logsResponse != null) {
-			if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
-				if (regId.equals(logsResponse.getRegIdTagged())) {
-					LOGGER.info("PRN is present in logs but matches the current session regId.");
-					return new PRNVerificationResponse(false, "PRN matches the current regId.");
-				} else {
-					LOGGER.info(String.format("PRN is already consumed and tagged to a different regId: %s", logsResponse.getRegIdTagged()));
-					return new PRNVerificationResponse(false, "PRN already used");
-				}
-			}
-		}
+	    //CheckPRNInTransLogsResponseDTO logsResponse = responseWrapper.getResponse();
+	    CheckPRNInTransLogsResponseDTO logsResponse = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNInTransLogsResponseDTO.class);
 
-		return new PRNVerificationResponse(false, "PRN is not consumed.");
+	    if (logsResponse != null) {
+	        if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
+	            if (regId.equals(logsResponse.getRegIdTagged())) {
+	                return new PRNVerificationResponse(false, "PRN matches the current regId.");
+	            } else {
+	                return new PRNVerificationResponse(false, "PRN already used");
+	            }
+	        }
+	    } else {
+	        return new PRNVerificationResponse(false, "Transaction logs response is empty.");
+	    }
+
+	    return new PRNVerificationResponse(false, "PRN is not consumed.");
 	}
+
 
 
 	/**
@@ -1473,37 +1501,77 @@ public class GenericController extends BaseController {
 	 * @param parentGridPane
 	 */
 	private void handlePRNVerification(String prnText, Node node, String processSpecFlow, String registrationId, FxControl fxControl, GridPane parentGridPane) {
-		showLoadingPRNIndicator(node);
+	    showLoadingPRNIndicator(node);
 
-		new Thread(() -> {
-			try {
-				Thread.sleep(3000);
+	    new Thread(() -> {
+	        try {
+	            Thread.sleep(3000);
 
-				PRNVerificationResponse verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId);
-				isPrnValid = verificationResponse.isValid();
+	            // Initialize with a default failure response to avoid NPE
+	            PRNVerificationResponse verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
 
-				Platform.runLater(() -> {
-					removeLoadingPRNIndicator(node);
+	            if ("LOST".equals(processSpecFlow)) {
+	                Node rootNode = node.getScene().getRoot();
+	                List<ComboBox<?>> comboBoxes = findAllComboBoxes(rootNode);
+	                
+	                // Retrieve Code of replacement type selected
+	                for (ComboBox<?> comboBox : comboBoxes) {
+	                	if("userServiceTypeReplacement".equals(comboBox.getId())) {
+	                		GenericDto selectedValue = (GenericDto)comboBox.getValue();
+		                    verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, selectedValue.getCode());
+		                    if (verificationResponse == null) {
+		                        verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
+		                    }
+	                	}
+	                }
 
-					// Locate the existing PRN validation label inside the GridPane
-					Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
+	            } else {
+	                verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, null);
+	                if (verificationResponse == null) {
+	                    verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
+	                }
+	            }
 
-					if (isPrnValid) {
-						PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
-						showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
-						//updatePRNIndicator(node, consumeResponse.isValid());
-						//updatePRNValidationMessage(validationLabel, consumeResponse.getMessage(), consumeResponse.isValid());
-					} else {
-						showPaymentValidationPopup(parentGridPane, verificationResponse.getMessage(), false);
-						//updatePRNIndicator(node, false);
-						//updatePRNValidationMessage(validationLabel, verificationResponse.getMessage(), false);
-					}
-				});
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}).start();
+	            final PRNVerificationResponse finalVerificationResponse = verificationResponse;
+	            boolean isValid = finalVerificationResponse.isValid();
+
+	            Platform.runLater(() -> {
+	                removeLoadingPRNIndicator(node);
+
+	                Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
+
+	                if (isValid) {
+	                    PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
+	                    showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
+	                } else {
+	                    showPaymentValidationPopup(parentGridPane, finalVerificationResponse.getMessage(), false);
+	                }
+	            });
+
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	        }
+	    }).start();
 	}
+	
+	public List<ComboBox<?>> findAllComboBoxes(Node node) {
+	    List<ComboBox<?>> comboBoxes = new ArrayList<>();
+	    
+	    // If the node is a container (like Parent), recursively check its children
+	    if (node instanceof Parent) {
+	        for (Node child : ((Parent) node).getChildrenUnmodifiable()) {
+	            comboBoxes.addAll(findAllComboBoxes(child));  // Recursive call to find ComboBoxes in child nodes
+	        }
+	    }
+
+	    // If the node is a ComboBox, add it to the list
+	    if (node instanceof ComboBox) {
+	        comboBoxes.add((ComboBox<?>) node);
+	    }
+	    
+	    return comboBoxes;
+	}
+
 
 	private void showPaymentValidationPopup(GridPane parent, String message, boolean isSuccess) {
 		Dialog<ButtonType> dialog = new Dialog<>();
