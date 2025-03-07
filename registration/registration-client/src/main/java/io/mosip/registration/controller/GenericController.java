@@ -1364,7 +1364,7 @@ public class GenericController extends BaseController {
 	 */
 	public PRNVerificationResponse verifyPRN(final String prnText, final String processFlow, final String regId, final String replaceTypeCode) {
 	    PrnMainResponseWrapperDTO<?> responseWrapper = prnService.checkPRNStatus(prnText);
-
+		paymentCheck=true;
 	    if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
 	        return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
 	    }
@@ -1395,14 +1395,14 @@ public class GenericController extends BaseController {
 
 
 	    // Check transaction logs for PRN
-	    Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
+	    /*Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	    if (prnCheck == null) {
 	        return new PRNVerificationResponse(false, "Verification failed: Unable to verify PRN logs.");
 	    }
 
 	    if (!prnCheck) {
 	        return new PRNVerificationResponse(false, "Verification failed: PRN already used.");
-	    }
+	    }*/
 
 	    return new PRNVerificationResponse(true, "PRN validation is Successful. Continue with Application");
 	}
@@ -1543,6 +1543,7 @@ public class GenericController extends BaseController {
 
 	            final PRNVerificationResponse finalVerificationResponse = verificationResponse;
 	            boolean isValid = finalVerificationResponse.isValid();
+				isPrnValid=isValid;
 
 	            Platform.runLater(() -> {
 	                removeLoadingPRNIndicator(node);
