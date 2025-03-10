@@ -50,6 +50,7 @@ public class DateValidation extends BaseController {
 	private Validations validation;
 
 	int maxAge = 0;
+	String dateofbirth="";
 
 	public boolean isNewValueValid(String newValue, String fieldType) {
 		if (newValue.isEmpty())
@@ -121,6 +122,10 @@ public class DateValidation extends BaseController {
 		else if(ageRestrictionResponse.get("errVal").equals(highAgeFirstId))
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_AGE_MINOR_FIRSTID,
 					maxAge));
+
+		if(isValid){
+			dateofbirth= dd.getText() + "/" + mm.getText() + "/" + yyyy.getText();
+		}
 		return isValid;
 	}
 
@@ -384,7 +389,7 @@ public class DateValidation extends BaseController {
 				fieldId + RegistrationConstants.MM + RegistrationConstants.TEXT_FIELD);
 		TextField yyyy = (TextField) getFxElement(parentPane,
 				fieldId + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
-
+		String dob="";
 		boolean isValid = false;
 		Validator validator = null;
 		boolean checkCardExpire = false;
@@ -403,7 +408,7 @@ public class DateValidation extends BaseController {
 			LocalDate localDate = LocalDate.of(Integer.valueOf(yyyy.getText()),
 					Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
 
-			String dob = localDate.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
+			dob = localDate.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
 			isValid = validator != null && validator.getValidator() != null ? dob.matches(validator.getValidator()) : true;
 
             String comparisonDate = getValueFromApplicationContext(RegistrationConstants.CARD_EXP);
@@ -415,6 +420,27 @@ public class DateValidation extends BaseController {
                 isValid = false;
                 checkCardExpire = true;
             }
+
+			if(isValid){
+				// Parse both dob and dateofbirth strings into LocalDate objects
+				LocalDate dobDate = LocalDate.parse(dob, formatter);
+				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);
+
+				// Calculate the period (difference) between the two dates
+				Period period = Period.between(dateofbirthDate, dobDate);
+
+				// Check if the difference is at least 18 years
+				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("child") )  && period.getYears() < 18) {
+					isValid = false; // If the difference is less than 18 years, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINIMUM_AGE_DIFF));
+				}
+				else if(period.getYears()>-1){
+					isValid = false; // If the difference is less than 18 years, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_DIFF));
+
+				}
+			}
+
 
 			if (isValid) {
 				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
@@ -429,6 +455,7 @@ public class DateValidation extends BaseController {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
 		}
+
 
 		return isValid;
 	}
