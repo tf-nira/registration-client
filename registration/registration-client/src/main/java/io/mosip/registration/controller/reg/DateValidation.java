@@ -430,11 +430,11 @@ public class DateValidation extends BaseController {
 				Period period = Period.between(dateofbirthDate, dobDate);
 
 				// Check if the difference is at least 18 years
-				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("child") )  && period.getYears() < 18) {
+				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("removeSpouse") || uiFieldDTO.getId().contains("child") )  && period.getYears() < 18) {
 					isValid = false; // If the difference is less than 18 years, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINIMUM_AGE_DIFF));
 				}
-				else if(period.getYears()>-1){
+				else if(uiFieldDTO.getId().contains("guardian") && period.getYears()>-1){
 					isValid = false; // If the difference is less than 18 years, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_DIFF));
 
