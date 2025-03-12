@@ -246,14 +246,15 @@ public class DocumentFxControl extends FxControl {
 
 		/** Text Field */
 		TextField textField;
-		if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+		/*if (!uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !uiFieldDTO.getSubType().equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 			textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, titleText,
 					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
 		} else {
 			textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, "",
 					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, true);
-		}
-
+		}*/
+		textField = getTextField(id + RegistrationConstants.DOC_TEXT_FIELD, null,
+				RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, -5, true);
 		textField.textProperty().addListener((observable, oldValue, newValue) -> {
 			Label label = (Label) getField(
 					uiFieldDTO.getId() + RegistrationConstants.DOC_TEXT_FIELD + RegistrationConstants.LABEL);
