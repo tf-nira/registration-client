@@ -421,7 +421,7 @@ public class DateValidation extends BaseController {
                 checkCardExpire = true;
             }
 
-			if(isValid){
+			if(isValid && !dateofbirth.equalsIgnoreCase("")){
 				// Parse both dob and dateofbirth strings into LocalDate objects
 				LocalDate dobDate = LocalDate.parse(dob, formatter);
 				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);
