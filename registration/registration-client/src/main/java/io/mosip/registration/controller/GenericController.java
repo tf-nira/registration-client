@@ -197,6 +197,7 @@ public class GenericController extends BaseController {
 	public static List<UiFieldDTO> fields = new ArrayList<>();
 	private LanguageSelectionController registrationDTO;
 	private RequiredFieldValidator requiredFieldValidator;
+	public int dobAge;
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
@@ -1929,6 +1930,14 @@ public class GenericController extends BaseController {
 		result.put("isValid", true);
 		result.put("errVal", "");
 		return result;
+	}
+
+	public void setDobAge(int age){
+		dobAge=age;
+	}
+
+	public int getDobAge(){
+		return dobAge;
 	}
 
 	/*
