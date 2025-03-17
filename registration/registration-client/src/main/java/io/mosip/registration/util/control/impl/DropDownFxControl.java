@@ -306,7 +306,106 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
+				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
+
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+
+					List<String> declarantFieldIds = new ArrayList<>(List.of(new String[]{"declarantSurname", "declarantgivenName", "declarantotherNames", "declarantPreviousNames", "introducerNIN"}));
+					List<String> fatherFieldIds = List.of(new String[]{"fatherSurname", "fatherGivenName", "fatherOtherNames", "fatherPreviousName", "fatherNIN"});
+					List<String> motherFieldIds = List.of(new String[]{"motherSurname", "motherGivenName", "motherOtherNames", "motherPreviousName", "motherNIN"});
+
+					if (newValue.getName().equalsIgnoreCase("Father")){
+						for (int i=0; i<5; i++) {
+							FxControl fxControl = getFxControl(declarantFieldIds.get(i));
+							fxControl.selectAndSet(genericController.getRegistrationDTOFromSession().getDemographics().get(fatherFieldIds.get(i)));
+							fxControl.setData(genericController.getRegistrationDTOFromSession().getDemographics().get(fatherFieldIds.get(i)));
+							fxControl.getNode().setDisable(true);
+						}
+
+						Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+
+						// Residence Status
+						SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("fatherResidence")).get(0);
+						FxControl fxControl1 =  getFxControl("declarantResidenceStatus");
+						if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
+							fxControl1.selectAndSet("UGA");
+							fxControl1.setData("UGA");
+						}
+						else {
+							fxControl1.selectAndSet("FRN");
+							fxControl1.setData("FRN");
+						}
+						fxControl1.getNode().setDisable(true);
+
+						// Gender
+						FxControl fxControl2 =  getFxControl("declarantGender");
+						fxControl2.selectAndSet("MLE");
+						fxControl2.setData("MLE");
+						fxControl2.getNode().setDisable(true);
+
+						// Nationality
+						FxControl fxControl3 =  getFxControl("declarantNationality");
+						fxControl3.selectAndSet("Ugandan");
+						fxControl3.setData("Ugandan");
+						fxControl3.getNode().setDisable(true);
+					}
+					else if (newValue.getName().equalsIgnoreCase("Mother")) {
+						for (int i=0; i<5; i++) {
+							FxControl fxControl = getFxControl(declarantFieldIds.get(i));
+							fxControl.selectAndSet(genericController.getRegistrationDTOFromSession().getDemographics().get(motherFieldIds.get(i)));
+							fxControl.setData(genericController.getRegistrationDTOFromSession().getDemographics().get(motherFieldIds.get(i)));
+							fxControl.getNode().setDisable(true);
+						}
+
+						Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+
+						// Maiden Name
+						FxControl fxControl1 =  getFxControl("declarantMaidenName");
+						fxControl1.selectAndSet(demographics.get("motherMaidenName"));
+						fxControl1.setData(demographics.get("motherMaidenName"));
+						fxControl1.getNode().setDisable(true);
+
+						// Residence Status
+						SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("motherResidence")).get(0);
+						FxControl fxControl2 =  getFxControl("declarantResidenceStatus");
+						if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
+							fxControl2.selectAndSet("UGA");
+							fxControl2.setData("UGA");
+						}
+						else {
+							fxControl2.selectAndSet("FRN");
+							fxControl2.setData("FRN");
+						}
+						fxControl2.getNode().setDisable(true);
+
+						// Gender
+						FxControl fxControl3 =  getFxControl("declarantGender");
+						fxControl3.selectAndSet("FLE");
+						fxControl3.setData("FLE");
+						fxControl3.getNode().setDisable(true);
+
+						// Nationality
+						FxControl fxControl4 =  getFxControl("declarantNationality");
+						fxControl4.selectAndSet("Ugandan");
+						fxControl4.setData("Ugandan");
+						fxControl4.getNode().setDisable(true);
+					}
+					else {
+						declarantFieldIds.add("declarantMaidenName");
+						declarantFieldIds.add("declarantGender");
+						declarantFieldIds.add("declarantResidenceStatus");
+						declarantFieldIds.add("declarantNationality");
+
+						for(String fieldId: declarantFieldIds) {
+							FxControl fxControl = getFxControl(fieldId);
+							fxControl.selectAndSet(null);
+							fxControl.setData(null);
+							fxControl.getNode().setDisable(false);
+						}
+					}
 				}
+
+			}
 		});
 	}
 	
