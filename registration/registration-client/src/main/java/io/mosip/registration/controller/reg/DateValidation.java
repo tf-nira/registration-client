@@ -192,6 +192,7 @@ public class DateValidation extends BaseController {
                     if (isValid) {
                         populateDateFields(parentPane, fieldId, age);
 						genericController.setDobAge(ageVal);
+						//set age
                     }
                 }
             } catch (Exception ex) {
