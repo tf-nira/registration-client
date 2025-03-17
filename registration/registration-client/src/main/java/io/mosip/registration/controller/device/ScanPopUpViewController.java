@@ -262,7 +262,6 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	                }
 	            });
 	        });
-	        renderAllPages();
 	        rectangleSelection = null;
 	        clearSelection();
 	        setScanImageViewZoomable();
@@ -299,20 +298,6 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 				}
 			}
 		});
-	}
-
-	private void renderAllPages() {
-		if (documentScanController.getScannedPages() != null && !documentScanController.getScannedPages().isEmpty()) {
-			getImageGroup().getChildren().clear(); // Clear previous content
-
-			for (int i = 0; i < documentScanController.getScannedPages().size(); i++) {
-				ImageView imageView = new ImageView(getImage(documentScanController.getScannedPages().get(i)));
-				setHeightAndWidth(imageView);
-				
-				// Add the image to the group
-				getImageGroup().getChildren().add(imageView);
-			}
-		}
 	}
 	
 	// Set the desired height and width
@@ -382,11 +367,13 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			int totalCount = documentScanController.getScannedPages().size();
 			initializeDocPages(currentPage, totalCount);
 			getImageGroup().getChildren().clear();
-			getImageGroup().getChildren().add(new ImageView(getImage(documentScanController.getScannedPages().get(currentPage-1))));
+			
+			// Create ImageView for the current image
+			ImageView imageView = new ImageView(getImage(documentScanController.getScannedPages().get(currentPage - 1)));
+			setHeightAndWidth(imageView);
+			
+			getImageGroup().getChildren().add(imageView);
 		}
-	    
-	    //set the height and width for scanned images
-	    renderAllPages();
 	    
 	    if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 	        streamBtn.setDisable(true);
