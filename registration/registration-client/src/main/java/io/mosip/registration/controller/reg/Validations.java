@@ -6,7 +6,7 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import io.mosip.registration.controller.ClientApplication;
 import io.mosip.registration.controller.GenericController;
 import io.mosip.registration.enums.FlowType;
 import javafx.scene.control.*;
@@ -180,7 +180,7 @@ public class Validations extends BaseController {
                                        UiFieldDTO uiFieldDTO, String langCode) {
 
 		boolean isLocalLanguageField = node.getId().contains(RegistrationConstants.LOCAL_LANGUAGE);
-
+		String errorMessage="";
 		if (RegistrationConstants.AGE_DATE.equals(uiFieldDTO.getControlType())) {
 			boolean isValid = dateValidation.validateDate(parentPane, uiFieldDTO.getId());
 			LOGGER.debug(RegistrationConstants.VALIDATION_LOGGER, APPLICATION_NAME, APPLICATION_ID,
@@ -191,7 +191,7 @@ public class Validations extends BaseController {
 
 		Validator validator = getRegex(fieldId, RegistrationConstants.REGEX_TYPE, langCode);
 		if (validator != null && validator.getValidator() != null && !value.matches(validator.getValidator())) {
-			String errorMessage = validator.getErrorCode() != null
+			errorMessage = validator.getErrorCode() != null
 					&& messageBundle.containsKey(validator.getErrorCode())
 							? messageBundle.getString(validator.getErrorCode())
 							: (getFromLabelMap(fieldId + langCode).concat(RegistrationConstants.SPACE)
@@ -202,7 +202,16 @@ public class Validations extends BaseController {
 			}
 			return false;
 		}
-
+		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			int age =genericController.getDobAge();
+			int comAge=Integer.parseInt(value);
+			if(age < comAge){
+				errorMessage="Years lived cannot be greater than the age";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+				return false;
+			}
+		}
 		if (!isLocalLanguageField && uiFieldDTO != null
 				&& Arrays.asList("UIN", "RID","VID").contains(uiFieldDTO.getSubType())
 				&& !validateUinOrRidField(value, getRegistrationDTOFromSession(), uiFieldDTO)) {

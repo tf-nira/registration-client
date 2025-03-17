@@ -156,9 +156,10 @@ public class DateValidation extends BaseController {
 		//int highAgeFirstId=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL_FIRSTID)) ;
 		int highAgeFirstId = 16;
 
-		GenericController controller = new GenericController();
-		HashMap<String, Object> ageRestrictionResponse = controller.ageRestriction(ageVal, highAgeNew, highAgeFirstId) ;
-		isValid = (Boolean) ageRestrictionResponse.get("isValid");
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+
+		HashMap<String, Object> ageRestrictionResponse = genericController.ageRestriction(ageVal, highAgeNew, highAgeFirstId) ;isValid = (Boolean) ageRestrictionResponse.get("isValid");
+
 		err = isValid;
 
         if (isValid) {
@@ -190,6 +191,7 @@ public class DateValidation extends BaseController {
 
                     if (isValid) {
                         populateDateFields(parentPane, fieldId, age);
+						genericController.setDobAge(ageVal);
                     }
                 }
             } catch (Exception ex) {
