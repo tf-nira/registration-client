@@ -53,8 +53,19 @@ public class DynamicFieldDAOImpl implements DynamicFieldDAO {
 			List<DynamicFieldValueDto> fields = MapperUtils.convertJSONStringToDto(valueJson == null ? "[]" : valueJson,
 					new TypeReference<List<DynamicFieldValueDto>>() {});
 
-			if(fields != null)
-				fields.sort((DynamicFieldValueDto d1, DynamicFieldValueDto d2) -> d1.getCode().compareTo(d2.getCode()));
+			if (fields != null) {
+			    fields.sort((d1, d2) -> {
+			        if(fieldName.equals("CountryCode")) {
+			        	if ("UGA".equals(d1.getCode())) {
+				            return -1; // d1 comes first
+				        } else if ("UGA".equals(d2.getCode())) {
+				            return 1; // d2 comes first
+				        }
+			        }
+			        // Default sorting by code
+			        return d1.getCode().compareTo(d2.getCode());
+			    });
+			}
 
 			return fields;
 			
