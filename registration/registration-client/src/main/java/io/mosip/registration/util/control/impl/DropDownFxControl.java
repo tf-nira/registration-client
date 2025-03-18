@@ -306,6 +306,39 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
+				if(uiFieldDTO.getId().equalsIgnoreCase("residenceStatus")){
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("residenceStatus")).get(0);
+					FxControl fxControl1 =  getFxControl("appResCountryUGA");
+					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
+						fxControl1.selectAndSet("UGA");
+						fxControl1.setData("UGA");
+					}
+				}
+
+				if(uiFieldDTO.getId().equalsIgnoreCase("applicantBirthPlace")){
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("applicantBirthPlace")).get(0);
+					FxControl fxControl1 =  getFxControl("appBirCountryUGA");
+					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
+						fxControl1.selectAndSet("UGA");
+						fxControl1.setData("UGA");
+					}
+				}
+				if(uiFieldDTO.getId().equalsIgnoreCase("applicantOriginPlace")){
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("applicantOriginPlace")).get(0);
+					FxControl fxControl1 =  getFxControl("appOriCountryUGA");
+					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
+						fxControl1.selectAndSet("UGA");
+						fxControl1.setData("UGA");
+					}
+				}
+
+
 				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
 
 					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
@@ -317,9 +350,15 @@ public class DropDownFxControl extends FxControl {
 					if (newValue.getName().equalsIgnoreCase("Father")){
 						for (int i=0; i<5; i++) {
 							FxControl fxControl = getFxControl(declarantFieldIds.get(i));
-							fxControl.selectAndSet(genericController.getRegistrationDTOFromSession().getDemographics().get(fatherFieldIds.get(i)));
-							fxControl.setData(genericController.getRegistrationDTOFromSession().getDemographics().get(fatherFieldIds.get(i)));
-							fxControl.getNode().setDisable(true);
+							fxControl.selectAndSet(null);
+							fxControl.setData(null);
+							fxControl.getNode().setDisable(false);
+							Object fatherDataObject = genericController.getRegistrationDTOFromSession().getDemographics().get(fatherFieldIds.get(i));
+							if(fatherDataObject!=null) {
+								fxControl.selectAndSet(fatherDataObject);
+								fxControl.setData(fatherDataObject);
+								fxControl.getNode().setDisable(true);
+							}
 						}
 
 						Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
@@ -352,15 +391,31 @@ public class DropDownFxControl extends FxControl {
 					else if (newValue.getName().equalsIgnoreCase("Mother")) {
 						for (int i=0; i<5; i++) {
 							FxControl fxControl = getFxControl(declarantFieldIds.get(i));
-							fxControl.selectAndSet(genericController.getRegistrationDTOFromSession().getDemographics().get(motherFieldIds.get(i)));
-							fxControl.setData(genericController.getRegistrationDTOFromSession().getDemographics().get(motherFieldIds.get(i)));
-							fxControl.getNode().setDisable(true);
+							fxControl.selectAndSet(null);
+							fxControl.setData(null);
+							fxControl.getNode().setDisable(false);
+							Object motherDataObject = genericController.getRegistrationDTOFromSession().getDemographics().get(motherFieldIds.get(i));
+							if(motherDataObject!=null) {
+								fxControl.selectAndSet(motherDataObject);
+								fxControl.setData(motherDataObject);
+								fxControl.getNode().setDisable(true);
+							}
 						}
 
 						Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
 
+						// Gender
+						FxControl fxControl3 =  getFxControl("declarantGender");
+						fxControl3.selectAndSet("FLE");
+						fxControl3.setData("FLE");
+						fxControl3.getNode().setDisable(true);
+
+
 						// Maiden Name
 						FxControl fxControl1 =  getFxControl("declarantMaidenName");
+						fxControl1.selectAndSet(demographics.get(null));
+						fxControl1.setData(demographics.get(null));
+						fxControl1.getNode().setDisable(false);
 						fxControl1.selectAndSet(demographics.get("motherMaidenName"));
 						fxControl1.setData(demographics.get("motherMaidenName"));
 						fxControl1.getNode().setDisable(true);
@@ -378,11 +433,6 @@ public class DropDownFxControl extends FxControl {
 						}
 						fxControl2.getNode().setDisable(true);
 
-						// Gender
-						FxControl fxControl3 =  getFxControl("declarantGender");
-						fxControl3.selectAndSet("FLE");
-						fxControl3.setData("FLE");
-						fxControl3.getNode().setDisable(true);
 
 						// Nationality
 						FxControl fxControl4 =  getFxControl("declarantNationality");
