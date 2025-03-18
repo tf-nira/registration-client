@@ -367,6 +367,22 @@ public abstract class FxControl  {
 		return false; // Default to false if something goes wrong
 	}
 
+	public boolean isFieldDefaultValue2(UiFieldDTO schemaDTO) {
+		if (requiredFieldValidator == null) {
+			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);
+		}
+		try {
+			// Determine if the field should use its default value according to some specifications
+			boolean isDefaultValueAccordingToSpec = requiredFieldValidator.isFieldDefaultValue2(schemaDTO, getRegistrationDTo());
+
+			return isDefaultValueAccordingToSpec;
+		} catch (Exception e) {
+			// Handle exception gracefully
+			e.printStackTrace();
+		}
+		return false; // Default to false if something goes wrong
+	}
+
 	public boolean isFieldRequired(UiFieldDTO schemaDTO) {
 		if (requiredFieldValidator == null) {
 			requiredFieldValidator = ClientApplication.getApplicationContext().getBean(RequiredFieldValidator.class);

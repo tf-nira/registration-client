@@ -63,6 +63,7 @@ public class UiFieldDTO {
 	private List<String> groupProcess;
 	private List<String> dependentFields;
 	private RequiredOnExpr defaultValue;
+	private RequiredOnExpr defaultValue2;
 	private boolean setRequired;
 	private List<String> parentFields;
 

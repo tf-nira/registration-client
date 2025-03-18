@@ -1858,13 +1858,21 @@ public class GenericController extends BaseController {
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
 								}
-								if (field.getDefaultValue() != null) {
-									boolean check = fxControl.isFieldDefaultValue(field);
-									if (check) {
+
+								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
+									boolean check1 = fxControl.isFieldDefaultValue(field);
+									boolean check2 = fxControl.isFieldDefaultValue2(field);
+
+									if(check1) {
 										fxControl.selectAndSet("Y");
 										fxControl.getNode().setDisable(true);
-									} else {
-										fxControl.selectAndSet(null);
+									}
+									else if(check2) {
+										fxControl.selectAndSet("N");
+										fxControl.getNode().setDisable(true);
+									}
+									else {
+										fxControl.selectAndSet("N");
 										fxControl.getNode().setDisable(false);
 									}
 								}
@@ -1878,13 +1886,20 @@ public class GenericController extends BaseController {
 				for (UiFieldDTO field : screenDTO.getFields()) {
 					FxControl fxControl = getFxControl(field.getId());
 					if (fxControl != null) {
-						if (field.getDefaultValue() != null) {
-							boolean check = fxControl.isFieldDefaultValue(field);
-							if (check) {
+						if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
+							boolean check1 = fxControl.isFieldDefaultValue(field);
+							boolean check2 = fxControl.isFieldDefaultValue2(field);
+
+							if(check1) {
 								fxControl.selectAndSet("Y");
 								fxControl.getNode().setDisable(true);
-							} else {
-								fxControl.selectAndSet(null);
+							}
+							else if(check2) {
+								fxControl.selectAndSet("N");
+								fxControl.getNode().setDisable(true);
+							}
+							else {
+								fxControl.selectAndSet("N");
 								fxControl.getNode().setDisable(false);
 							}
 						}

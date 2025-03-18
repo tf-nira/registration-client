@@ -95,6 +95,18 @@ public class RequiredFieldValidator {
 		return defaultValue;
 	}
 
+	public boolean isFieldDefaultValue2(UiFieldDTO schemaField, RegistrationDTO registrationDTO) {
+		boolean defaultValue = false;
+
+		if (schemaField != null && schemaField.getDefaultValue2() != null && schemaField.getDefaultValue2().getEngine().equalsIgnoreCase("MVEL")
+				&& schemaField.getDefaultValue2().getExpr() != null) {
+			// Check if the MVEL expression matches a condition
+			defaultValue = executeMVEL(schemaField.getDefaultValue2().getExpr(), registrationDTO);
+			LOGGER.info("Checked {} field for default value condition: {}", schemaField.getId(), defaultValue);
+		}
+		return defaultValue;
+	}
+
 
 	public List<String> getRequiredBioAttributes(UiFieldDTO field, RegistrationDTO registrationDTO) {
 		if(!isRequiredField(field, registrationDTO))
