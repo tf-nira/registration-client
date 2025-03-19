@@ -410,6 +410,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 	        documentScanController.getFxControl().setData(documentScanController.getScannedPages());
 	        documentScanController.getScannedPages().clear();
+	        rotationAngle = 0;
 	        popupStage.close();
 
 	    } catch (RuntimeException exception) {
