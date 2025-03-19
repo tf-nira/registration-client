@@ -78,6 +78,8 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	@FXML
 	private Button cropButton;
 	@FXML
+	private Button rotateButton;
+	@FXML
 	private Button streamBtn;
 	@FXML
 	private Button previewBtn;
@@ -95,6 +97,8 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	private ImageView saveImageView;
 	@FXML
 	private ImageView backImageView1;
+	@FXML
+	private ImageView rotateImageView;
 	@FXML
 	private ImageView cancelImageView;	
 	@FXML
@@ -123,6 +127,8 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 	@Value("${mosip.doc.stage.height:620}")
 	private int height;
+	
+	private double rotationAngle = 0;
 
 	private Thread streamer_thread = null;
 	private Stage popupStage;
@@ -184,6 +190,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		setImage(captureImageView	, RegistrationConstants.SCAN_IMG);
 		setImage(saveImageView	, RegistrationConstants.DWLD_PRE_REG_DATA_IMG);
 		//setImage(backImageView1	, RegistrationConstants.CROP_IMG);
+		setImage(rotateImageView	, RegistrationConstants.ROTATE_IMG);
 		setImage(cancelImageView	, RegistrationConstants.REJECT_IMG);
 		setImage(previewImageView	, RegistrationConstants.HOVER_IMG);
 	}
@@ -215,6 +222,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			scanImage.setPreserveRatio(true);
 			//popupTitle.setText(title);
 			//cropButton.setDisable(true);
+			rotateButton.setDisable(true);
 			cancelBtn.setDisable(true);
 			previewOption.setVisible(false);
 
@@ -227,6 +235,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	        } else {
 	            saveBtn.setDisable(true);
 	          //cropButton.setDisable(true);
+	            rotateButton.setDisable(true);
 	            cancelBtn.setDisable(true);
 	            previewBtn.setDisable(true);
 	        }
@@ -234,6 +243,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	        if (subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 	            streamBtn.setDisable(true);
 	          //cropButton.setDisable(true);
+	            rotateButton.setDisable(true);
 	            cancelBtn.setDisable(false);
 	            previewBtn.setDisable(false);
 	        }
@@ -333,6 +343,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		showStream(true);
 		cancelBtn.setDisable(true);
 		//cropButton.setDisable(true);
+		rotateButton.setDisable(true);
 
 		if(getImageGroup().getChildren().isEmpty())
 			getImageGroup().getChildren().add(new ImageView());
@@ -381,6 +392,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	        previewBtn.setDisable(false);
 	    }
 	    //cropButton.setDisable(false);
+	    rotateButton.setDisable(false);
 	    saveBtn.setDisable(false);
 	}
 
@@ -418,7 +430,26 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 //		rectangleSelection = new RectangleSelection(imageGroup);
 //		LOGGER.debug("Shown stage for crop");
 //	}
+	
+	@FXML
+	public void rotate() {
+		if (getImageGroup().getChildren().isEmpty()) {
+			return;
+		}
+		ImageView imageView = (ImageView) getImageGroup().getChildren().get(0);
 
+		rotationAngle += 90;
+		rotationAngle = rotationAngle % 360;
+
+		// Apply the rotation
+		imageView.setRotate(rotationAngle);
+		if (rotationAngle == 90 || rotationAngle == 270) {
+			imageView.setFitWidth(420);
+			imageView.setFitHeight(640);
+		} else {
+			setHeightAndWidth(imageView);
+		}
+	}
 
 	@FXML
 	public void cancel() {
@@ -489,6 +520,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			saveBtn.setDisable(true);
 			cancelBtn.setDisable(true);
 			// cropButton.setDisable(false);
+			rotateButton.setDisable(false);
 		}
 	}
 
@@ -701,6 +733,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		scanImage.setVisible(true);
 		cancelBtn.setDisable(false);
 		//cropButton.setDisable(true);
+		rotateButton.setDisable(false);
 	}
 
 	private void showStream(boolean isVisible) {
@@ -724,6 +757,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		streamBtn.setDisable(true);
 		cancelBtn.setDisable(true);
 		//cropButton.setDisable(true);
+		rotateButton.setDisable(true);
 		previewBtn.setDisable(true);
 	}
 }

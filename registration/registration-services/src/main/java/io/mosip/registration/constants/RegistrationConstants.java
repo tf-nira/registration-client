@@ -1900,6 +1900,7 @@ public class RegistrationConstants {
 	public static final String CANT_INFORM_IMG = "cantInform.png";
 	public static final String STREAM_IMG = "stream.png";
 	public static final String CROP_IMG = "crop.png";
+	public static final String ROTATE_IMG = "rotate.png";
 	//    public static final String REJECT_IMG ="reject.png";
 	public static final String HOVER_IMG = "hover.png";
 	public static final String EMAIL_IMG = "Email.png";
