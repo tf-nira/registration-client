@@ -553,18 +553,16 @@ public class GenericController extends BaseController {
 						default:
 
 							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
-							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null ? getRegistrationDTOFromSession().getDemographics().get(field.getId()) : demographicsCopy.get(field.getId()));
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
 						Object data =getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
 									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
 									: demographicsCopy.get(field.getId());
-
-							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()) != null
-									? getRegistrationDTOFromSession().getDemographics().get(field.getId())
-									: demographicsCopy.get(field.getId()));
-							if (field.getId().equalsIgnoreCase("spouseDateOfMarriage"))
-								LOGGER.info("spouse data : {}", data);
+						
+							if(data != null) {
+								fxControl.selectAndSet(data);
+								fxControl.setData(data);;
+							}
 							break;
 					}
 				}
