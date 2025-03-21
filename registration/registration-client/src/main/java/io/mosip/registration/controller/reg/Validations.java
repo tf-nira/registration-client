@@ -201,9 +201,9 @@ public class Validations extends BaseController {
 				addInvalidInputStyleClass(parentPane, node, false);
 			}
 			return false;
-		}
+		}GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+
 		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
-			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 			int age =genericController.getDobAge();
 			int comAge=Integer.parseInt(value);
 			if(age < comAge){
@@ -212,6 +212,13 @@ public class Validations extends BaseController {
 				return false;
 			}
 		}
+		String ninCheck =genericController.validateNin(fieldId,value);
+		if( ninCheck!=null){
+			errorMessage="Duplicate nin with "+ninCheck+" ";
+			generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+			return false;
+		}
+
 		if (!isLocalLanguageField && uiFieldDTO != null
 				&& Arrays.asList("UIN", "RID","VID").contains(uiFieldDTO.getSubType())
 				&& !validateUinOrRidField(value, getRegistrationDTOFromSession(), uiFieldDTO)) {

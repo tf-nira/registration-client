@@ -17,7 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
 import static io.mosip.registration.constants.RegistrationConstants.HASH;
@@ -26,15 +26,7 @@ import static io.mosip.registration.constants.RegistrationUIConstants.DEMOGRAPHI
 import static io.mosip.registration.constants.RegistrationUIConstants.DOCUMENT_UPLOAD;
 import static org.mockito.ArgumentMatchers.nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
@@ -198,6 +190,12 @@ public class GenericController extends BaseController {
 	private LanguageSelectionController registrationDTO;
 	private RequiredFieldValidator requiredFieldValidator;
 	public int dobAge;
+	public HashMap<String,String> ninMap= new HashMap<String, String>() ;
+	private static final List<String> familyRoles = Arrays.asList(
+			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
+			"fatherNIN", "motherNIN", "guardianNIN_AIN", "introducerNIN", "childNIN",
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
+	);
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
@@ -977,7 +975,7 @@ public class GenericController extends BaseController {
 
 				// Validate PRN differently
 				FxControl fxControl = getFxControl(field.getId());
-				if (field.getId().equalsIgnoreCase("PRNId") )
+				/*if (field.getId().equalsIgnoreCase("PRNId") )
 					if((field.isRequired() || fxControl.isFieldRequired(field)) && !paymentCheck &&!isPrnValid) {
 						LOGGER.error("PRN verification failed");
 						String label = getFxControl(field.getId()).getUiSchemaDTO().getLabel()
@@ -985,7 +983,7 @@ public class GenericController extends BaseController {
 						showHideErrorNotification(label, "");
 						isValid = false;
 						break;
-					}
+					}*/
 
 
 				if (getFxControl(field.getId()) != null && !getFxControl(field.getId()).canContinue()) {
@@ -1114,6 +1112,7 @@ public class GenericController extends BaseController {
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 		LOGGER.debug("Populating Dynamic screens for process : {}", registrationDTO.getProcessId());
 		initialize(registrationDTO);
+		initNinMap();
 		ProcessSpecDto processSpecDto = getProcessSpec(registrationDTO.getProcessId(),
 				registrationDTO.getIdSchemaVersion());
 		getScreens(processSpecDto.getScreens());
@@ -1279,7 +1278,7 @@ public class GenericController extends BaseController {
 						}
 
 						// Only if field is PRN
-						if (fieldDTO.getId().equalsIgnoreCase("PRNId")) {
+						/*if (fieldDTO.getId().equalsIgnoreCase("PRNId")) {
 							Node node = fxControl.getNode();
 
 							Button validatePaymentButton = new Button("Validate Payment");
@@ -1299,7 +1298,7 @@ public class GenericController extends BaseController {
 										fxControl, groupFlowPane);
 
 							});
-						}
+						}*/
 
 					} catch (Exception exception) {
 						LOGGER.error("Failed to build control " + fieldDTO.getId(), exception);
@@ -1952,7 +1951,41 @@ public class GenericController extends BaseController {
 	public int getDobAge(){
 		return dobAge;
 	}
+	public void initNinMap(){
 
+		for (String role : familyRoles) {
+			String field = role;
+			// Fetch data using the field ID
+			Object data = getRegistrationDTOFromSession().getDemographics().get(field);
+			if(data!=null)
+				ninMap.put(role,data.toString());
+			else
+				ninMap.put(role,"");
+		}
+	}
+
+	public String validateNin(String fieldId, String value ){
+		if(familyRoles.contains(fieldId)){
+			initNinMap();
+			for (Map.Entry<String, String> entry : ninMap.entrySet()) {
+				if (!entry.getKey().equals(fieldId) && entry.getValue().equals(value)) {
+					if (!(fieldId.equalsIgnoreCase("introducerNIN") && (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")))) {
+						if (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")) {
+							return entry.getKey().equals("fatherNIN") ? "Father's NIN" : "Mother's NIN";
+
+						} else{
+							String label = getFxControl(entry.getKey()).getUiSchemaDTO().getLabel()
+									.getOrDefault(ApplicationContext.applicationLanguage(), entry.getKey());
+							return label;
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+
+	}
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
 	 * fields.stream().filter(field ->
