@@ -1,5 +1,6 @@
 package io.mosip.registration.controller.device;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -361,6 +362,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	public void scan() throws MalformedURLException, IOException {
 		LOGGER.info("Invoke scan method for the passed controller");
 		scanningMsg.setVisible(true);
+		rotationAngle = 0;
 		setWebCamStream(false);
 		String docNumber = docCurrentPageNumber.getText();
 		int currentPage = (docNumber == null || docNumber.isEmpty() || docNumber.equals("0")) ? 1 : Integer.valueOf(docNumber);
@@ -402,14 +404,21 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	    // Enable Auto-Logout
 	    SessionContext.setAutoLogout(true);
 	    try {
+	        String docNumber = docCurrentPageNumber.getText();
+	        int currentPage = (docNumber == null || docNumber.isEmpty() || docNumber.equals("0")) ? 1 : Integer.parseInt(docNumber);
+	        
 	        if(rectangleSelection != null) {
-	            String docNumber = docCurrentPageNumber.getText();
-	            int currentPage = (docNumber == null || docNumber.isEmpty() || docNumber.equals("0")) ? 1 : Integer.valueOf(docNumber);
 	            save(rectangleSelection.getBounds(), documentScanController.getScannedPages().get(currentPage - 1));
+	        } else {
+	        	BufferedImage currentImage = documentScanController.getScannedPages().get(currentPage - 1);
+	        	BufferedImage rotatedImage = rotateBufferedImage(currentImage, rotationAngle);
+	        	// Save rotated image back to the current page
+	        	documentScanController.getScannedPages().set(currentPage - 1, rotatedImage);
 	        }
-
+	        
 	        documentScanController.getFxControl().setData(documentScanController.getScannedPages());
 	        documentScanController.getScannedPages().clear();
+	        // Reset rotation for future saves
 	        rotationAngle = 0;
 	        popupStage.close();
 
@@ -431,6 +440,27 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 //		rectangleSelection = new RectangleSelection(imageGroup);
 //		LOGGER.debug("Shown stage for crop");
 //	}
+
+	private BufferedImage rotateBufferedImage(BufferedImage originalImage, double angle) {
+		double radians = Math.toRadians(angle);
+	    int width = originalImage.getWidth();
+	    int height = originalImage.getHeight();
+
+	    // Swap width & height for 90 or 270-degree rotations
+	    if (angle == 90 || angle == 270) {
+	        int temp = width;
+	        width = height;
+	        height = temp;
+	    }
+	    BufferedImage rotatedImage = new BufferedImage(width, height, originalImage.getType());
+	    Graphics2D g2d = rotatedImage.createGraphics();
+	    g2d.translate(width / 2, height / 2);
+	    g2d.rotate(radians);
+	    g2d.translate(-originalImage.getWidth() / 2, -originalImage.getHeight() / 2);
+	    g2d.drawImage(originalImage, 0, 0, null);
+	    g2d.dispose();
+	    return rotatedImage;
+	}
 	
 	@FXML
 	public void rotate() {
@@ -699,7 +729,7 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	        streamer_thread.interrupt();
 	        streamer_thread = null;
 	    }
-
+	    rotationAngle = 0;
 	    setWebCamStream(true);
 	    isStreamPaused = false;
 
