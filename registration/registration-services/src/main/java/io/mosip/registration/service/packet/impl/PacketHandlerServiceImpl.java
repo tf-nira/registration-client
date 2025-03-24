@@ -41,6 +41,7 @@ import io.mosip.commons.packet.constants.PacketManagerConstants;
 import io.mosip.commons.packet.dto.Document;
 import io.mosip.commons.packet.dto.packet.DeviceMetaInfo;
 import io.mosip.commons.packet.dto.packet.DigitalId;
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.commons.packet.facade.PacketWriter;
 import io.mosip.kernel.auditmanager.entity.Audit;
 import io.mosip.kernel.biometrics.entities.BIR;
@@ -193,6 +194,41 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
+		
+		if(registrationDTO.getFlowType().equals(FlowType.UPDATE)) {
+			if(registrationDTO.getDemographicSimpleType("citizenshipTypeCop")!=null) {
+				List<SimpleDto> simpleDtos = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("citizenshipTypeCop");
+
+				if (simpleDtos != null && !simpleDtos.isEmpty()) {
+				    String value = simpleDtos.get(0).getValue(); // Assuming you need the first item
+				    if ("Birth to Naturalization".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Naturalization"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				    else if("Birth to Dual Citizenship".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				    else if("Birth to Registration".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Registration"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				    else if("Naturalisation to Dual Citizenship".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				    else if("Registration to Dual Citizenship".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				    else if("Citizenship Under Article  9 to Dual Citizenship".equals(value)) {
+				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
+				        registrationDTO.addDemographicField("userServiceType", values);
+				    }
+				}
+
+			}
+		}
 		
 		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {
 			registrationDTO.addDemographicField(RegistrationConstants.SIGNATURE,applicantUnabletoSignDefault);
