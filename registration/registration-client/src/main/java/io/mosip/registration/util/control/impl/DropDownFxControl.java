@@ -306,38 +306,25 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("residenceStatus")){
-					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("residenceStatus")).get(0);
-					FxControl fxControl1 =  getFxControl("appResCountryUGA");
-					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
-						fxControl1.selectAndSet("UGA");
-						fxControl1.setData("UGA");
-					}
-				}
+				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",
+					    "applicantOriginPlace", "appOriCountryUGA", "fatherResidence","fatResCountryUGA", "fatherOrigin","fatOriCountryUGA",
+					    "motherResidence","motResCountryUGA", "motherOrigin","motOriCountryUGA", "guardianResidence", "guardiansCountry"
+				);
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("applicantBirthPlace")){
-					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("applicantBirthPlace")).get(0);
-					FxControl fxControl1 =  getFxControl("appBirCountryUGA");
-					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
-						fxControl1.selectAndSet("UGA");
-						fxControl1.setData("UGA");
-					}
+				if (fieldMappings.containsKey(uiFieldDTO.getId())) {
+				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+				    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+				    List<SimpleDto> residenceDataList = (List<SimpleDto>) demographics.get(uiFieldDTO.getId());
+				    if (residenceDataList != null && !residenceDataList.isEmpty()) {
+				        SimpleDto residenceData = residenceDataList.get(0);
+				        FxControl fxControl = getFxControl(fieldMappings.get(uiFieldDTO.getId()));
+				        if ("In Uganda".equalsIgnoreCase(residenceData.getValue())) {
+				            fxControl.selectAndSet("UGA");
+				            fxControl.setData("UGA");
+				            fxControl.getNode().setDisable(true);
+				        }
+				    }
 				}
-				if(uiFieldDTO.getId().equalsIgnoreCase("applicantOriginPlace")){
-					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-					SimpleDto residenceData = (SimpleDto) ((ArrayList) demographics.get("applicantOriginPlace")).get(0);
-					FxControl fxControl1 =  getFxControl("appOriCountryUGA");
-					if (residenceData.getValue().equalsIgnoreCase("In Uganda")) {
-						fxControl1.selectAndSet("UGA");
-						fxControl1.setData("UGA");
-					}
-				}
-
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
 
