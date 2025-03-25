@@ -193,7 +193,7 @@ public class GenericController extends BaseController {
 	public HashMap<String,String> ninMap= new HashMap<String, String>() ;
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
-			"fatherNIN", "motherNIN", "guardianNIN_AIN", "introducerNIN", "childNIN",
+			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
 			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
 	);
 
@@ -1969,7 +1969,7 @@ public class GenericController extends BaseController {
 			initNinMap();
 			for (Map.Entry<String, String> entry : ninMap.entrySet()) {
 				if (!entry.getKey().equals(fieldId) && entry.getValue().equals(value)) {
-					if (!(fieldId.equalsIgnoreCase("introducerNIN") && (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")))) {
+					if ((entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN"))) {
 						if (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")) {
 							return entry.getKey().equals("fatherNIN") ? "Father's NIN" : "Mother's NIN";
 
