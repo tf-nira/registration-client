@@ -3,6 +3,7 @@ package io.mosip.registration.util.control.impl;
 import java.util.*;
 
 import io.mosip.registration.controller.ClientApplication;
+import io.mosip.registration.controller.GenericController;
 import javafx.scene.control.Tooltip;
 import org.springframework.context.ApplicationContext;
 
@@ -129,7 +130,25 @@ public class ToggleButtonFxControl extends FxControl {
 		ToggleButton button = (ToggleButton) node;
 		button.selectedProperty().addListener((options, oldValue, newValue) -> {
 			getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), newValue ? "Y" : "N");
-			
+
+			if(uiFieldDTO.getId().equalsIgnoreCase("addSpouse")){
+				GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+				Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+				SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("genderCop")).get(0);
+				FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
+				if (genderData.getValue().equalsIgnoreCase("Female")) {
+					fxControl1.selectAndSet("1");
+					fxControl1.setData("1");
+					fxControl1.getNode().setDisable(true);
+
+				}
+				else {
+					fxControl1.selectAndSet(null);
+					fxControl1.setData(null);
+					fxControl1.getNode().setDisable(false);
+				}
+			}
+
 			// handling other handlers
 			demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),
 					uiFieldDTO.getChangeAction());

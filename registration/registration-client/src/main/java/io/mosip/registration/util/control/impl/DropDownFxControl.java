@@ -306,6 +306,13 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
+				if(uiFieldDTO.getId().equalsIgnoreCase("genderCop")){
+					FxControl fxControl2 =  getFxControl("addSpouse");
+					fxControl2.selectAndSet(null);
+					fxControl2.setData(null);
+					fxControl2.getNode().setDisable(false);
+				}
+
 				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
 					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
@@ -317,12 +324,12 @@ public class DropDownFxControl extends FxControl {
 						fxControl1.getNode().setDisable(true);
 
 					}
-					else
+					else {
 						fxControl1.selectAndSet(null);
 						fxControl1.setData(null);
 						fxControl1.getNode().setDisable(false);
-
 					}
+				}
 
 
 				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",
