@@ -306,10 +306,28 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
+				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+					SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("gender")).get(0);
+					FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
+					if (genderData.getValue().equalsIgnoreCase("Female")) {
+						fxControl1.selectAndSet("1");
+						fxControl1.setData("1");
+						fxControl1.getNode().setDisable(true);
+
+					}
+					else
+						fxControl1.selectAndSet(null);
+						fxControl1.setData(null);
+						fxControl1.getNode().setDisable(false);
+
+					}
+
+
 				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",
 					    "applicantOriginPlace", "appOriCountryUGA", "fatherResidence","fatResCountryUGA", "fatherOrigin","fatOriCountryUGA",
-					    "motherResidence","motResCountryUGA", "motherOrigin","motOriCountryUGA", "guardianResidence", "guardiansCountry"
-				);
+					    "motherResidence","motResCountryUGA", "motherOrigin","motOriCountryUGA", "guardianResidence", "guardiansCountry");
 
 				if (fieldMappings.containsKey(uiFieldDTO.getId())) {
 				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
