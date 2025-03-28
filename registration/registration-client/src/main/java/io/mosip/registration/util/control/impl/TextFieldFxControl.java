@@ -10,7 +10,10 @@ import java.util.stream.Collectors;
 
 import io.mosip.registration.controller.*;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import org.springframework.context.ApplicationContext;
 
@@ -578,7 +581,20 @@ public class TextFieldFxControl extends FxControl {
 			keyBoardStage.setX(300);
 			keyBoardStage.setY(500);
 			GridPane gridPane = prepareMainGridPaneForKeyboard();
-			gridPane.addColumn(1, keyboardNode);
+
+			// Create a close button
+			Button closeButton = new Button("X");
+			closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 14; -fx-border-radius: 5;");
+			closeButton.setOnAction(e -> closeVirtualKeyboard());
+
+			// Set button alignment
+			GridPane.setHalignment(closeButton, HPos.RIGHT);
+			GridPane.setMargin(closeButton, new Insets(5, 5, 5, 5));
+
+			// Add close button to the grid
+			gridPane.add(closeButton, 2, 0); // Column 1, Row 0 (top-right)
+			gridPane.add(keyboardNode, 1, 1); // Place the keyboard below the close button
+
 			Scene scene = new Scene(gridPane);
 			scene.getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(validation.getCssName()).toExternalForm());
 			gridPane.getStyleClass().add(RegistrationConstants.KEYBOARD_PANE);
