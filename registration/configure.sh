@@ -25,10 +25,10 @@ echo "mosip.reg.rollback.path=BackUp" >> "${work_dir}"/mosip-application.propert
 echo "mosip.reg.xml.file.url=${client_upgrade_server}/registration-client/maven-metadata.xml" >> "${work_dir}"/mosip-application.properties
 echo "mosip.client.upgrade.server.url=${client_upgrade_server}" >> "${work_dir}"/mosip-application.properties
 echo "mosip.hostname=${host_name}"  >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.url=https://raw.githubusercontent.com/Manishch22/VIdExpireBatchJob/main" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.zip.url=https://raw.githubusercontent.com/Manishch22/VIdExpireBatchJob/main/Tech5.zip" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.zip.extraction.path=C:/Bio_SDK/Tech5" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.manifest.path=C:/Bio_SDK/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.url=${mosip.bio.sdk.url}" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.zip.url=${mosip.bio.sdk.zip.url}" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.zip.extraction.path=${mosip.bio.sdk.zip.extraction.path}" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.manifest.path=${mosip.bio.sdk.manifest.path}" >> "${work_dir}"/mosip-application.properties
 
 echo "jar signing keystore_secret"
 echo ${keystore_secret}
