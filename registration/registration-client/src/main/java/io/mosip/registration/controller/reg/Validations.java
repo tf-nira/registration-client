@@ -211,7 +211,7 @@ public class Validations extends BaseController {
             System.out.println(countryCode);
 			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
 				String number=value;
-				if (number.charAt(0) == '0') {
+				if (number.charAt(0) != '0') {
 					errorMessage="Mobile No. is invalid";
 					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
 					return false;
@@ -225,7 +225,7 @@ public class Validations extends BaseController {
 			System.out.println(countryCode);
 			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
 				String number=value;
-				if (number.charAt(0) == '0') {
+				if (number.charAt(0) != '0') {
 					errorMessage="Mobile No. is invalid";
 					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
 					return false;
