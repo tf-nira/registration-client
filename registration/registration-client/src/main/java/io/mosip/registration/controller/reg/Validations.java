@@ -6,6 +6,8 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.registration.controller.ClientApplication;
 import io.mosip.registration.controller.GenericController;
 import io.mosip.registration.enums.FlowType;
@@ -202,6 +204,34 @@ public class Validations extends BaseController {
 			}
 			return false;
 		}GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+		if(fieldId.equalsIgnoreCase("phone")){
+			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
+			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
+			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode");
+            System.out.println(countryCode);
+			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
+				String number=value;
+				if (number.charAt(0) == '0') {
+					errorMessage="Mobile No. is invalid";
+					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+					return false;
+				}
+			}
+        }
+		if(fieldId.equalsIgnoreCase("phone2")){
+			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
+			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
+			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode2");
+			System.out.println(countryCode);
+			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
+				String number=value;
+				if (number.charAt(0) == '0') {
+					errorMessage="Mobile No. is invalid";
+					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+					return false;
+				}
+			}
+		}
 
 		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
 			int age =genericController.getDobAge();
