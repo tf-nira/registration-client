@@ -1888,8 +1888,9 @@ public class GenericController extends BaseController {
 							"enrollmentOfficerComment",
 							"PRNId"
 					);
+					int a =screenDTO.getOrder() ;
 
-					if (fxControl != null && !excludedFields.contains(field.getId())) {
+					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 ) {
 						fxControl.getNode().setDisable(true);
 					}
 				}
