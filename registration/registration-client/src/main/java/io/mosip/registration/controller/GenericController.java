@@ -1883,24 +1883,14 @@ public class GenericController extends BaseController {
 			for (UiScreenDTO screenDTO : orderedScreens.values()) {
 				for (UiFieldDTO field : screenDTO.getFields()) {
 					FxControl fxControl = getFxControl(field.getId());
-					if (fxControl != null) {
-						if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-							boolean check1 = fxControl.isFieldDefaultValue(field);
-							boolean check2 = fxControl.isFieldDefaultValue2(field);
+					Set<String> excludedFields = Set.of(
+							"inDepthCitizenshipVerification",
+							"enrollmentOfficerComment",
+							"PRNId"
+					);
 
-							if(check1) {
-								fxControl.selectAndSet("Y");
-								fxControl.getNode().setDisable(true);
-							}
-							else if(check2) {
-								fxControl.selectAndSet("N");
-								fxControl.getNode().setDisable(true);
-							}
-							else {
-								fxControl.selectAndSet("N");
-								fxControl.getNode().setDisable(false);
-							}
-						}
+					if (fxControl != null && !excludedFields.contains(field.getId())) {
+						fxControl.getNode().setDisable(true);
 					}
 				}
 			}
