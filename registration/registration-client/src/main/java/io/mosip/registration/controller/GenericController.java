@@ -1851,7 +1851,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId()))){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId())) && !(field.getId().equalsIgnoreCase("enrolmentCountry"))){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1886,7 +1886,14 @@ public class GenericController extends BaseController {
 					Set<String> excludedFields = Set.of(
 							"inDepthCitizenshipVerification",
 							"enrollmentOfficerComment",
-							"PRNId"
+							"PRNId",
+							"enrolmentCountry",
+							"applicantPlaceOfEnrolmentDistrict",
+							"applicantPlaceOfEnrolmentCounty",
+							"applicantPlaceOfEnrolmentSubCounty",
+							"applicantPlaceOfEnrolmentParish",
+							"applicantPlaceOfEnrolmentVillage",
+							"sameAsPlaceOfResidenceCheckBoxEnrolment"
 					);
 					int a =screenDTO.getOrder() ;
 

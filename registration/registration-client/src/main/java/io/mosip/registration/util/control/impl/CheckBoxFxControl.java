@@ -151,7 +151,12 @@ public class CheckBoxFxControl extends FxControl {
 					fxControl.clearValue();
 				}
 			}
-
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent")){
+				FxControl fxControl = getFxControl("enrolmentCountry");
+				fxControl.selectAndSet("UGA");
+				fxControl.setData("UGA");
+				fxControl.getNode().setDisable(true);
+			}
 			if (uiFieldDTO.isSetRequired()){
 				resetValue();
 			}
