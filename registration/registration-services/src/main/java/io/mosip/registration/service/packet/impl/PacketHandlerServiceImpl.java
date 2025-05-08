@@ -201,28 +201,16 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 				if (simpleDtos != null && !simpleDtos.isEmpty()) {
 				    String value = simpleDtos.get(0).getValue(); // Assuming you need the first item
-				    if ("Birth to Naturalization".equals(value)) {
+				    if ("Citizenship by Naturalization".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Naturalization"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
-				    else if("Birth to Dual Citizenship".equals(value)) {
+				    else if("Dual citizenship".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
-				    else if("Birth to Registration".equals(value)) {
+				    else if("Citizenship by Registration".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Registration"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Naturalisation to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Registration to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Citizenship Under Article  9 to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
 				}
