@@ -632,7 +632,7 @@ public class GenericBiometricsController extends BaseController {
 					}
 					fxControl.setData(biometricsMap);
 					LOGGER.debug("Completed Saving filtered biometrics into registration DTO");
-					addStreamImageAndScoreToCache(fxControl.getUiSchemaDTO().getId(), currentModality, biometricsMap.values(),
+					addStreamImageAndScoreToCache(fxControl.getUiSchemaDTO().getId(), currentModality, biometricsMap,
 							getRegistrationDTOFromSession().ATTEMPTS.get(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality)));
 					displayBiometric(currentModality);
 					// if all the above check success show alert capture success
@@ -652,7 +652,7 @@ public class GenericBiometricsController extends BaseController {
 	}
 
 	//TODO - onMissing attribute , pls use default image / blank image
-	private void addStreamImageAndScoreToCache(String fieldId, Modality modalityName, Collection<BiometricsDto> biometricsDtos, int retry) throws Exception {
+	private void addStreamImageAndScoreToCache(String fieldId, Modality modalityName, Map<String, BiometricsDto> biometricsDtos, int retry) throws Exception {
 		try {
 			double score = 0;
 			double sdkScore = 0;
@@ -661,7 +661,7 @@ public class GenericBiometricsController extends BaseController {
 				case FINGERPRINT_SLAB_RIGHT:
 				case FINGERPRINT_SLAB_THUMBS:
 
-					for(BiometricsDto dto : biometricsDtos) {
+					for(BiometricsDto dto : biometricsDtos.values()) {
 						ConvertRequestDto convertRequestDto = new ConvertRequestDto();
 						convertRequestDto.setVersion("ISO19794_4_2011");
 						convertRequestDto.setInputBytes(dto.getAttributeISO());
@@ -677,9 +677,12 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							sdkScore / biometricsDtos.size());
+					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
+							fieldId, modalityName.name(), retry),
+							biometricsDtos);
 					break;
 				case IRIS_DOUBLE:
-					for(BiometricsDto dto : biometricsDtos) {
+					for(BiometricsDto dto : biometricsDtos.values()) {
 						ConvertRequestDto convertRequestDto = new ConvertRequestDto();
 						convertRequestDto.setVersion("ISO19794_6_2011");
 						convertRequestDto.setInputBytes(dto.getAttributeISO());
@@ -695,11 +698,14 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							sdkScore / biometricsDtos.size());
+					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
+									fieldId, modalityName.name(), retry),
+							biometricsDtos);
 					break;
 
 				case EXCEPTION_PHOTO:
 				case FACE:
-					BiometricsDto faceDto = biometricsDtos.toArray(new BiometricsDto[0])[0];
+					BiometricsDto faceDto = biometricsDtos.values().toArray(new BiometricsDto[0])[0];
 					ConvertRequestDto convertRequestDto = new ConvertRequestDto();
 					convertRequestDto.setVersion("ISO19794_5_2011");
 					convertRequestDto.setInputBytes(faceDto.getAttributeISO());
@@ -712,6 +718,10 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							faceDto.getSdkScore());
+
+					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
+									fieldId, modalityName.name(), retry),
+							biometricsDtos);
 					break;
 			}
 		} catch (Exception exception) {
@@ -943,6 +953,11 @@ public class GenericBiometricsController extends BaseController {
 							bioService.getMDMQualityThreshold(currentModality), biometricImage,
 							qualityText, bioProgress);
 					//}
+
+					Map<String, Map<String, BiometricsDto>> biometricsDTOMap = getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP;
+					for (Map.Entry<String, BiometricsDto> entry : biometricsDTOMap.get(String.format("%s_%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality.name(), attempt)).entrySet()) {
+						getRegistrationDTOFromSession().addBiometric(fxControl.getUiSchemaDTO().getId(), entry.getKey(), entry.getValue());
+					}
 
 					LOGGER.info("Mouse Event by attempt Ended. modality : {}", currentModality);
 

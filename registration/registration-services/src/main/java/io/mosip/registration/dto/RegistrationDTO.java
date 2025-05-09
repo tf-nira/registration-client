@@ -10,9 +10,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import io.mosip.kernel.core.logger.spi.Logger;
-import io.mosip.registration.config.AppConfig;
-import io.mosip.registration.service.external.impl.PreRegZipHandlingServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 
 import org.json.JSONObject;
@@ -85,6 +82,7 @@ public class RegistrationDTO {
 	public Map<String, Double> SDK_SCORES = new HashMap<>();
 	public Map<String, Object> AGE_GROUPS = new HashMap<>();
 	public Map<String, Integer> ATTEMPTS = new HashMap<>();
+	public Map<String, Map<String, BiometricsDto>> BIOMETRICS_DTO_MAP = new HashMap<>();
 	public Map<String, List<String>> CONFIGURED_BIOATTRIBUTES = new HashMap<>();
 	public Map<String, String> SELECTED_CODES = new HashMap<>();
 	public Map<String, BlocklistedConsentDto> BLOCKLISTED_CHECK = new HashMap<>();
