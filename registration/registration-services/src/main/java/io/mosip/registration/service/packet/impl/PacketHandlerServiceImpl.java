@@ -244,6 +244,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		Map<String, String> metaInfoMap = new LinkedHashMap<>();
 		try {
 			SchemaDto schema = identitySchemaService.getIdentitySchema(registrationDTO.getIdSchemaVersion());
+			LOGGER.info("before saving registrationDTO ===> "+  registrationDTO.toString());
 			setDemographics(registrationDTO);
 			setDocuments(registrationDTO, metaInfoMap);
 			setBiometrics(registrationDTO, metaInfoMap);
@@ -277,7 +278,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 			LOGGER.info("Saving registration info in DB and on disk.");
 			registrationDAO.save(baseLocation + SLASH + packetManagerAccount + SLASH + registrationDTO.getPacketId(), registrationDTO);
-
+			LOGGER.info("After saving registrationDTO ===> " + registrationDTO.toString());
 			globalParamService.update(RegistrationConstants.AUDIT_TIMESTAMP, DateUtils.getUTCCurrentDateTime().toString());
 
 			auditFactory.audit(AuditEvent.PACKET_CREATION_SUCCESS, Components.PACKET_HANDLER,
