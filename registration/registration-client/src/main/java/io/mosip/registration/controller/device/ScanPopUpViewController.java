@@ -837,4 +837,5 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		rotateButton.setDisable(true);
 		previewBtn.setDisable(true);
 	}
+	
 }
