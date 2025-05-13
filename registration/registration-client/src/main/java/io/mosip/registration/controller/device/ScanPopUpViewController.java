@@ -838,4 +838,5 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		previewBtn.setDisable(true);
 	}
 	
+	
 }
