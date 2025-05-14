@@ -959,6 +959,8 @@ public class GenericBiometricsController extends BaseController {
 						getRegistrationDTOFromSession().addBiometric(fxControl.getUiSchemaDTO().getId(), entry.getKey(), entry.getValue());
 					}
 
+					biometricImage.setImage(getBioStreamImage(fxControl.getUiSchemaDTO().getId(), currentModality, attempt));
+
 					LOGGER.info("Mouse Event by attempt Ended. modality : {}", currentModality);
 
 				} catch (RuntimeException runtimeException) {
