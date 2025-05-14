@@ -1,6 +1,8 @@
 package io.mosip.registration.controller.device;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -318,6 +320,14 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		image.setPreserveRatio(true);
 		image.setSmooth(true);
 	}
+	
+	// Set the desired height and width
+	public void setHeightAndWidthForSignature(ImageView image) {
+		image.setFitWidth(240);
+		image.setFitHeight(320);
+		image.setPreserveRatio(true);
+		image.setSmooth(true);
+	}
 
 	@FXML
 	public void preview() {
@@ -330,7 +340,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			getImageGroup().getChildren().clear();
 
 			ImageView imageView = new ImageView(getImage(documentScanController.getScannedPages().get(0)));
-			setHeightAndWidth(imageView);
+			if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+				setHeightAndWidth(imageView);
+			} else {
+				setHeightAndWidthForSignature(imageView);
+			}
 			getImageGroup().getChildren().add(imageView);
 		}
 	}
@@ -383,7 +397,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			
 			// Create ImageView for the current image
 			ImageView imageView = new ImageView(getImage(documentScanController.getScannedPages().get(currentPage - 1)));
-			setHeightAndWidth(imageView);
+			if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+				setHeightAndWidth(imageView);
+			} else {
+				setHeightAndWidthForSignature(imageView);
+			}
 			
 			getImageGroup().getChildren().add(imageView);
 		}
@@ -454,6 +472,15 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	    }
 	    BufferedImage rotatedImage = new BufferedImage(width, height, originalImage.getType());
 	    Graphics2D g2d = rotatedImage.createGraphics();
+	    
+	    g2d.setComposite(AlphaComposite.Clear);
+	    g2d.fillRect(0, 0, width, height);
+	    g2d.setComposite(AlphaComposite.SrcOver);
+	    
+	    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	    g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+	    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
 	    g2d.translate(width / 2, height / 2);
 	    g2d.rotate(radians);
 	    g2d.translate(-originalImage.getWidth() / 2, -originalImage.getHeight() / 2);
@@ -474,11 +501,15 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 		// Apply the rotation
 		imageView.setRotate(rotationAngle);
-		if (rotationAngle == 90 || rotationAngle == 270) {
-			imageView.setFitWidth(420);
-			imageView.setFitHeight(640);
+		if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+			if (rotationAngle == 90 || rotationAngle == 270) {
+				imageView.setFitWidth(420);
+				imageView.setFitHeight(640);
+			} else {
+				setHeightAndWidth(imageView);
+			}
 		} else {
-			setHeightAndWidth(imageView);
+			setHeightAndWidthForSignature(imageView);
 		}
 	}
 
@@ -538,7 +569,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			}
 		}
 
-		setHeightAndWidth(imageView);
+		if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+			setHeightAndWidth(imageView);
+		} else {
+			setHeightAndWidthForSignature(imageView);
+		}
 
 		getImageGroup().getChildren().clear();
 		getImageGroup().getChildren().add(imageView);
@@ -637,7 +672,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 			if (bufferedImage != null) {
 				ImageView imageView = new ImageView(DocScannerUtil.getImage(bufferedImage));
-				setHeightAndWidth(imageView);
+				if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+					setHeightAndWidth(imageView);
+				} else {
+					setHeightAndWidthForSignature(imageView);
+				}
 				
 				getImageGroup().getChildren().clear();
 				getImageGroup().getChildren().add(imageView);
@@ -668,7 +707,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 			if (bufferedImage != null) {
 				ImageView imageView = new ImageView(DocScannerUtil.getImage(bufferedImage));
-				setHeightAndWidth(imageView);
+				if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+					setHeightAndWidth(imageView);
+				} else {
+					setHeightAndWidthForSignature(imageView);
+				}
 
 				getImageGroup().getChildren().clear();
 				getImageGroup().getChildren().add(imageView);
@@ -743,8 +786,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 	                        ImageView scanImageView = getScanImage();
                             scanImageView.setImage(scannedImage);
-
-                            setHeightAndWidth(scanImageView);
+                            if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+                    			setHeightAndWidth(scanImageView);
+                    		} else {
+                    			setHeightAndWidthForSignature(scanImageView);
+                    		}
 	                       
 	                    }
 	                } catch (Throwable t) {
