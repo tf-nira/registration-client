@@ -960,6 +960,7 @@ public class GenericBiometricsController extends BaseController {
 					}
 
 					biometricImage.setImage(getBioStreamImage(fxControl.getUiSchemaDTO().getId(), currentModality, attempt));
+					fxControl.refreshModalityButton(currentModality);
 
 					LOGGER.info("Mouse Event by attempt Ended. modality : {}", currentModality);
 
