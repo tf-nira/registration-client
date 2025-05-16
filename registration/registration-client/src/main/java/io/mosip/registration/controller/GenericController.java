@@ -1055,7 +1055,14 @@ public class GenericController extends BaseController {
 		// Only show the custom message if the fieldName matches the condition
 		if ("Please accept the terms and conditions to proceed with the application.".equals(fieldName)) {
 			notification.setText(fieldName); // Show the message if condition is met
-		} else {
+		}
+		else if("Applicant Biometrics".equals(fieldName) ){
+			notification.setText("Please complete biometric capture to proceed with the application");
+		}
+		else if("Introducer Biometrics".equals(fieldName)){
+			notification.setText("Please complete Introducer biometric capture to proceed with the application.");
+		}
+		else {
 			notification.setText(
 					(fieldName == null) ? EMPTY
 							: ApplicationContext
