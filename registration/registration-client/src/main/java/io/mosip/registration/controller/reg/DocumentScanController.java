@@ -1,5 +1,6 @@
 package io.mosip.registration.controller.reg;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -145,7 +146,9 @@ public class DocumentScanController extends BaseController {
 			BufferedImage bufferedImage = null;
 			
 			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+				
 				bufferedImage =signatureFacade.scanDocument(scanDevice, DeviceType.SIGNATURE_PAD.toString());
+				bufferedImage = changeDimensionForSignature(bufferedImage);
 			} else {
 				bufferedImage = docScannerFacade.scanDocument(scanDevice, getValueFromApplicationContext(RegistrationConstants.IMAGING_DEVICE_TYPE));
 				
@@ -177,6 +180,17 @@ public class DocumentScanController extends BaseController {
 			LOGGER.error("Exception while scanning documents for registration", e);
 			generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
 		}
+	}
+	
+	public BufferedImage changeDimensionForSignature(BufferedImage bufferedImage) {
+		int targetWidth = 443;
+		int targetHeight = 118;
+		BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, bufferedImage.getType());
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.drawImage(bufferedImage, 0, 0, targetWidth, targetHeight, null);
+		g2d.dispose();
+		bufferedImage = resizedImage;
+		return bufferedImage;
 	}
 
 	public byte[] captureAndConvertBufferedImage() throws Exception {
