@@ -410,9 +410,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	        streamBtn.setDisable(true);
 	        cancelBtn.setDisable(false);
 	        previewBtn.setDisable(false);
+	        rotateButton.setDisable(true);
+	    } else {
+	    	rotateButton.setDisable(false);
 	    }
 	    //cropButton.setDisable(false);
-	    rotateButton.setDisable(false);
 	    saveBtn.setDisable(false);
 	}
 
@@ -429,9 +431,12 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	            save(rectangleSelection.getBounds(), documentScanController.getScannedPages().get(currentPage - 1));
 	        } else {
 	        	BufferedImage currentImage = documentScanController.getScannedPages().get(currentPage - 1);
-	        	BufferedImage rotatedImage = rotateBufferedImage(currentImage, rotationAngle);
-	        	// Save rotated image back to the current page
-	        	documentScanController.getScannedPages().set(currentPage - 1, rotatedImage);
+	        	if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+	        		BufferedImage rotatedImage = rotateBufferedImage(currentImage, rotationAngle);
+		        	documentScanController.getScannedPages().set(currentPage - 1, rotatedImage);     // Save rotated image back to the current page
+	        	} else {
+	        		documentScanController.getScannedPages().set(currentPage - 1, currentImage);
+	        	}
 	        }
 	        
 	        documentScanController.getFxControl().setData(documentScanController.getScannedPages());
@@ -586,7 +591,12 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 			saveBtn.setDisable(true);
 			cancelBtn.setDisable(true);
 			// cropButton.setDisable(false);
-			rotateButton.setDisable(false);
+			if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+				rotateButton.setDisable(false);
+			} else {
+				rotateButton.setDisable(true);
+			}
+			
 		}
 	}
 
@@ -810,7 +820,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 		scanImage.setVisible(true);
 		cancelBtn.setDisable(false);
 		//cropButton.setDisable(true);
-		rotateButton.setDisable(false);
+		if (!subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) && !subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) { 
+			rotateButton.setDisable(false);
+		} else {
+			rotateButton.setDisable(true);
+		}
 	}
 
 	private void showStream(boolean isVisible) {
