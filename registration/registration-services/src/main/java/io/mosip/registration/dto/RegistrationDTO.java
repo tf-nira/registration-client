@@ -85,6 +85,7 @@ public class RegistrationDTO {
 	public Map<String, Double> SDK_SCORES = new HashMap<>();
 	public Map<String, Object> AGE_GROUPS = new HashMap<>();
 	public Map<String, Integer> ATTEMPTS = new HashMap<>();
+	public Map<String, Map<String, BiometricsDto>> BIOMETRICS_DTO_MAP = new HashMap<>();
 	public Map<String, List<String>> CONFIGURED_BIOATTRIBUTES = new HashMap<>();
 	public Map<String, String> SELECTED_CODES = new HashMap<>();
 	public Map<String, BlocklistedConsentDto> BLOCKLISTED_CHECK = new HashMap<>();
