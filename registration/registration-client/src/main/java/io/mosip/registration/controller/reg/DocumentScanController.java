@@ -1,5 +1,6 @@
 package io.mosip.registration.controller.reg;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
