@@ -323,8 +323,8 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 	
 	// Set the desired height and width
 	public void setHeightAndWidthForSignature(ImageView image) {
-		image.setFitWidth(240);
-		image.setFitHeight(320);
+		image.setFitWidth(443);
+		image.setFitHeight(118);
 		image.setPreserveRatio(true);
 		image.setSmooth(true);
 	}
