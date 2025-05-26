@@ -425,22 +425,29 @@ public class DateValidation extends BaseController {
             }
 
 			if(isValid && !dateofbirth.equalsIgnoreCase("")){
-				// Parse both dob and dateofbirth strings into LocalDate objects
+				// Parse both dob, current date and dateofbirth strings into LocalDate objects
 				LocalDate dobDate = LocalDate.parse(dob, formatter);
 				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);
-
-				// Calculate the period (difference) between the two dates
+				LocalDate currentDate = LocalDate.parse(LocalDate.now().format(formatter), formatter);
+				
+				// Calculate the period (difference) between Applicant Date and Input Date
 				Period period = Period.between(dateofbirthDate, dobDate);
+				
+				// Calculate the difference between Current Data and Input Date
+				Period period1 = Period.between(currentDate, dobDate);
 
-				// Check if the difference is at least 18 years
-				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("removeSpouse") || uiFieldDTO.getId().contains("child") )  && period.getYears() < 18) {
-					isValid = false; // If the difference is less than 18 years, set isValid to false
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINIMUM_AGE_DIFF));
+				// Check the date if any future date or before Applicant or After applicant
+				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("removeSpouse") )  && (period1.getDays() > 0) || period1.getMonths() > 0 || period1.getYears() > 0) {
+					isValid = false; // If Age is Future date, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 				}
-				else if(uiFieldDTO.getId().contains("guardian") && period.getYears()>-1){
-					isValid = false; // If the difference is less than 18 years, set isValid to false
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_DIFF));
-
+				else if(uiFieldDTO.getId().contains("guardian") && period.getDays() >= 0 && period.getMonths() >= 0 && period.getYears() >= 0){
+					isValid = false; // If Age is After Applicant DOB, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AFTER_APPLICANT_DOB));
+				}
+				else if(uiFieldDTO.getId().contains("child") && period.getDays() <= 0 && period.getMonths() <= 0 && period.getYears() <= 0) {
+					isValid = false; // If Age is Before Applicant DOB, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.BEFORE_APPLICANT_DOB));
 				}
 			}
 
