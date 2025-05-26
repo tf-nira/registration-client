@@ -106,16 +106,13 @@ public class ClientSetupValidator {
                     // Validate checksum
                     boolean checksumOk = SoftwareUpdateUtil.validateJarChecksum(jarFile, entry.getValue());
                     // Validate it's a proper JAR
-                    boolean isJarValid = true;
-                    if (jarName.toLowerCase().endsWith(".jar")) {
-                        try (JarFile jar = new JarFile(jarFile)) {
-                            jar.entries(); // Just to test the structure
-                        } catch (IOException ex) {
-                            logger.error("Corrupted JAR detected during pre-check: {}", jarName, ex);
-                            isJarValid = false;
-                        }
+                    boolean isJarValid = false;
+                    try (JarFile jar = new JarFile(jarFile)) {
+                        jar.entries();
+                        isJarValid = true;
+                    } catch (IOException ex) {
+                        logger.error("Corrupted JAR detected during pre-check: {}", jarName, ex);
                     }
-
                     if (!checksumOk || !isJarValid) {
                         logger.info("{} is corrupted or checksum invalid during pre-check, will download", jarName);
                         needsDownload = true;
