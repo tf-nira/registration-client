@@ -1846,8 +1846,9 @@ public class RegistrationConstants {
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
-	public static final String MINIMUM_AGE_DIFF="MINIMUM_AGE_DIFF";
-	public static final String AGE_DIFF="AGE_DIFF";
+	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
+	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
+	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
 
 	public static final String ICONS_HBOX = "iconsHBox";
 	public static final String KEYBOARD_PANE = "keyboardPane";
