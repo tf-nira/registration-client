@@ -2,6 +2,7 @@ package io.mosip.registration.controller.reg;
 
 import static io.mosip.registration.constants.LoggerConstants.PACKET_HANDLER;
 import static io.mosip.registration.constants.RegistrationConstants.*;
+import static io.mosip.registration.constants.RegistrationConstants.COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -490,7 +491,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				}
 			}
 			else {
-				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
