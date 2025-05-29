@@ -187,10 +187,18 @@ public class MosipDeviceSpecificationHelper {
 			timeOutCheck(maxTimeLimit);
 		}
 
+		int byteRead;
 		// 255 indicates the start of the jpeg image
-		while (urlStream.read() != 255) {
-
+		while ((byteRead = urlStream.read()) > -1) {
+			if (byteRead == 255) {
+				break;
+			}
+			
 			timeOutCheck(maxTimeLimit);
+		}
+		
+		if (byteRead == -1) {
+			return null;
 		}
 
 		// rest is the buffer
