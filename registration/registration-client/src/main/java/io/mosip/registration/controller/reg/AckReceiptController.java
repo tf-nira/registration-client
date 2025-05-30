@@ -3,16 +3,22 @@ package io.mosip.registration.controller.reg;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_ID;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
+
 import com.sun.javafx.print.PrintHelper;
 import com.sun.javafx.print.Units;
 import io.mosip.registration.api.printer.PrinterStatusChecker;
+import io.mosip.registration.api.thermal.printer.ThermalPrinter;
 import javafx.collections.ObservableSet;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.print.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,8 +33,10 @@ import io.mosip.registration.controller.BaseController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -137,45 +145,38 @@ public class AckReceiptController extends BaseController implements Initializabl
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
 		slipWebView.getEngine().loadContent(slipStringWriter.toString());
-		PrinterJob job = PrinterJob.createPrinterJob();
-		if (job != null) {
-			job.getJobSettings().setJobName("A6_Ack");
-			ObservableSet<Printer> printers = Printer.getAllPrinters();
-			Printer selectedPrinter = null;
-			Paper customPaper = null;
-			if(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH) != null &&
-					getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT) != null
-			) {
-				//customPaper = PrintHelper.createPaper("A6 Paper", 75, Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
-				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
+		
+		WritableImage fxImage = slipWebView.snapshot(new SnapshotParameters(), null);
+		BufferedImage bufferedImage = SwingFXUtils.fromFXImage(fxImage, null);
+		
+		try {
+			File tempFile = File.createTempFile("receipt", ".bmp");
+			ImageIO.write(bufferedImage, "bmp", tempFile);
+			
+			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
+			long printerID = thermalPrinter.POS_Port_OpenA("SP-USB1", 1002, false, null);
 
-				List<PrinterStatusChecker> connectedPrinters = PrinterStatusChecker.getPrintersWithStatus();
-				System.out.println(connectedPrinters.toString());
-				for (PrinterStatusChecker checker : connectedPrinters) {
-					if (checker.getPrinterName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
-						selectedPrinter = Printer.getAllPrinters()
-								.stream()
-								.filter(printer -> printer.getName().equalsIgnoreCase(checker.getPrinterName()))
-								.findFirst()
-								.orElse(null);
-						break;
-					}
-				}
+			if ((int)printerID < 0) {
+			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer port open failed");
 			} else {
-				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);
+			    long printerStatus = thermalPrinter.POS_Status_RTQueryStatus(printerID);
+
+			    if ((int)printerStatus == 1) {
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer is out of paper");
+			    } else if ((int)printerStatus == 0) {
+			        //long printStatus = thermalPrinter.POS_Output_PrintFontStringA(printerID, 0, 0, 0, 0, 0, slipStringWriter.toString());
+			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, tempFile.getAbsolutePath());
+			        if ((int)printStatus != 0) {
+			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Failed to send print data");
+			        }
+			    } else {
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer not connected");
+			    }
+
+			    thermalPrinter.POS_Port_Close(printerID);
 			}
-			if(selectedPrinter != null){
-				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
-				PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
-				job.setPrinter(selectedPrinter);
-				job.getJobSettings().setPageLayout(pageLayout);
-				slipWebView.getEngine().print(job);
-				job.endJob();
-			}
-			else{
-				generateAlert(RegistrationConstants.ALERT_INFORMATION,
-						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_THERMAL_NOT_CONNECTED));
-			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
