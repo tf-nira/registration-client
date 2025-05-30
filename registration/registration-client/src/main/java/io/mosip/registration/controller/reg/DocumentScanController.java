@@ -153,7 +153,7 @@ public class DocumentScanController extends BaseController {
 				
 			}
 
-			if (bufferedImage != null) {
+			if (bufferedImage == null) {
 				if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 					LOGGER.error("Captured buffered image was null and Signature process timed out.");
 					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_SIGNATURE_ERROR));
