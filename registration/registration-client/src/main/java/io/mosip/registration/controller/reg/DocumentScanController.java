@@ -162,7 +162,7 @@ public class DocumentScanController extends BaseController {
 				} else {
 					LOGGER.error("captured buffered image was null");
 					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
-				}s
+				}
 				return;
 			}
 
