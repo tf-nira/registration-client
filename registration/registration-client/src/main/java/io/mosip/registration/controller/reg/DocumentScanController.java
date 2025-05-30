@@ -147,7 +147,9 @@ public class DocumentScanController extends BaseController {
 			
 			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				bufferedImage =signatureFacade.scanDocument(scanDevice, DeviceType.SIGNATURE_PAD.toString());
-				bufferedImage = changeDimensionForSignature(bufferedImage);
+				if(bufferedImage != null) {
+					bufferedImage = changeDimensionForSignature(bufferedImage);
+				}
 			} else {
 				bufferedImage = docScannerFacade.scanDocument(scanDevice, getValueFromApplicationContext(RegistrationConstants.IMAGING_DEVICE_TYPE));
 				
@@ -160,7 +162,7 @@ public class DocumentScanController extends BaseController {
 				} else {
 					LOGGER.error("captured buffered image was null");
 					generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
-				}
+				}s
 				return;
 			}
 
