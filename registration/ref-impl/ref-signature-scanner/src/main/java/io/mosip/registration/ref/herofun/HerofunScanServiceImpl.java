@@ -149,6 +149,9 @@ public class HerofunScanServiceImpl implements SignatureService {
 	            LOGGER.error("Failed to complete the signature process due to interruption.", e);
 	            Thread.currentThread().interrupt();
 	            return null;
+	        } catch (Exception e) {
+	            LOGGER.error("Unexpected exception while capturing signature", e);
+	            return null;
 	        }
 	    };
 
@@ -156,17 +159,28 @@ public class HerofunScanServiceImpl implements SignatureService {
 	    Future<BufferedImage> future = executorService.submit(task);
 	    
 	    try {
-	        // Wait for the task to complete and get the result, with a timeout
-	        return future.get(60, TimeUnit.SECONDS); // Allow some buffer time for completion
+	        BufferedImage image = future.get(60, TimeUnit.SECONDS);
+	        if (image == null) {
+	            LOGGER.warn("Signature image is null.");
+	        }
+	        return image;
 	    } catch (TimeoutException e) {
-	        LOGGER.error("Signature capture process timed out.", e);
-	        throw e; // Re-throw the exception for the caller to handle
+	        LOGGER.error("Signature capture timed out", e);
+	        future.cancel(true);
+	        throw e;
+	    } catch (ExecutionException e) {
+	        LOGGER.error("Execution failed during signature capture", e);
+	        throw e;
 	    } finally {
-	        LOGGER.info("Closing the signature pad...");
-	        signaturepad.HWClose(); // Close the device to release resources
-	        // Shutdown the executor service to free resources
+	        try {
+	            LOGGER.info("Closing signature pad...");
+	            signaturepad.HWClose();
+	        } catch (Exception e) {
+	            LOGGER.warn("Exception while closing signature pad", e);
+	        }
 	        executorService.shutdown();
 	    }
 	}
+
 
 }
