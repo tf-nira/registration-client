@@ -3,23 +3,29 @@ package io.mosip.registration.controller.reg;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_ID;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
 
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Base64;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
+import javax.swing.JEditorPane;
 
-import com.sun.javafx.print.PrintHelper;
-import com.sun.javafx.print.Units;
 import io.mosip.registration.api.printer.PrinterStatusChecker;
 import io.mosip.registration.api.thermal.printer.ThermalPrinter;
 import javafx.collections.ObservableSet;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.print.*;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -33,10 +39,8 @@ import io.mosip.registration.controller.BaseController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -144,14 +148,36 @@ public class AckReceiptController extends BaseController implements Initializabl
 	public void printReceiptThermal(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
-		slipWebView.getEngine().loadContent(slipStringWriter.toString());
-		
-		WritableImage fxImage = slipWebView.snapshot(new SnapshotParameters(), null);
-		BufferedImage bufferedImage = SwingFXUtils.fromFXImage(fxImage, null);
+		//slipWebView.getEngine().loadContent(slipStringWriter.toString());
 		
 		try {
-			File tempFile = File.createTempFile("receipt", ".bmp");
-			ImageIO.write(bufferedImage, "bmp", tempFile);
+			Document doc = Jsoup.parse(slipStringWriter.toString());
+	        Element qrImg = doc.selectFirst("img.qrimage");
+	        
+	        String path = "C:/Thermal_images/";
+	        File pathFile = new File(path);
+	        if (!pathFile.exists()) {
+	            pathFile.mkdirs();
+	        }
+
+	        if (qrImg != null) {
+	            String src = qrImg.attr("src");
+	            if (src.startsWith("data:image")) {
+	                String base64 = src.split(",")[1];
+	                byte[] qrBytes = Base64.getDecoder().decode(base64);
+	                BufferedImage qrImage = ImageIO.read(new ByteArrayInputStream(qrBytes));
+	                
+		            File qrFile = new File(path + "qr_image.png");
+		            ImageIO.write(qrImage, "png", qrFile);
+
+		            String fileUrl = qrFile.toURI().toString();
+		            qrImg.attr("src", fileUrl);
+	            }
+	        }
+			
+			BufferedImage rendered = renderHtmlToImage(doc.html(), 384);  // 384 pixels = 48mm printable width
+
+	        saveAsMonochromeBmp(rendered, path + "print_image.bmp");
 			
 			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
 			long printerID = thermalPrinter.POS_Port_OpenA("SP-USB1", 1002, false, null);
@@ -165,7 +191,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer is out of paper");
 			    } else if ((int)printerStatus == 0) {
 			        //long printStatus = thermalPrinter.POS_Output_PrintFontStringA(printerID, 0, 0, 0, 0, 0, slipStringWriter.toString());
-			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, tempFile.getAbsolutePath());
+			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, path + "print_image.bmp");
 			        if ((int)printStatus != 0) {
 			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Failed to send print data");
 			        }
@@ -179,7 +205,37 @@ public class AckReceiptController extends BaseController implements Initializabl
 			e.printStackTrace();
 		}
 	}
+	
+	private BufferedImage renderHtmlToImage(String html, int width) {
+        JEditorPane pane = new JEditorPane("text/html", html);
+        pane.setSize(width, Short.MAX_VALUE);
+        pane.setEditable(false);
 
+        Dimension preferredSize = pane.getPreferredSize();
+        pane.setSize(preferredSize);
+
+        BufferedImage image = new BufferedImage(preferredSize.width, preferredSize.height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        pane.paint(g);
+        g.dispose();
+        return image;
+    }
+	
+	private void saveAsMonochromeBmp(BufferedImage original, String outputPath) throws IOException {
+        BufferedImage gray = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g = gray.createGraphics();
+        g.drawImage(original, 0, 0, null);
+        g.dispose();
+
+        // Dithering / binarization for 1-bit BMP
+        BufferedImage mono = new BufferedImage(gray.getWidth(), gray.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+        Graphics2D g2 = mono.createGraphics();
+        g2.drawImage(gray, 0, 0, null);
+        g2.dispose();
+
+        ImageIO.write(original, "bmp", new File(outputPath));
+    }
+	
 	@FXML
 	public void printReceipt(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
