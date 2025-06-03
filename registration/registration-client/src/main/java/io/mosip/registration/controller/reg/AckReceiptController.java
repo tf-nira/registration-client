@@ -183,7 +183,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 			long printerID = thermalPrinter.POS_Port_OpenA("SP-USB1", 1002, false, null);
 
 			if ((int)printerID < 0) {
-			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer port open failed");
+			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer port open failed, status: " + (int)printerID);
 			} else {
 			    long printerStatus = thermalPrinter.POS_Status_RTQueryStatus(printerID);
 
@@ -193,10 +193,10 @@ public class AckReceiptController extends BaseController implements Initializabl
 			        //long printStatus = thermalPrinter.POS_Output_PrintFontStringA(printerID, 0, 0, 0, 0, 0, slipStringWriter.toString());
 			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, path + "print_image.bmp");
 			        if ((int)printStatus != 0) {
-			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Failed to send print data");
+			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Failed to send print data, status: " + (int)printStatus);
 			        }
 			    } else {
-			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer not connected");
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer not connected, status: " + (int)printerStatus);
 			    }
 
 			    thermalPrinter.POS_Port_Close(printerID);
@@ -233,7 +233,7 @@ public class AckReceiptController extends BaseController implements Initializabl
         g2.drawImage(gray, 0, 0, null);
         g2.dispose();
 
-        ImageIO.write(original, "bmp", new File(outputPath));
+        ImageIO.write(mono, "bmp", new File(outputPath));
     }
 	
 	@FXML
