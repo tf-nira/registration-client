@@ -5,6 +5,7 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -17,6 +18,8 @@ import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 import javax.swing.JEditorPane;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 import io.mosip.registration.api.printer.PrinterStatusChecker;
 import io.mosip.registration.api.thermal.printer.ThermalPrinter;
@@ -163,6 +166,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 	        if (qrImg != null) {
 	            String src = qrImg.attr("src");
 	            if (src.startsWith("data:image")) {
+	            	LOGGER.info("Updating qr code image");
 	                String base64 = src.split(",")[1];
 	                byte[] qrBytes = Base64.getDecoder().decode(base64);
 	                BufferedImage qrImage = ImageIO.read(new ByteArrayInputStream(qrBytes));
@@ -172,11 +176,14 @@ public class AckReceiptController extends BaseController implements Initializabl
 
 		            String fileUrl = qrFile.toURI().toString();
 		            qrImg.attr("src", fileUrl);
+		            qrImg.attr("width", "100");
+		            qrImg.attr("height", "100");
+		            LOGGER.info("Updated qr code image");
 	            }
 	        }
 			
-			BufferedImage rendered = renderHtmlToImage(doc.html(), 384);  // 384 pixels = 48mm printable width
-
+			BufferedImage rendered = renderHtmlToImage(doc.html(), 640);
+			rendered = zoomImage(rendered, 640);
 	        saveAsMonochromeBmp(rendered, path + "print_image.bmp");
 			
 			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
@@ -202,16 +209,27 @@ public class AckReceiptController extends BaseController implements Initializabl
 			    thermalPrinter.POS_Port_Close(printerID);
 			}
 		} catch (Exception e) {
+			LOGGER.info("Exception while printing slip: " + e.getStackTrace());
 			e.printStackTrace();
 		}
 	}
 	
 	private BufferedImage renderHtmlToImage(String html, int width) {
-        JEditorPane pane = new JEditorPane("text/html", html);
-        pane.setSize(width, Short.MAX_VALUE);
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType("text/html");
         pane.setEditable(false);
 
+        HTMLEditorKit kit = new HTMLEditorKit();
+        StyleSheet styleSheet = new StyleSheet();
+        styleSheet.addRule("body { padding-top: 20px; padding-bottom: 20px; margin: 0; }");
+        kit.setStyleSheet(styleSheet);
+        pane.setEditorKit(kit);
+        
+        pane.setText(html);
+        
+        pane.setSize(width, Short.MAX_VALUE);
         Dimension preferredSize = pane.getPreferredSize();
+//      preferredSize.width = width;
         pane.setSize(preferredSize);
 
         BufferedImage image = new BufferedImage(preferredSize.width, preferredSize.height, BufferedImage.TYPE_INT_RGB);
@@ -220,6 +238,22 @@ public class AckReceiptController extends BaseController implements Initializabl
         g.dispose();
         return image;
     }
+	
+	private BufferedImage zoomImage(BufferedImage original, int targetWidth) {
+	    int originalWidth = original.getWidth();
+	    int originalHeight = original.getHeight();
+
+	    double scaleFactor = (double) targetWidth / originalWidth;
+	    int targetHeight = (int) (originalHeight * scaleFactor);
+
+	    BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+	    Graphics2D g2 = scaledImage.createGraphics();
+	    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+	    g2.drawImage(original, 0, 0, targetWidth, targetHeight, null);
+	    g2.dispose();
+
+	    return scaledImage;
+	}
 	
 	private void saveAsMonochromeBmp(BufferedImage original, String outputPath) throws IOException {
         BufferedImage gray = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
