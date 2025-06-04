@@ -150,7 +150,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 	@FXML
 	public void printReceiptThermal(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
-				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
+				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Thermal Receipt");
 		//slipWebView.getEngine().loadContent(slipStringWriter.toString());
 		
 		try {
@@ -166,7 +166,8 @@ public class AckReceiptController extends BaseController implements Initializabl
 	        if (qrImg != null) {
 	            String src = qrImg.attr("src");
 	            if (src.startsWith("data:image")) {
-	            	LOGGER.info("Updating qr code image");
+	            	LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Updating qr code image");
 	                String base64 = src.split(",")[1];
 	                byte[] qrBytes = Base64.getDecoder().decode(base64);
 	                BufferedImage qrImage = ImageIO.read(new ByteArrayInputStream(qrBytes));
@@ -178,12 +179,13 @@ public class AckReceiptController extends BaseController implements Initializabl
 		            qrImg.attr("src", fileUrl);
 		            qrImg.attr("width", "100");
 		            qrImg.attr("height", "100");
-		            LOGGER.info("Updated qr code image");
+		            LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Updated qr code image");
 	            }
 	        }
 			
 			BufferedImage rendered = renderHtmlToImage(doc.html(), 640);
-			rendered = zoomImage(rendered, 640);
+			rendered = zoomImage(rendered, 576);
 	        saveAsMonochromeBmp(rendered, path + "print_image.bmp");
 			
 			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
@@ -209,8 +211,8 @@ public class AckReceiptController extends BaseController implements Initializabl
 			    thermalPrinter.POS_Port_Close(printerID);
 			}
 		} catch (Exception e) {
-			LOGGER.info("Exception while printing slip: " + e.getStackTrace());
-			e.printStackTrace();
+			LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip: " + e.getStackTrace());
 		}
 	}
 	
