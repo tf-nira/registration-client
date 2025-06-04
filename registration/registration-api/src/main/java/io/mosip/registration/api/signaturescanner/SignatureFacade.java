@@ -52,7 +52,7 @@ public class SignatureFacade {
 
 	    public BufferedImage scanDocument(@NonNull DocScanDevice docScanDevice, String deviceType) throws Exception {
 
-	        LOGGER.debug("Selected device details with configuration fully set : {}", docScanDevice);
+	        LOGGER.info("Selected device details with configuration fully set : {}", docScanDevice);
 	        Optional<SignatureService> result = signatureServiceList.stream()
 					.filter(s -> s.getServiceName().equals(docScanDevice.getServiceName())).findFirst();
 
