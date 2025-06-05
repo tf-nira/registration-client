@@ -8,13 +8,13 @@ public interface ThermalPrinter extends Library {
 	
 	public long POS_Port_OpenA(String a, int b, boolean c, String d);
 	
-	public long POS_Output_PrintFontStringA(long iPrinterID,int iFont,int iThick,int iWidth,int iHeight,int iUnderLine,String lpString);
+	public long POS_Status_RTQueryStatus(long iPrinterID);
 	
-	public long POS_Output_PrintBmpDirectA_POS76(long iPrinterID, String filePath);
+	public long POS_Output_PrintFontStringA(long iPrinterID,int iFont,int iThick,int iWidth,int iHeight,int iUnderLine,String lpString);
 	
 	public long POS_Output_PrintBmpDirectA(long iPrinterID, String filePath);
 	
-	public long POS_Status_RTQueryStatus(long iPrinterID);
+	public long POS_Control_FeedLines(long iPrinterID, long iLines);
 	
 	public long POS_Port_Close(long iPrinterID);
 	

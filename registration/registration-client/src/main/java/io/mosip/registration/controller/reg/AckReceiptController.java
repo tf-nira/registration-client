@@ -151,7 +151,6 @@ public class AckReceiptController extends BaseController implements Initializabl
 	public void printReceiptThermal(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Thermal Receipt");
-		//slipWebView.getEngine().loadContent(slipStringWriter.toString());
 		
 		try {
 			Document doc = Jsoup.parse(slipStringWriter.toString());
@@ -174,7 +173,16 @@ public class AckReceiptController extends BaseController implements Initializabl
 	                
 		            File qrFile = new File(path + "qr_image.png");
 		            ImageIO.write(qrImage, "png", qrFile);
-
+		            
+		            for (int i = 0; i < 5; i++) {
+		                if (qrFile.exists() && qrFile.canRead()) {
+		                	break;
+		                }
+		                LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+		        				RegistrationConstants.APPLICATION_ID, "Saving qr code in progress");
+		                Thread.sleep(20);
+		            }
+		            
 		            String fileUrl = qrFile.toURI().toString();
 		            qrImg.attr("src", fileUrl);
 		            qrImg.attr("width", "100");
@@ -185,34 +193,49 @@ public class AckReceiptController extends BaseController implements Initializabl
 	        }
 			
 			BufferedImage rendered = renderHtmlToImage(doc.html(), 640);
-			rendered = zoomImage(rendered, 576);
+			rendered = zoomImage(rendered, 575);
 	        saveAsMonochromeBmp(rendered, path + "print_image.bmp");
+	        
+	        LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+    				RegistrationConstants.APPLICATION_ID, "Receipt image saved");
 			
 			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
 			long printerID = thermalPrinter.POS_Port_OpenA("SP-USB1", 1002, false, null);
 
 			if ((int)printerID < 0) {
-			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer port open failed, status: " + (int)printerID);
+			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer not connected");
+			    LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+        				RegistrationConstants.APPLICATION_ID, "Thermal printer port open failed, status: " + (int)printerID);
 			} else {
 			    long printerStatus = thermalPrinter.POS_Status_RTQueryStatus(printerID);
 
 			    if ((int)printerStatus == 1) {
-			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer is out of paper");
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer is out of paper");
 			    } else if ((int)printerStatus == 0) {
-			        //long printStatus = thermalPrinter.POS_Output_PrintFontStringA(printerID, 0, 0, 0, 0, 0, slipStringWriter.toString());
 			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, path + "print_image.bmp");
 			        if ((int)printStatus != 0) {
-			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Failed to send print data, status: " + (int)printStatus);
+			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer connected but print failed");
+			            LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+		        				RegistrationConstants.APPLICATION_ID, "Failed to print data with thermal printer, status: " + (int)printStatus);
+			        } else {
+			        	generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
+			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 20);
+			        	if ((int) feedStatus != 0) {
+			        	    LOGGER.warn("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+			        	        RegistrationConstants.APPLICATION_ID, "Feed after print failed, status: " + (int) feedStatus);
+			        	}
 			        }
 			    } else {
-			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Printer not connected, status: " + (int)printerStatus);
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer not connected");
+			        LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Thermal printer not connected, status: " + (int)printerStatus);
 			    }
 
 			    thermalPrinter.POS_Port_Close(printerID);
 			}
 		} catch (Exception e) {
 			LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
-    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip: " + e.getStackTrace());
+    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip: " + ExceptionUtils.getStackTrace(e));
 		}
 	}
 	
