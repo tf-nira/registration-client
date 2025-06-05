@@ -234,8 +234,10 @@ public class AckReceiptController extends BaseController implements Initializabl
 			    thermalPrinter.POS_Port_Close(printerID);
 			}
 		} catch (Exception e) {
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,
+					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
 			LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
-    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip: " + ExceptionUtils.getStackTrace(e));
+    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip", e);
 		}
 	}
 	
