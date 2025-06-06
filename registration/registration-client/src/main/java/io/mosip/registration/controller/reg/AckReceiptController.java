@@ -174,14 +174,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 		            File qrFile = new File(path + "qr_image.png");
 		            ImageIO.write(qrImage, "png", qrFile);
 		            
-		            for (int i = 0; i < 5; i++) {
-		                if (qrFile.exists() && qrFile.canRead()) {
-		                	break;
-		                }
-		                LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
-		        				RegistrationConstants.APPLICATION_ID, "Saving qr code in progress");
-		                Thread.sleep(20);
-		            }
+		            Thread.sleep(500);
 		            
 		            String fileUrl = qrFile.toURI().toString();
 		            qrImg.attr("src", fileUrl);
@@ -219,7 +212,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 		        				RegistrationConstants.APPLICATION_ID, "Failed to print data with thermal printer, status: " + (int)printStatus);
 			        } else {
 			        	generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
-			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 20);
+			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 40);
 			        	if ((int) feedStatus != 0) {
 			        	    LOGGER.warn("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 			        	        RegistrationConstants.APPLICATION_ID, "Feed after print failed, status: " + (int) feedStatus);
