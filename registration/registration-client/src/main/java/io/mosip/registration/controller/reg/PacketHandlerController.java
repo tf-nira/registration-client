@@ -341,7 +341,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				setImage(syncDataImageView, RegistrationConstants.SYNC_IMG);
 			}
 		});
-		downloadPreRegDataPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
+		/*downloadPreRegDataPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
 			if (newValue) {
 
 				setImage(downloadPreRegDataImageView, RegistrationConstants.DOWNLOAD_PREREG_FOCUSED_IMG);
@@ -349,7 +349,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				setImage(downloadPreRegDataImageView, RegistrationConstants.DWLD_PRE_REG_DATA_IMG);
 			}
-		});
+		});*/
 		updateOperatorBiometricsPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
 			if (newValue) {
 				setImage(updateOperatorBiometricsImageView, RegistrationConstants.UPDATE_OP_BIOMETRICS_FOCUSED_IMG);
@@ -683,8 +683,10 @@ public class PacketHandlerController extends BaseController implements Initializ
 				}
 			} catch (RuntimeException runtimeException) {
 				LOGGER.error("", runtimeException);
-			}
-		} else {
+			} catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
 			if (response.getErrorResponseDTOs() != null && response.getErrorResponseDTOs().get(0).getCode()
 					.equals(RegistrationExceptionConstants.AUTH_ADVICE_USR_ERROR.getErrorCode())) {
 				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.AUTH_ADVICE_FAILURE));
