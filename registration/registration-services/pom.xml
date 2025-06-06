@@ -544,6 +544,11 @@
             <artifactId>jna-platform</artifactId>
             <version>5.12.0</version>
         </dependency>
+		<dependency>
+			<groupId>com.github.luben</groupId>
+			<artifactId>zstd-jni</artifactId>
+			<version>1.5.5-11</version>
+		</dependency>
 	</dependencies>
 	<!--<repositories> <repository> <id>local-maven-repo</id> <url>file:///${basedir}/lib</url>
 		</repository> </repositories> -->
