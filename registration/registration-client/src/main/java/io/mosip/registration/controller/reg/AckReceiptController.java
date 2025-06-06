@@ -161,6 +161,16 @@ public class AckReceiptController extends BaseController implements Initializabl
 	        if (!pathFile.exists()) {
 	            pathFile.mkdirs();
 	        }
+	        
+	        File[] oldQrImages = pathFile.listFiles(f -> f.getName().startsWith("qr_image") && f.getName().endsWith(".png"));
+	        if (oldQrImages != null) {
+		        for (File file : oldQrImages) {
+		            boolean deleted = file.delete();
+		            if (!deleted) {
+		                LOGGER.warn("Failed to delete old QR image: " + file.getAbsolutePath());
+		            }
+		        }
+		    }
 
 	        if (qrImg != null) {
 	            String src = qrImg.attr("src");
@@ -171,7 +181,7 @@ public class AckReceiptController extends BaseController implements Initializabl
 	                byte[] qrBytes = Base64.getDecoder().decode(base64);
 	                BufferedImage qrImage = ImageIO.read(new ByteArrayInputStream(qrBytes));
 	                
-		            File qrFile = new File(path + "qr_image.png");
+		            File qrFile = new File(path + "qr_image_" + System.currentTimeMillis() + ".png");
 		            ImageIO.write(qrImage, "png", qrFile);
 		            
 		            Thread.sleep(500);
@@ -211,12 +221,12 @@ public class AckReceiptController extends BaseController implements Initializabl
 			            LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 		        				RegistrationConstants.APPLICATION_ID, "Failed to print data with thermal printer, status: " + (int)printStatus);
 			        } else {
-			        	generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
-			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 40);
+			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 100);
 			        	if ((int) feedStatus != 0) {
 			        	    LOGGER.warn("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
 			        	        RegistrationConstants.APPLICATION_ID, "Feed after print failed, status: " + (int) feedStatus);
 			        	}
+			        	generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
 			        }
 			    } else {
 			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer not connected");
