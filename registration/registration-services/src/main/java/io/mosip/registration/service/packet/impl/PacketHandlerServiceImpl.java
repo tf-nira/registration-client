@@ -15,12 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 
-
-import java.io.ByteArrayOutputStream;
-import java.util.zip.GZIPOutputStream;
-import org.apache.commons.io.FileUtils;
-import com.github.luben.zstd.Zstd;
-
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import io.mosip.commons.packet.dto.PacketInfo;
@@ -28,12 +22,14 @@ import io.mosip.kernel.clientcrypto.service.impl.ClientCryptoFacade;
 import io.mosip.kernel.clientcrypto.util.ClientCryptoUtils;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
+import io.mosip.kernel.core.util.FileUtils;
 import io.mosip.registration.dto.schema.ProcessSpecDto;
 import io.mosip.registration.entity.MachineMaster;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.service.config.GlobalParamService;
 import io.mosip.registration.service.sync.MasterSyncService;
 import lombok.NonNull;
+import io.mosip.registration.util.healthcheck.RegistrationSystemPropertiesChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -683,35 +679,14 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 	@Override
 	public void createAcknowledgmentReceipt(@NonNull String packetId, byte[] content, String format)
-            throws io.mosip.kernel.core.exception.IOException, IOException {
+            throws io.mosip.kernel.core.exception.IOException {
 		LOGGER.debug("Starting to create Registration ack receipt : {}", packetId);
-
-	// 1. Sign the original content
-	byte[] signature = clientCryptoFacade.getClientSecurity().signData(content);
-
-	// 2. Compress the content using GZIP
-		byte[] compressedContent = Zstd.compress(content, 19); // Max = 22
-
-// 3. Log sizes and compression ratio
-		double compressionPercent = 100.0 * (1 - ((double) compressedContent.length / content.length));
-		LOGGER.debug("Original size: {} bytes, Compressed size: {} bytes, Compression achieved: {}%",
-				content.length, compressedContent.length, String.format("%.2f", compressionPercent));
-	// 4. Encrypt the compressed content
-	byte[] key = clientCryptoFacade.getClientSecurity().getEncryptionPublicPart();
-	byte[] encryptedData = clientCryptoFacade.encrypt(key, compressedContent);
-
-	// 5. Write encrypted data to file
-    FileUtils.copyToFile(
-			new ByteArrayInputStream(encryptedData),
-        Paths.get(baseLocation, packetManagerAccount, packetId.concat("_Ack.").concat(format)).toFile()
-    );
-
-	// 6. Update the signature in database (Base64 URL safe encoding)
-    registrationDAO.updateAckReceiptSignature(packetId, CryptoUtil.encodeToURLSafeBase64(signature));
-
-    LOGGER.debug("Ack receipt creation completed for packetId: {}", packetId);
-}
-
+		byte[] signature = clientCryptoFacade.getClientSecurity().signData(content);Add commentMore actions
+		byte[] key = clientCryptoFacade.getClientSecurity().getEncryptionPublicPart();
+		FileUtils.copyToFile(new ByteArrayInputStream(clientCryptoFacade.encrypt(key, content)),
+				Paths.get(baseLocation, packetManagerAccount, packetId.concat("_Ack.").concat(format)).toFile());
+		registrationDAO.updateAckReceiptSignature(packetId, CryptoUtil.encodeToURLSafeBase64(signature));
+	}
 
 	public String getAcknowledgmentReceipt(@NonNull String packetId, @NonNull String filepath)
 			throws RegBaseCheckedException, io.mosip.kernel.core.exception.IOException {
@@ -725,17 +700,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 						FileUtils.readFileToByteArray(new File(filepath)),
 						RegistrationConstants.ACKNOWLEDGEMENT_FORMAT);
 				registration = registrationDAO.getRegistrationByPacketId(packetId);
-			} catch (io.mosip.kernel.core.exception.IOException | IOException ex) {
+			} catch (io.mosip.kernel.core.exception.IOException ex) {
 				LOGGER.error("Failed to sign and encrypt existing ack receipt : {}", packetId, ex);
 			}
 		}
 
-        byte[] decryptedContent = null;
-        try {
-            decryptedContent = clientCryptoFacade.decrypt(FileUtils.readFileToByteArray(new File(filepath)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        byte[] decryptedContent = clientCryptoFacade.decrypt(FileUtils.readFileToByteArray(new File(filepath)));
         boolean isSignatureValid = clientCryptoFacade.getClientSecurity()
 				.validateSignature(ClientCryptoUtils.decodeBase64Data(registration.getAckSignature()), decryptedContent);
 		if(isSignatureValid)
