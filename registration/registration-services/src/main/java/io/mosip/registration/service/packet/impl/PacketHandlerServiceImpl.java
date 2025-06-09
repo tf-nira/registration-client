@@ -681,7 +681,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 	public void createAcknowledgmentReceipt(@NonNull String packetId, byte[] content, String format)
             throws io.mosip.kernel.core.exception.IOException {
 		LOGGER.debug("Starting to create Registration ack receipt : {}", packetId);
-		byte[] signature = clientCryptoFacade.getClientSecurity().signData(content);Add commentMore actions
+		byte[] signature = clientCryptoFacade.getClientSecurity().signData(content);
 		byte[] key = clientCryptoFacade.getClientSecurity().getEncryptionPublicPart();
 		FileUtils.copyToFile(new ByteArrayInputStream(clientCryptoFacade.encrypt(key, content)),
 				Paths.get(baseLocation, packetManagerAccount, packetId.concat("_Ack.").concat(format)).toFile());
