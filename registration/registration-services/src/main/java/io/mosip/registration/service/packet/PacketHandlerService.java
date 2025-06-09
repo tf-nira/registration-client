@@ -70,7 +70,7 @@ public interface PacketHandlerService {
 	 * @param format
 	 * @throws IOException
 	 */
-	public void createAcknowledgmentReceipt(String packetId, byte[] content, String format) throws IOException, java.io.IOException;
+	public void createAcknowledgmentReceipt(String packetId, byte[] content, String format) throws IOException;
 
 	/**
 	 * Reads the ack receipt, decrypts the content and verifies the signature,
