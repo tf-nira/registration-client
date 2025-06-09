@@ -683,9 +683,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				}
 			} catch (RuntimeException runtimeException) {
 				LOGGER.error("", runtimeException);
-			} catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+			} 
         } else {
 			if (response.getErrorResponseDTOs() != null && response.getErrorResponseDTOs().get(0).getCode()
 					.equals(RegistrationExceptionConstants.AUTH_ADVICE_USR_ERROR.getErrorCode())) {
