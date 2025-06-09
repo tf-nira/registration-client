@@ -390,11 +390,11 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 
 		if (!isInitialSync()) {
 			// getting Last Sync date from Data from sync table
-			SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
-			if (masterSyncDetails != null) {
-				requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
-						DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
-			}
+//			SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
+//			if (masterSyncDetails != null) {
+//				requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
+//						DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
+//			}
 
 			String registrationCenterId = getCenterId();
 			if (registrationCenterId != null)
