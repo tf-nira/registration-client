@@ -1865,21 +1865,37 @@ public class GenericController extends BaseController {
 								}
 
 								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-									boolean check1 = fxControl.isFieldDefaultValue(field);
-									boolean check2 = fxControl.isFieldDefaultValue2(field);
+								    boolean check1 = fxControl.isFieldDefaultValue(field);
+								    boolean check2 = fxControl.isFieldDefaultValue2(field);
 
-									if(check1) {
-										fxControl.selectAndSet("Y");
-										fxControl.getNode().setDisable(true);
-									}
-									else if(check2) {
-										fxControl.selectAndSet("N");
-										fxControl.getNode().setDisable(true);
-									}
-									else {
-										fxControl.selectAndSet("N");
-										fxControl.getNode().setDisable(false);
-									}
+								    Set<String> copCat = Set.of(
+								        "changeOfDateOfBirth",
+								        "placeOfOriginCat",
+								        "citizenshipTypeCat",
+								        "familyInformationCat"
+								    );
+
+								    // Get demographics list
+								    Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
+								    
+								    // Check if any copCat field has value "Y"
+							        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+							        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+							        
+								    if (check1) {
+								        fxControl.selectAndSet("Y");
+								        fxControl.getNode().setDisable(true);
+								    } else if (check2) {
+								        fxControl.selectAndSet("N");
+								        if (fxControl != null && !anyCopCatFieldHasY) {
+								            fxControl.getNode().setDisable(true);
+								        } else {
+								        	fxControl.getNode().setDisable(false);
+								        }
+								    } else {
+								        fxControl.selectAndSet("N");
+								        fxControl.getNode().setDisable(false);
+								    }
 								}
 						}
 					}

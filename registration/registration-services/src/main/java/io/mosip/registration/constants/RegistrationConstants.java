@@ -251,6 +251,8 @@ public class RegistrationConstants {
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
 	public static final String POSTAL_CODE = "postalCode";
+	public static final String CARD_REQUIRED = "isCardRequired";
+	public static final String TOAST_MSG = "This is subject to card change charges";
 	public static final String CNI_OR_PIN = "cniOrPinNumber";
 	public static final String UIN_ID = "uinId";
 	public static final String EMAIL_ID = "emailId";

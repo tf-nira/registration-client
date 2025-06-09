@@ -362,6 +362,33 @@ public class DropDownFxControl extends FxControl {
 				        }
 				    }
 				}
+				
+				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.CARD_REQUIRED)) {
+				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+				    String cardValue = genericController.getRegistrationDTOFromSession().getDemographic(RegistrationConstants.CARD_REQUIRED);
+				    Set<String> copCat = Set.of(
+				    		"changeOfDateOfBirth",
+					        "placeOfOriginCat",
+					        "citizenshipTypeCat",
+					        "familyInformationCat"
+					);
+				    
+				    // Get demographics list
+				    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+				    
+				    // Check if any copCat field has value "Y"
+			        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+			        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+			        
+			        FxControl fxControl = getFxControl(uiFieldDTO.getId()); // Assuming you have a FxControl store
+			        if (fxControl != null) {
+			            if ("Yes".equalsIgnoreCase(cardValue) && anyCopCatFieldHasY) {
+			                fxControl.setMessage("This is subject to card change charges");
+			            } else {
+			                fxControl.setMessage(null); // or use null if your method handles that safely
+			            }
+			        }
+				}
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
 
@@ -528,15 +555,20 @@ public class DropDownFxControl extends FxControl {
 
 	@Override
 	public void fillData(Object data) {
-
+		ComboBox<GenericDto> comboBox = (ComboBox<GenericDto>) getField(uiFieldDTO.getId());
+		
+		comboBox.getItems().clear();
+		comboBox.setValue(null);
+		clearToolTipText();
+		
 		if (data != null) {
-
+			
 			Map<String, List<GenericDto>> val = (Map<String, List<GenericDto>>) data;
 
 			List<GenericDto> items = val.get(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
 
 			if (items != null && !items.isEmpty()) {
-				setItems((ComboBox<GenericDto>) getField(uiFieldDTO.getId()), items);
+				comboBox.getItems().addAll(items);  // Fill with new data
 			}
 
 		}

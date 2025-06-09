@@ -23,7 +23,9 @@ import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Pane;
@@ -42,7 +44,8 @@ public abstract class FxControl  {
 
 	protected static final Logger LOGGER = AppConfig.getLogger(FxControl.class);
 	private static final String loggerClassName = "FxControl";
-
+	private Label messageLabel;
+	
 	protected UiFieldDTO uiFieldDTO;
 	protected FxControl control;
 	public Node node;
@@ -240,7 +243,38 @@ public abstract class FxControl  {
 	public void clearToolTipText() {}
 	
 	public  void clearValue() {}
-	
+
+	public void setMessage(String message) {
+	    Node controlNode = this.node;
+	    Parent parent = controlNode.getParent();
+
+	    if (parent instanceof GridPane) {
+	        GridPane gridPane = (GridPane) parent;
+
+	        Integer rowIndex = GridPane.getRowIndex(controlNode);
+	        Integer columnIndex = GridPane.getColumnIndex(controlNode);
+	        if (rowIndex == null) rowIndex = 0;
+	        if (columnIndex == null) columnIndex = 0;
+
+	        if (messageLabel == null) {
+	            messageLabel = new Label();
+	            messageLabel.setStyle("-fx-text-fill: #e22d2d; -fx-font-size: 11px;"); // dark red
+	            gridPane.add(messageLabel, columnIndex, rowIndex + 1);
+	        }
+
+	        if (message == null || message.trim().isEmpty()) {
+	            messageLabel.setVisible(false);
+	            messageLabel.setManaged(false);
+	            messageLabel.setText(""); // Optional
+	        } else {
+	            messageLabel.setText(message);
+	            messageLabel.setVisible(true);
+	            messageLabel.setManaged(true);
+	        }
+	    }
+	}
+
+
 	/**
 	 *
 	 * @return
