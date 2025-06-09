@@ -125,11 +125,11 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 			//Perform sync once again only during initial sync to pull all the latest changes.
 			if(responseDto.getSuccessResponseDTO() != null && isInitialSync()) {
 				// getting Last Sync date from Data from sync table
-				SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
-				if (masterSyncDetails != null) {
-					requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
-							DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
-				}
+//				SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
+//				if (masterSyncDetails != null) {
+//					requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
+//							DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
+//				}
 				responseDto = syncClientSettings(masterSyncDtls, triggerPoint, requestParamMap);
 			}
 			if (responseDto.getSuccessResponseDTO() != null && upgradeFullSyncEntities != null) {
