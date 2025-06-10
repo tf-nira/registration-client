@@ -519,7 +519,7 @@ public class ClientSettingSyncHelper {
 	 */
 	@Async
 	private CompletableFuture handleDynamicFieldSync(SyncDataResponseDto syncDataResponseDto) throws SyncFailedException {
-		try {;
+		try {
 			Iterator<SyncDataBaseDto> iterator = syncDataResponseDto.getDataToSync().stream()
 					.filter(obj -> FIELD_TYPE_DYNAMIC.equalsIgnoreCase(obj.getEntityType()))
 					.iterator();
