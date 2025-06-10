@@ -81,11 +81,11 @@ public class OpenCvScannerImpl implements DocScannerService {
 	        Mat temp = new Mat();
 	        if (capture.read(temp)) {
 	            DocScanDevice docScanDevice = new DocScanDevice();
-	            docScanDevice.setDeviceType(DeviceType.CAMERA);
-	            docScanDevice.setName(capture.getBackendName() + DELIMITER + CAMERA_INDEX);
-	            docScanDevice.setServiceName(getServiceName());
-	            docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName() + DELIMITER + CAMERA_INDEX);
-	            devices.add(docScanDevice);
+		    docScanDevice.setDeviceType(DeviceType.CAMERA);
+		    docScanDevice.setName(capture.getBackendName() + DELIMITER + CAMERA_INDEX);
+		    docScanDevice.setServiceName(getServiceName());
+		    docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
+		    devices.add(docScanDevice);
 	            LOGGER.info("Connected camera at index {} with backend {}", CAMERA_INDEX, capture.getBackendName());
 	        }
 	        capture.release();
