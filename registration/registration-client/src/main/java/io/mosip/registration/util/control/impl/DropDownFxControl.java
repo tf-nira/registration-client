@@ -568,7 +568,7 @@ public class DropDownFxControl extends FxControl {
 			List<GenericDto> items = val.get(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
 
 			if (items != null && !items.isEmpty()) {
-				comboBox.getItems().addAll(items);  // Fill with new data
+				setItems(comboBox, items);  // Fill with new data
 			}
 
 		}
