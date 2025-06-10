@@ -259,7 +259,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				lastSyncTime.setText(getLocalZoneTime(latestUpdateTime.isPresent() ? latestUpdateTime.get() : null));
 
-				setLastPreRegPacketDownloadedTime();
+//				setLastPreRegPacketDownloadedTime();
 			}
 		} catch (RuntimeException exception) {
 			LOGGER.error("REGISTRATION - ALERT - BASE_CONTROLLER", APPLICATION_NAME, APPLICATION_ID,
