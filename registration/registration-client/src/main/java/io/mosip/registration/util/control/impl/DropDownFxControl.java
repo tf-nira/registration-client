@@ -529,8 +529,7 @@ public class DropDownFxControl extends FxControl {
 	@Override
 	public void fillData(Object data) {
 		ComboBox<GenericDto> comboBox = (ComboBox<GenericDto>) getField(uiFieldDTO.getId());
-		FxControl fxControl = getFxControl(uiFieldDTO.getId());
-
+		
 		comboBox.getItems().clear();
 		comboBox.setValue(null);
 		clearToolTipText();
@@ -542,7 +541,7 @@ public class DropDownFxControl extends FxControl {
 			List<GenericDto> items = val.get(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
 
 			if (items != null && !items.isEmpty()) {
-				comboBox.getItems().addAll(items);  // Fill with new data
+				setItems(comboBox, items);  // Fill with new data
 			}
 
 		}
