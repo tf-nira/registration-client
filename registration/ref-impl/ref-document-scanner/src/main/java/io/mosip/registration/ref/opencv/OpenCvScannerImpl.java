@@ -98,10 +98,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 	public void stop(DocScanDevice docScanDevice) {
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
 		VideoCapture capture = new VideoCapture(index);
-		if (capture.isOpened()) {
-			capture.release();
-			LOGGER.info("Released camera at index {}", index);
-		}
+		capture.release();
 	}
 
 	public BufferedImage mat2Img(Mat mat) throws IOException {
