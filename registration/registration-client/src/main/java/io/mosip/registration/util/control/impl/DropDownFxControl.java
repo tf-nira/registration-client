@@ -369,7 +369,6 @@ public class DropDownFxControl extends FxControl {
 				    Set<String> copCat = Set.of(
 				    		"changeOfDateOfBirth",
 					        "placeOfOriginCat",
-					        "citizenshipTypeCat",
 					        "familyInformationCat"
 					);
 				    

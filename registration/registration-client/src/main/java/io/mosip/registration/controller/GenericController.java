@@ -1871,7 +1871,6 @@ public class GenericController extends BaseController {
 								    Set<String> copCat = Set.of(
 								        "changeOfDateOfBirth",
 								        "placeOfOriginCat",
-								        "citizenshipTypeCat",
 								        "familyInformationCat"
 								    );
 

@@ -523,6 +523,10 @@ public class ClientSettingSyncHelper {
 			Iterator<SyncDataBaseDto> iterator = syncDataResponseDto.getDataToSync().stream()
 					.filter(obj -> FIELD_TYPE_DYNAMIC.equalsIgnoreCase(obj.getEntityType()))
 					.iterator();
+			
+			if(iterator.hasNext()) {
+				dynamicFieldRepository.deleteAll();
+			}
 
 			while(iterator.hasNext()) {
 				SyncDataBaseDto syncDataBaseDto = iterator.next();
