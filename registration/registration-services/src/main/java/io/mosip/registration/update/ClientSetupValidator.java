@@ -81,116 +81,64 @@ public class ClientSetupValidator {
 
 
     public void validateBuildSetup() throws RegBaseCheckedException {
-        final int MAX_RETRIES = 2;
-
         try {
-            if ("LOCAL".equals(environment)) {
-                logger.warn("NOTE :: IGNORING LOCAL REGISTRATION CLIENT SETUP VALIDATION AS IT'S A LOCAL ENVIRONMENT");
+
+            if("LOCAL".equals(environment)) {
+                logger.warn("NOTE :: IGNORING LOCAL REGISTRATION CLIENT SETUP VALIDATION AS ITS LOCAL ENVIRONMENT");
                 return;
             }
 
-            // Load local manifest first (assuming setLocalManifest() is called somewhere before or here)
-            setLocalManifest();  // Ensure localManifest is loaded before pre-check
-
-            // --------- STEP 1: Pre-check all jars against local manifest ----------------
-            Map<String, Attributes> localAttributes = localManifest.getEntries();
-            for (Map.Entry<String, Attributes> entry : localAttributes.entrySet()) {
-                String jarName = entry.getKey();
-                File jarFile = new File(libFolder + File.separator + jarName);
-
-                boolean needsDownload = false;
-                if (!jarFile.exists()) {
-                    logger.info("{} does not exist during pre-check, will download", jarName);
-                    needsDownload = true;
-                } else {
-                    // Validate checksum
-                    boolean checksumOk = SoftwareUpdateUtil.validateJarChecksum(jarFile, entry.getValue());
-                    // Validate it's a proper JAR
-                    boolean isJarValid = true;
-                    if (jarName.toLowerCase().endsWith(".jar")) {
-                        try (JarFile jar = new JarFile(jarFile)) {
-                            jar.entries(); // Just to test the structure
-                        } catch (IOException ex) {
-                            logger.error("Corrupted JAR detected during pre-check: {}", jarName, ex);
-                            isJarValid = false;
-                        }
-                    }
-
-                    if (!checksumOk || !isJarValid) {
-                        logger.info("{} is corrupted or checksum invalid during pre-check, will download", jarName);
-                        needsDownload = true;
-                    }
-                }
-
-                if (needsDownload) {
-                    boolean success = false;
-                    String jarUrl = serverRegClientURL + latestVersion + "/" + libFolder + "/" + jarName;
-
-                    for (int attempt = 1; attempt <= MAX_RETRIES && !success; attempt++) {
-                       // logger.info("Pre-check download attempt {}/{} for {}", attempt, MAX_RETRIES, jarName);
-                        SoftwareUpdateUtil.download(jarUrl, jarName);
-                        File downloadedJar = new File(libFolder + File.separator + jarName);
-
-                        boolean checksumOk = SoftwareUpdateUtil.validateJarChecksum(downloadedJar, entry.getValue());
-                        boolean isJarValid = false;
-                        try (JarFile jar = new JarFile(downloadedJar)) {
-                            jar.entries();
-                            isJarValid = true;
-                        } catch (IOException ex) {
-                           // logger.error("Downloaded JAR {} is invalid during pre-check on attempt {}", jarName, attempt, ex);
-                        }
-
-                        if (checksumOk && isJarValid) {
-                            success = true;
-                            patch_downloaded = true;
-                            logger.info("Successfully downloaded and validated {} during pre-check", jarName);
-                        } else {
-                            downloadedJar.delete();
-                            logger.warn("Downloaded file {} invalid during pre-check, retrying...", jarName);
-                        }
-                    }
-
-                    if (!success) {
-                        logger.error("Failed to download valid JAR {} during pre-check after {} attempts", jarName, MAX_RETRIES);
-                        validation_failed = true;
-                    }
-                }
-            }
-
-            // --------- STEP 2: Proceed with server manifest setup and version checks ----------------
             setServerManifest();
 
-            String serverVersion = serverManifest == null ? null :
-                    serverManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
+            //When machine is offline / not reachable to server, serverManifest might be null
+            String serverVersion = serverManifest == null ? null : serverManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
             String localVersion = localManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
 
-            if (localVersion.equals(serverVersion)) {
+            //only if the version is same then rewrite local manifest with server manifest.
+            //if the version is different, then upgrade should handle it, and only checksum validation will be
+            //done based on the local manifest file.
+            if(localVersion.equals(serverVersion)) {
                 serverManifest.write(new FileOutputStream(manifestFile));
+                //reset the local manifest, as it's overwritten
                 setLocalManifest();
             }
 
             latestVersion = localManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
-            logger.info("Checksum validation started with manifest version: {}", latestVersion);
+            logger.info("Checksum validation started with manifest version : {}", latestVersion);
 
             SoftwareUpdateUtil.clearTempDirectory();
 
-            if (SoftwareUpdateUtil.deleteUnknownJars(localManifest)) {
-                logger.info("Found unknown jars in the classpath!");
+            if(SoftwareUpdateUtil.deleteUnknownJars(localManifest)) {
+                logger.info("Found unknown jars in the classpath !");
                 unknown_jars_found = true;
                 validation_failed = true;
             }
 
-            // Repeat the same download logic here for new patches if manifest version is different
-            // (As in previous code snippet)
+            Map<String, Attributes> localAttributes = localManifest.getEntries();
+            for (Map.Entry<String, Attributes> entry : localAttributes.entrySet()) {
+                File file = new File(libFolder + File.separator + entry.getKey());
+                String url = serverRegClientURL + latestVersion + SLASH + libFolder + SLASH + entry.getKey();
+                if(!file.exists()) {
+                    logger.info("{} file doesn't exists, downloading it", entry.getKey());
+                    SoftwareUpdateUtil.download(url, entry.getKey());
+                    logger.info("Successfully downloaded the file : {}", entry.getKey());
+                    patch_downloaded = true;
+                    continue;
+                }
 
-            // ... (You can reuse the previous loop here or call a helper method)
-
+                if(!SoftwareUpdateUtil.validateJarChecksum(file, entry.getValue())) {
+                    logger.info("{} file checksum validation failed, downloading it", entry.getKey());
+                    SoftwareUpdateUtil.download(url, entry.getKey());
+                    logger.info("Successfully downloaded the latest file : {}", entry.getKey());
+                    patch_downloaded = true;
+                }
+            }
         } catch (Throwable e) {
             logger.error("Failed to validate build setup", e);
             validation_failed = true;
         }
-
-        logger.info("Checksum validation completed. validation_failed: {}, patch_downloaded: {}", validation_failed, patch_downloaded);
+        logger.info("Checksum validation completed validation_failed : {}, patch_downloaded : {}", validation_failed,
+                patch_downloaded);
     }
 
 
