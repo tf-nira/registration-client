@@ -33,6 +33,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private static final String SERVICE_NAME = "OpenCV";
 	private static final String DELIMITER = ":";
 
+	private static final int WARMUP_FRAME_COUNT = 5;
 
 	public OpenCvScannerImpl() {
 		OpenCV.loadShared();
@@ -58,47 +59,62 @@ public class OpenCvScannerImpl implements DocScannerService {
 
 		Mat frame = new Mat(new Size(width, height), CvType.CV_8UC3);
 		if (capture.isOpened()) {
-			capture.read(frame);
-			try {
-				return mat2Img(frame);
-			} catch (IOException e) {
-				e.printStackTrace();
+			for (int i = 0; i < WARMUP_FRAME_COUNT; i++) {
+				capture.read(frame);
 			}
+
+			if (capture.read(frame)) {
+				try {
+					return mat2Img(frame);
+				} catch (IOException e) {
+					LOGGER.error("Error converting Mat to BufferedImage", e);
+				}
+			} else {
+				LOGGER.warn("Failed to capture frame from camera index {}", index);
+			}
+			capture.release();
+		} else {
+			LOGGER.warn("Camera at index {} could not be opened", index);
 		}
 		return null;
 	}
 
 	@Override
 	public List<DocScanDevice> getConnectedDevices(String enabled) {
-	    final int CAMERA_INDEX = 1;
-	    LOGGER.info("Entering the OpenCV device implementation: getConnectedDevices*************");
+		LOGGER.info("Entering the OpenCV device implementation: getConnectedDevice of index 1*************");
+		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
+ 
+		int index = 1;
+	    VideoCapture capture = new VideoCapture(index);
+	    LOGGER.info("Contrast of device at index {} : {}", index, capture.get(Videoio.CAP_PROP_CONTRAST));
 	    
-	    List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
-	    VideoCapture capture = new VideoCapture(CAMERA_INDEX);
-	    LOGGER.info("Contrast of device at index {}: {}", CAMERA_INDEX, capture.get(Videoio.CAP_PROP_CONTRAST));
 	    if ((capture.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && capture.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
 	            && capture.isOpened()) {
 	        Mat temp = new Mat();
 	        if (capture.read(temp)) {
 	            DocScanDevice docScanDevice = new DocScanDevice();
-		    docScanDevice.setDeviceType(DeviceType.CAMERA);
-		    docScanDevice.setName(capture.getBackendName() + DELIMITER + CAMERA_INDEX);
-		    docScanDevice.setServiceName(getServiceName());
-		    docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
-		    devices.add(docScanDevice);
-	            LOGGER.info("Connected camera at index {} with backend {}", CAMERA_INDEX, capture.getBackendName());
+	            docScanDevice.setDeviceType(DeviceType.CAMERA);
+	            docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
+	            docScanDevice.setServiceName(getServiceName());
+	            docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
+	            devices.add(docScanDevice);
+	            LOGGER.info("Detected camera at index {} with backend {}", index, capture.getBackendName());
 	        }
-	        capture.release();
 	    }
-	    LOGGER.info("Total detected devices: {}", devices.size());
-	    return devices;
+	    capture.release();
+ 
+		LOGGER.info("Total detected devices: {}", devices.size());
+		return devices;
 	}
 
 	@Override
 	public void stop(DocScanDevice docScanDevice) {
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
 		VideoCapture capture = new VideoCapture(index);
-		capture.release();
+		if (capture.isOpened()) {
+			capture.release();
+			LOGGER.info("Released camera at index {}", index);
+		}
 	}
 
 	public BufferedImage mat2Img(Mat mat) throws IOException {
