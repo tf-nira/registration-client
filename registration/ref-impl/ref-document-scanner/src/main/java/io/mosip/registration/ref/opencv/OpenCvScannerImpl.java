@@ -33,8 +33,6 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private static final String SERVICE_NAME = "OpenCV";
 	private static final String DELIMITER = ":";
 
-	private static final int WARMUP_FRAME_COUNT = 5;
-
 	public OpenCvScannerImpl() {
 		OpenCV.loadShared();
 	}
@@ -59,62 +57,43 @@ public class OpenCvScannerImpl implements DocScannerService {
 
 		Mat frame = new Mat(new Size(width, height), CvType.CV_8UC3);
 		if (capture.isOpened()) {
-			for (int i = 0; i < WARMUP_FRAME_COUNT; i++) {
-				capture.read(frame);
+			capture.read(frame);
+			try {
+				return mat2Img(frame);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-
-			if (capture.read(frame)) {
-				try {
-					return mat2Img(frame);
-				} catch (IOException e) {
-					LOGGER.error("Error converting Mat to BufferedImage", e);
-				}
-			} else {
-				LOGGER.warn("Failed to capture frame from camera index {}", index);
-			}
-			capture.release();
-		} else {
-			LOGGER.warn("Camera at index {} could not be opened", index);
 		}
 		return null;
 	}
 
 	@Override
 	public List<DocScanDevice> getConnectedDevices(String enabled) {
-		LOGGER.info("Entering the OpenCV device implementation: getConnectedDevice of index 1*************");
+		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
+		
+		var deviceIndexList = returnCameraIndexes(1);
 		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
- 
-		int index = 1;
-	    VideoCapture capture = new VideoCapture(index);
-	    LOGGER.info("Contrast of device at index {} : {}", index, capture.get(Videoio.CAP_PROP_CONTRAST));
-	    
-	    if ((capture.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && capture.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
-	            && capture.isOpened()) {
-	        Mat temp = new Mat();
-	        if (capture.read(temp)) {
-	            DocScanDevice docScanDevice = new DocScanDevice();
-	            docScanDevice.setDeviceType(DeviceType.CAMERA);
-	            docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
-	            docScanDevice.setServiceName(getServiceName());
-	            docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
-	            devices.add(docScanDevice);
-	            LOGGER.info("Detected camera at index {} with backend {}", index, capture.getBackendName());
-	        }
-	    }
-	    capture.release();
- 
-		LOGGER.info("Total detected devices: {}", devices.size());
+		deviceIndexList.parallelStream().forEach(index -> {
+			VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
+			if (capture.isOpened()) {
+				DocScanDevice docScanDevice = new DocScanDevice();
+				docScanDevice.setDeviceType(DeviceType.CAMERA);
+				docScanDevice.setName(capture.getBackendName() + DELIMITER + index);
+				docScanDevice.setServiceName(getServiceName());
+				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
+				devices.add(docScanDevice);
+				LOGGER.info("Connected camera at index {} with backend {}", index, capture.getBackendName());
+				capture.release();
+			}
+		});
 		return devices;
 	}
 
 	@Override
 	public void stop(DocScanDevice docScanDevice) {
 		int index = Integer.parseInt(docScanDevice.getName().split(DELIMITER)[1]);
-		VideoCapture capture = new VideoCapture(index);
-		if (capture.isOpened()) {
-			capture.release();
-			LOGGER.info("Released camera at index {}", index);
-		}
+		VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
+		capture.release();
 	}
 
 	public BufferedImage mat2Img(Mat mat) throws IOException {
@@ -122,5 +101,17 @@ public class OpenCvScannerImpl implements DocScannerService {
 		Imgcodecs.imencode(".jpg", mat, bytes);
 		InputStream inputStream = new ByteArrayInputStream(bytes.toArray());
 		return ImageIO.read(inputStream);
+	}
+	
+	private List<Integer> returnCameraIndexes(int cameraIndex) {
+		var cameraIndexes = new ArrayList<Integer>();
+		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
+		LOGGER.info("Contrast of device at index {} : {}", cameraIndex, cap.get(Videoio.CAP_PROP_CONTRAST));
+	    if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
+	            && cap.isOpened()) {
+			cameraIndexes.add(cameraIndex);
+			cap.release();
+	    }
+	    return cameraIndexes;
 	}
 }
