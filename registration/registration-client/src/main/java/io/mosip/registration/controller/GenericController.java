@@ -1947,7 +1947,7 @@ public class GenericController extends BaseController {
 							"sameAsPlaceOfResidenceCheckBoxEnrolment"
 					);
 
-					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 ) {
+					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
 						fxControl.getNode().setDisable(true);
 					}
 				}
