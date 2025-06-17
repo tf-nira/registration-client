@@ -369,7 +369,8 @@ public class DropDownFxControl extends FxControl {
 				    Set<String> copCat = Set.of(
 				    		"changeOfDateOfBirth",
 					        "placeOfOriginCat",
-					        "familyInformationCat"
+					        "familyInformationCat",
+					        "citizenshipTypeCat"
 					);
 				    
 				    // Get demographics list
@@ -381,7 +382,7 @@ public class DropDownFxControl extends FxControl {
 			        
 			        FxControl fxControl = getFxControl(uiFieldDTO.getId()); // Assuming you have a FxControl store
 			        if (fxControl != null) {
-			            if ("Yes".equalsIgnoreCase(cardValue) && anyCopCatFieldHasY) {
+			            if ("Yes".equalsIgnoreCase(cardValue) && anyCopCatFieldHasY && !fxControl.getNode().isDisable()) {
 			                fxControl.setMessage("This is subject to card change charges");
 			            } else {
 			                fxControl.setMessage(null); // or use null if your method handles that safely

@@ -10,6 +10,8 @@ import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.Initializable;
+import java.time.LocalDate;
+import java.time.Period;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -17,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
@@ -1874,9 +1877,32 @@ public class GenericController extends BaseController {
 								        "familyInformationCat"
 								    );
 
+								    
 								    // Get demographics list
 								    Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
+								 
+								    String dateOfBirthStr = null;
+
+								    Object dobObj = demographics.get("dateOfBirthCop");
+
+								    if (dobObj instanceof String) {
+								        dateOfBirthStr = (String) dobObj;
+								    } else if (dobObj instanceof List<?>) {
+								        List<?> dobList = (List<?>) dobObj;
+								        if (!dobList.isEmpty() && dobList.get(0) instanceof SimpleDto) {
+								            dateOfBirthStr = ((SimpleDto) dobList.get(0)).getValue();
+								        }
+								    }
+
+								    int applicantAgeCop = 0;
+								    if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+								        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+								        LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr, formatter);
+								        applicantAgeCop = Period.between(dateOfBirth, LocalDate.now()).getYears();
+								    }
 								    
+							        String citizenshipTypeCatValue = demographics.get("citizenshipTypeCat") != null ?
+							                String.valueOf(demographics.get("citizenshipTypeCat")) : "N";
 								    // Check if any copCat field has value "Y"
 							        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
 							        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
@@ -1887,9 +1913,13 @@ public class GenericController extends BaseController {
 								    } else if (check2) {
 								        fxControl.selectAndSet("N");
 								        if (fxControl != null && !anyCopCatFieldHasY) {
-								            fxControl.getNode().setDisable(true);
+								            if ("Y".equals(citizenshipTypeCatValue) && applicantAgeCop >= 16) {
+								                fxControl.getNode().setDisable(false); // Enable - allow change
+								            } else {
+								                fxControl.getNode().setDisable(true);  // Disable - not allowed to change
+								            }
 								        } else {
-								        	fxControl.getNode().setDisable(false);
+								            fxControl.getNode().setDisable(false);
 								        }
 								    } else {
 								        fxControl.selectAndSet("N");
