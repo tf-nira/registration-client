@@ -506,8 +506,14 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 			//A4 ack
-			String ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+			String ackTemplateText = "" ;
+			if(registrationDTO.getProcessId().equalsIgnoreCase("UPDATE")) {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_COP,
 					platformLanguageCode);
+			} else {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+						platformLanguageCode);
+			}
 
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 
