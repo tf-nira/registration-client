@@ -2013,28 +2013,21 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	public String validateNin(String fieldId, String value ){
-		if(familyRoles.contains(fieldId)){
-			initNinMap();
-			for (Map.Entry<String, String> entry : ninMap.entrySet()) {
-				if (!entry.getKey().equals(fieldId) && entry.getValue().equals(value)) {
-					if ((entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN"))) {
-						if (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")) {
-							return entry.getKey().equals("fatherNIN") ? "Father's NIN" : "Mother's NIN";
+	public String validateNin(String fieldId, String value) {
+	    if (familyRoles.contains(fieldId)) {
+	        initNinMap();
+	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
+	            String key = entry.getKey();
+	            String ninValue = entry.getValue();
 
-						} else{
-							String label = getFxControl(entry.getKey()).getUiSchemaDTO().getLabel()
-									.getOrDefault(ApplicationContext.applicationLanguage(), entry.getKey());
-							return label;
-						}
-					}
-				}
-			}
-		}
-
-		return null;
-
+	            if (!key.equals(fieldId) && value.equals(ninValue) && !ninValue.isEmpty()) {
+	                return key; // Duplicate NIN found
+	            }
+	        }
+	    }
+	    return null; // No duplicate found
 	}
+
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
 	 * fields.stream().filter(field ->
