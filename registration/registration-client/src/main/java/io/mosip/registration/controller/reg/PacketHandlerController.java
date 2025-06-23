@@ -464,7 +464,8 @@ public class PacketHandlerController extends BaseController implements Initializ
 			//slip acknowledgement
 			String slipAckTemplateText = null;
 
-			if (!registrationDTO.getProcessId().equals("LOST")) {
+			//this condition only allowing for NEW, UPDATE, RENEWAL packets
+			if (!registrationDTO.getProcessId().equals("LOST") && !registrationDTO.getProcessId().equals("RENEWAL")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -484,6 +485,31 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 					} else {
 						slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
+
+					}
+
+				}
+			}
+			else if (registrationDTO.getProcessId().equals("RENEWAL")){
+				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
+
+				String residenceStatus = null;
+
+				if (residenceStatusList != null) {
+					residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
+							? residenceStatusList.get(0).getValue()
+							: null;
+				}
+
+				LOGGER.info("Renewal Residence Status: " + residenceStatus);
+
+				if (residenceStatus != null && !residenceStatus.isEmpty()) {
+					if ("In Uganda".equals(residenceStatus)) {
+						slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+
+
+					} else {
+						slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
 
 					}
 
