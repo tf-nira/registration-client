@@ -464,7 +464,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			//slip acknowledgement
 			String slipAckTemplateText = null;
 
-			//this condition only allowing for NEW, UPDATE, RENEWAL packets
+			//this condition allows only packets with statuses NEW, UPDATE, or RENEWAL.
 			if (!registrationDTO.getProcessId().equals("LOST") && !registrationDTO.getProcessId().equals("RENEWAL")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
