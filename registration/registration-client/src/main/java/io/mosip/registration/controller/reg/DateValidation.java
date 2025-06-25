@@ -393,7 +393,7 @@ public class DateValidation extends BaseController {
 		TextField yyyy = (TextField) getFxElement(parentPane,
 				fieldId + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
 		String dob="";
-		boolean isValid = false;
+		boolean isValid = true;
 		Validator validator = null;
 		boolean checkCardExpire = false;
 		if (dd.getText().matches(RegistrationConstants.NUMBER_REGEX)
@@ -452,7 +452,7 @@ public class DateValidation extends BaseController {
 			}
 
 
-			if (isValid) {
+			if (!isValid) {
 				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
 				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
 				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
