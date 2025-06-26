@@ -19,6 +19,7 @@ import io.mosip.registration.controller.Initialization;
 import io.mosip.registration.controller.reg.DateValidation;
 import io.mosip.registration.dto.mastersync.GenericDto;
 import io.mosip.registration.dto.schema.UiFieldDTO;
+import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.FxControl;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -162,6 +163,16 @@ public class DOBAgeFxControl extends FxControl {
 				uiFieldDTO.getId() + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
 
 		getRegistrationDTo().setDateField(uiFieldDTO.getId(), dd.getText(), mm.getText(), yyyy.getText(), uiFieldDTO.getSubType());
+		
+		int age = getRegistrationDTo().getAge();
+		FlowType flowType = getRegistrationDTo().getFlowType();
+
+		if (age > 15 && (flowType.equals(FlowType.NEW) || flowType.equals(FlowType.UPDATE) || flowType.equals(FlowType.FIRSTID))) {
+		    FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+		    fxControl.selectAndSet("UGA");
+		    fxControl.setData("UGA");
+		    fxControl.getNode().setDisable(true);
+		}
 	}
 
 	@Override

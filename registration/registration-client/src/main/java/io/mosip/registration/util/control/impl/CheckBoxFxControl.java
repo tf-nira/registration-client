@@ -19,6 +19,7 @@ import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.Initialization;
 import io.mosip.registration.dto.schema.UiFieldDTO;
+import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.FxControl;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
@@ -151,8 +152,9 @@ public class CheckBoxFxControl extends FxControl {
 					fxControl.clearValue();
 				}
 			}
-			if(uiFieldDTO.getId().equalsIgnoreCase("consent")){
-				FxControl fxControl = getFxControl("enrolmentCountry");
+			FlowType flowType = getRegistrationDTo().getFlowType();
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.RENEWAL) || flowType.equals(FlowType.LOST))){
+				FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 				fxControl.selectAndSet("UGA");
 				fxControl.setData("UGA");
 				fxControl.getNode().setDisable(true);
