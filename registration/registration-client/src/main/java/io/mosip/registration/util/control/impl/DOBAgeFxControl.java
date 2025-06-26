@@ -168,7 +168,7 @@ public class DOBAgeFxControl extends FxControl {
 		FlowType flowType = getRegistrationDTo().getFlowType();
 
 		if (age > 15 && (flowType.equals(FlowType.NEW) || flowType.equals(FlowType.UPDATE) || flowType.equals(FlowType.FIRSTID))) {
-		    FxControl fxControl = getFxControl("enrolmentCountry");
+		    FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 		    fxControl.selectAndSet("UGA");
 		    fxControl.setData("UGA");
 		    fxControl.getNode().setDisable(true);
