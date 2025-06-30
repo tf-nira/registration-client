@@ -367,8 +367,6 @@ public class DropDownFxControl extends FxControl {
 				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 				    String cardValue = genericController.getRegistrationDTOFromSession().getDemographic(RegistrationConstants.CARD_REQUIRED);
 				    Set<String> copCat = Set.of(
-				    		"changeOfDateOfBirth",
-					        "placeOfOriginCat",
 					        "familyInformationCat",
 					        "citizenshipTypeCat"
 					);

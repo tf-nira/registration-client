@@ -1872,8 +1872,6 @@ public class GenericController extends BaseController {
 								    boolean check2 = fxControl.isFieldDefaultValue2(field);
 
 								    Set<String> copCat = Set.of(
-								        "changeOfDateOfBirth",
-								        "placeOfOriginCat",
 								        "familyInformationCat"
 								    );
 
