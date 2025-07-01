@@ -310,8 +310,8 @@ public class DropDownFxControl extends FxControl {
 						RegistrationConstants.ENROLLMENT_DISTRICT,
 						RegistrationConstants.ENROLLMENT_COUNTY,
 						RegistrationConstants.ENROLLMENT_SUB_COUNTY,
-						RegistrationConstants.ENROLLMENT_VILLAGE,
-						RegistrationConstants.ENROLLMENT_PARISH
+						RegistrationConstants.ENROLLMENT_PARISH,
+						RegistrationConstants.ENROLLMENT_VILLAGE
 					);
 
 					String changedFieldId = uiFieldDTO.getId();
