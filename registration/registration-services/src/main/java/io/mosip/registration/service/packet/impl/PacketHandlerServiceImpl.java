@@ -216,6 +216,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				}
 
 			}
+			if (registrationDTO.getDemographicSimpleType("removingName")!=null){
+				if(registrationDTO.getDemographicSimpleType("removingName").equals("Y") && registrationDTO.getDemographicSimpleType("otherNames")==null) {
+					List<SimpleDto> otherNamevalue = Collections.singletonList(new SimpleDto("eng", ""));
+					registrationDTO.addDemographicField("otherNames", otherNamevalue);
+				}
+			}
 		}
 		
 		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {
