@@ -307,11 +307,11 @@ public class DropDownFxControl extends FxControl {
 				}
 				
 				List<String> fieldHierarchy = List.of(
-					    "applicantPlaceOfEnrolmentDistrict",
-					    "applicantPlaceOfEnrolmentCounty",
-					    "applicantPlaceOfEnrolmentSubCounty",
-					    "applicantPlaceOfEnrolmentParish",
-					    "applicantPlaceOfEnrolmentVillage"
+						RegistrationConstants.ENROLLMENT_DISTRICT,
+						RegistrationConstants.ENROLLMENT_COUNTY,
+						RegistrationConstants.ENROLLMENT_SUB_COUNTY,
+						RegistrationConstants.ENROLLMENT_VILLAGE,
+						RegistrationConstants.ENROLLMENT_PARISH
 					);
 
 					String changedFieldId = uiFieldDTO.getId();

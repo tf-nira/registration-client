@@ -251,6 +251,11 @@ public class RegistrationConstants {
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
+	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
+	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
+	public static final String ENROLLMENT_SUB_COUNTY = "applicantPlaceOfEnrolmentSubCounty";
+	public static final String ENROLLMENT_PARISH = "applicantPlaceOfEnrolmentParish";
+	public static final String ENROLLMENT_VILLAGE = "applicantPlaceOfEnrolmentVillage";
 	public static final String POSTAL_CODE = "postalCode";
 	public static final String CARD_REQUIRED = "isCardRequired";
 	public static final String TOAST_MSG = "This is subject to card change charges";
