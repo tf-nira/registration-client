@@ -197,7 +197,7 @@ public class GenericController extends BaseController {
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
-			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
