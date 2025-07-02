@@ -324,13 +324,6 @@ public class DropDownFxControl extends FxControl {
 					}
 
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("genderCop")){
-					FxControl fxControl2 =  getFxControl("addSpouse");
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
-				}
-
 				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");
 					FxControl fxControl2 =  getFxControl("numberOfOtherSpouses");
