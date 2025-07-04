@@ -2014,11 +2014,44 @@ public class GenericController extends BaseController {
 	public String validateNin(String fieldId, String value) {
 	    if (familyRoles.contains(fieldId)) {
 	        initNinMap();
+
+	        String declarant = null;
+	        if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	            Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
+	            if (declarantObj instanceof List<?>) {
+	                List<?> declarantList = (List<?>) declarantObj;
+	                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+	                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+	                    if (dto.getValue() != null) {
+	                        declarant = dto.getValue().trim().toLowerCase(); // Normalize
+	                    }
+	                }
+	            }
+	        }
+
 	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
 	            String key = entry.getKey();
 	            String ninValue = entry.getValue();
 
-	            if (!key.equals(fieldId) && value.equals(ninValue) && !ninValue.isEmpty()) {
+	            if (key.equals(fieldId) || ninValue.isEmpty())
+	            	continue;
+
+	            if (value.equals(ninValue)) {
+	                if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || 
+	                    "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	                    
+	                    boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                                    ("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
+	                    if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
+	                        continue;
+	                    }
+	                }
 	                return key; // Duplicate NIN found
 	            }
 	        }
