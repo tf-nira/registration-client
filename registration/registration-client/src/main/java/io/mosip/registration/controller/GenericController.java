@@ -561,6 +561,13 @@ public class GenericController extends BaseController {
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
+							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
+								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+								enrolmentControl.selectAndSet("UGA");
+								enrolmentControl.setData("UGA");
+								enrolmentControl.getNode().setDisable(true);
+							}
+							
 							if (data != null) {
 							    fxControl.selectAndSet(data);
 							    fxControl.setData(data);
