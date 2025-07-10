@@ -250,6 +250,7 @@ public class RegistrationConstants {
 	public static final String REG_DDC_004 = "REG_DDC_004";
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
+	public static final String CONSENT = "consent";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
 	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
 	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
