@@ -2,7 +2,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=master&project=mosip_registration&metric=alert_status)](https://sonarcloud.io/dashboard?branch=master&id=mosip_registration)
 
 ## Overview
-
+ 
 * Registration module provides a desktop application for Registration Officers/Supervisors to register an individual in MOSIP by capturing the demographic and biometric details of an individual.
 * Registration module uses data captured by `Pre-Registration` module if an individual has booked for an appointment in the registration centre.
 * Registration Processor processes the data captured by Registration Client module to complete the registration process.
