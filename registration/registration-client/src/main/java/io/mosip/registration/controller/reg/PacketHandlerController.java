@@ -2,7 +2,7 @@ package io.mosip.registration.controller.reg;
 
 import static io.mosip.registration.constants.LoggerConstants.PACKET_HANDLER;
 import static io.mosip.registration.constants.RegistrationConstants.*;
-//import static io.mosip.registration.constants.RegistrationConstants.COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE;
+import static io.mosip.registration.constants.RegistrationConstants.COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -458,6 +458,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 	public void showReciept() {
 		try {
+			ackReceiptController.setSlipStringWriter(null);
 			RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 			LOGGER.info("Showing receipt Started for process", registrationDTO.getProcessId());
 			String platformLanguageCode = ApplicationContext.applicationLanguage();
