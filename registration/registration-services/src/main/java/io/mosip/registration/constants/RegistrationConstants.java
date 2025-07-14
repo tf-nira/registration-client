@@ -251,6 +251,11 @@ public class RegistrationConstants {
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
 	public static final String CONSENT = "consent";
+	public static final String OTHER = "Other";
+	public static final String GUARDIAN = "guardian";
+	public static final String CHILD_FOR_AGE = "child";
+	public static final String SPOUSE = "spouse";
+	public static final String REMOVE_SPOUSE = "removeSpouse";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
 	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
 	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
@@ -1859,6 +1864,7 @@ public class RegistrationConstants {
 	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
 	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
 	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
+	public static final String MINOR_GUARDIAN="MINOR_GUARDIAN";
 
 	public static final String ICONS_HBOX = "iconsHBox";
 	public static final String KEYBOARD_PANE = "keyboardPane";
