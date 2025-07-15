@@ -485,11 +485,11 @@ public class DateValidation extends BaseController {
 			}
 
 
-			if (!isValid) {
-				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
-				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
-				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
-			}
+//			if (!isValid) {
+//				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
+//				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
+//				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
+//			}
 		}
 		if (checkCardExpire) {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
