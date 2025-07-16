@@ -160,7 +160,7 @@ public class RegistrationDTO {
 			        ageInMonths += 1;
 			    }
 			    
-			    double currentAgeInYears = ageInYears + (ageInMonths / 12.0);
+			    double currentAgeInYears = ageInMonths / 12.0;
 			    double startAge = Double.parseDouble(range[0]);
 			    double endAge = Double.parseDouble(range[1]);
 
