@@ -23,6 +23,7 @@ on:
       - niradev-1.2.0.2-N1
       - tf_nira_dev
       - tf-nira-dev-jar
+      - tf_nira_bio
 
 jobs:
   build-regclient:
