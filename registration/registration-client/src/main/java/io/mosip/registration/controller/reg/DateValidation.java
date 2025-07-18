@@ -495,6 +495,7 @@ public class DateValidation extends BaseController {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
         }
 		if(uiFieldDTO.isRequired() && (dd.getText().isEmpty() || mm.getText().isEmpty() || yyyy.getText().isEmpty()) ) {
+			isValid = false;
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
 		}
