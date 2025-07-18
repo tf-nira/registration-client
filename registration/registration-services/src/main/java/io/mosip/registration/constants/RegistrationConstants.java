@@ -2049,7 +2049,7 @@ public class RegistrationConstants {
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "ack_a6slip_template_part_out";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "renewal-reg_ack_a6slip_template_part";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "renewal-ack_a6slip_template_part_out";
-
+	public static final String COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE="cop_thermal_printer_template_part";
 	public static final String A6_THERMAL_PRINTER  = "mosip.registration.ack.printer.a6.thermal";
 
 }
