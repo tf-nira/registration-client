@@ -556,6 +556,7 @@ public class GenericController extends BaseController {
 							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
+							FlowType flowType = getRegistrationDTOFromSession().getFlowType();
 							Object sessionValue = getRegistrationDTOFromSession().getDemographics().get(field.getId());
 							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
@@ -568,8 +569,11 @@ public class GenericController extends BaseController {
 								enrolmentControl.getNode().setDisable(true);
 							}
 							
-							if (data != null) {
+							if (flowType.equals(FlowType.UPDATE) && data != null) {
 							    fxControl.selectAndSet(data);
+							    fxControl.setData(data);
+							} else if(!flowType.equals(FlowType.UPDATE) && !field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT) && !field.getId().equalsIgnoreCase(RegistrationConstants.ENROLLMENT_COUNTRY)){
+								fxControl.selectAndSet(data);
 							    fxControl.setData(data);
 							}
 							break;
