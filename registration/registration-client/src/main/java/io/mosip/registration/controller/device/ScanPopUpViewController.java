@@ -528,8 +528,11 @@ public class ScanPopUpViewController extends BaseController implements Initializ
 
 		// Remove current page
 		documentScanController.getScannedPages().remove(pageNumberIndex);
-
-		generateAlert(RegistrationConstants.ALERT_INFORMATION,RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.DOC_DELETE_SUCCESS));
+		if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SIGN_DELETE_SUCCESS));
+		}else {
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.DOC_DELETE_SUCCESS));
+		}
 
 		// ImageView to handle the image with dimensions
 		ImageView imageView = new ImageView();
