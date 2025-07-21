@@ -431,6 +431,10 @@ public class RegistrationUIConstants {
 
 	public static final String DOC_DELETE_SUCCESS = "DOC_DELETE_SUCCESS";
 
+	public static final String SIGN_CAPTURE_SUCCESS = "SIGN_CAPTURE_SUCCESS";
+
+	public static final String SIGN_DELETE_SUCCESS = "SIGN_DELETE_SUCCESS";
+	
 	public static final String USER_IN_ACTIVE = "USER_IN_ACTIVE";
 
 	public static final String ONBOARD_USER_TITLE = "officerbiometrics";
