@@ -235,8 +235,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 					if (certList != null && !certList.isEmpty()) {
 						String certificateNo = certList.get(0).getValue();
 						if (certificateNo != null && !certificateNo.isEmpty()) {
-							registrationDTO.addDemographicField("citizenshipCertificateNo",
-									Collections.singletonList(new SimpleDto("eng", certificateNo)));
+						registrationDTO.addDemographicField("citizenshipCertificateNo", certificateNo);
 							break;
 						}
 					}
