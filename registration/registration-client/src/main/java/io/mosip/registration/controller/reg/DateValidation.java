@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 
@@ -17,6 +18,7 @@ import io.mosip.registration.controller.ClientApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
@@ -423,6 +425,18 @@ public class DateValidation extends BaseController {
                 isValid = false;
                 checkCardExpire = true;
             }
+			
+			String guardianRelationToApplicant = null;
+			Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("guardianRelationToApplicant");
+            if (declarantObj instanceof List<?>) {
+                List<?> declarantList = (List<?>) declarantObj;
+                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+                    if (dto.getValue() != null) {
+                    	guardianRelationToApplicant = dto.getValue().trim().toLowerCase(); // Normalize
+                    }
+                }
+            }
 
 			if(isValid && !dateofbirth.equalsIgnoreCase("")){
 				// Parse both dob, current date and dateofbirth strings into LocalDate objects
@@ -437,31 +451,51 @@ public class DateValidation extends BaseController {
 				Period period1 = Period.between(currentDate, dobDate);
 
 				// Check the date if any future date or before Applicant or After applicant
-				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("removeSpouse") )  && (period1.getDays() > 0) || period1.getMonths() > 0 || period1.getYears() > 0) {
+				if ( (uiFieldDTO.getId().contains(RegistrationConstants.SPOUSE) || uiFieldDTO.getId().contains(RegistrationConstants.REMOVE_SPOUSE) )  && (period1.getDays() > 0) || period1.getMonths() > 0 || period1.getYears() > 0) {
 					isValid = false; // If Age is Future date, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 				}
-				else if(uiFieldDTO.getId().contains("guardian") && period.getDays() >= 0 && period.getMonths() >= 0 && period.getYears() >= 0){
+			    else if (guardianRelationToApplicant != null && guardianRelationToApplicant.equalsIgnoreCase(RegistrationConstants.OTHER) && uiFieldDTO.getId().contains(RegistrationConstants.GUARDIAN)) {
+			        Period applicantAge = Period.between(dateofbirthDate, currentDate);
+			        int applicantYears = applicantAge.getYears();
+			        int guardianYears = Period.between(dobDate, currentDate).getYears();
+
+			        if (applicantYears >= 40) {
+			            // Guardian must be at least 18 years old, even if younger than applicant
+			            if (guardianYears < 18) {
+			                isValid = false;
+			                resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINOR_GUARDIAN));
+			            }
+			        } else {
+			            // For applicants < 40, guardian must be older or equal in age
+			            if (guardianYears < applicantYears) {
+			                isValid = false;
+			                resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AFTER_APPLICANT_DOB));
+			            }
+			        }
+			    }
+				else if(uiFieldDTO.getId().contains(RegistrationConstants.GUARDIAN) && period.getDays() >= 0 && period.getMonths() >= 0 && period.getYears() >= 0){
 					isValid = false; // If Age is After Applicant DOB, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AFTER_APPLICANT_DOB));
 				}
-				else if(uiFieldDTO.getId().contains("child") && period.getDays() <= 0 && period.getMonths() <= 0 && period.getYears() <= 0) {
+				else if(uiFieldDTO.getId().contains(RegistrationConstants.CHILD_FOR_AGE) && period.getDays() <= 0 && period.getMonths() <= 0 && period.getYears() <= 0) {
 					isValid = false; // If Age is Before Applicant DOB, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.BEFORE_APPLICANT_DOB));
 				}
 			}
 
 
-			if (!isValid) {
-				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
-				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
-				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
-			}
+//			if (!isValid) {
+//				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
+//				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
+//				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
+//			}
 		}
 		if (checkCardExpire) {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
         }
 		if(uiFieldDTO.isRequired() && (dd.getText().isEmpty() || mm.getText().isEmpty() || yyyy.getText().isEmpty()) ) {
+			isValid = false;
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
 		}

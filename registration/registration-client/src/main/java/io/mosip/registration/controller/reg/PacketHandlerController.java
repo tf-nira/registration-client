@@ -458,6 +458,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 	public void showReciept() {
 		try {
+			ackReceiptController.setSlipStringWriter(null);
 			RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 			LOGGER.info("Showing receipt Started for process", registrationDTO.getProcessId());
 			String platformLanguageCode = ApplicationContext.applicationLanguage();
@@ -465,7 +466,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			//slip acknowledgement
 			String slipAckTemplateText = null;
 
-			if (!registrationDTO.getProcessId().equals("LOST") && !registrationDTO.getProcessId().equals("RENEWAL")) {
+			if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -491,7 +492,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				}
 			}
 
-			else if (registrationDTO.getProcessId().equals("RENEWAL")){
+			else if (registrationDTO.getProcessId().equals("RENEWAL") || registrationDTO.getProcessId().equals("FIRSTID") ){
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -518,7 +519,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 
-			else {
+			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 

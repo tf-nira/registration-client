@@ -305,13 +305,24 @@ public class DropDownFxControl extends FxControl {
 				if (uiFieldDTO.isSetRequired()){
 					resetValue();
 				}
+				
+				List<String> fieldHierarchy = List.of(
+						RegistrationConstants.ENROLLMENT_DISTRICT,
+						RegistrationConstants.ENROLLMENT_COUNTY,
+						RegistrationConstants.ENROLLMENT_SUB_COUNTY,
+						RegistrationConstants.ENROLLMENT_PARISH,
+						RegistrationConstants.ENROLLMENT_VILLAGE
+					);
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("genderCop")){
-					FxControl fxControl2 =  getFxControl("addSpouse");
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
-				}
+					String changedFieldId = uiFieldDTO.getId();
+					int changedIndex = fieldHierarchy.indexOf(changedFieldId);
+
+					if (changedIndex != -1 && changedIndex < fieldHierarchy.size() - 1) {
+					    for (int i = changedIndex + 1; i < fieldHierarchy.size(); i++) {
+					        getRegistrationDTo().removeDemographicField(fieldHierarchy.get(i));
+					    }
+					}
+
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");

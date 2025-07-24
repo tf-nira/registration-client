@@ -197,7 +197,7 @@ public class GenericController extends BaseController {
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
-			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
@@ -556,13 +556,24 @@ public class GenericController extends BaseController {
 							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
+							FlowType flowType = getRegistrationDTOFromSession().getFlowType();
 							Object sessionValue = getRegistrationDTOFromSession().getDemographics().get(field.getId());
 							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
-							if (data != null) {
+							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
+								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+								enrolmentControl.selectAndSet("UGA");
+								enrolmentControl.setData("UGA");
+								enrolmentControl.getNode().setDisable(true);
+							}
+							
+							if (flowType.equals(FlowType.UPDATE) && data != null) {
 							    fxControl.selectAndSet(data);
+							    fxControl.setData(data);
+							} else if(!flowType.equals(FlowType.UPDATE) && !field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT) && !field.getId().equalsIgnoreCase(RegistrationConstants.ENROLLMENT_COUNTRY)){
+								fxControl.selectAndSet(data);
 							    fxControl.setData(data);
 							}
 							break;
@@ -2014,11 +2025,44 @@ public class GenericController extends BaseController {
 	public String validateNin(String fieldId, String value) {
 	    if (familyRoles.contains(fieldId)) {
 	        initNinMap();
+
+	        String declarant = null;
+	        if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	            Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
+	            if (declarantObj instanceof List<?>) {
+	                List<?> declarantList = (List<?>) declarantObj;
+	                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+	                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+	                    if (dto.getValue() != null) {
+	                        declarant = dto.getValue().trim().toLowerCase(); // Normalize
+	                    }
+	                }
+	            }
+	        }
+
 	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
 	            String key = entry.getKey();
 	            String ninValue = entry.getValue();
 
-	            if (!key.equals(fieldId) && value.equals(ninValue) && !ninValue.isEmpty()) {
+	            if (key.equals(fieldId) || ninValue.isEmpty())
+	            	continue;
+
+	            if (value.equals(ninValue)) {
+	                if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || 
+	                    "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	                    
+	                    boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                                    ("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
+	                    if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
+	                        continue;
+	                    }
+	                }
 	                return key; // Duplicate NIN found
 	            }
 	        }

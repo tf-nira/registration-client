@@ -222,6 +222,25 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 					registrationDTO.addDemographicField("otherNames", otherNamevalue);
 				}
 			}
+
+
+				List<String> certTypes = Arrays.asList(
+					"dualCitizenshipCertificateNumber",
+					"registrationCertificateNumber",
+					"naturalizationCertificateNumber"
+				);
+
+				for (String certType : certTypes) {
+					List<SimpleDto> certList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType(certType);
+					if (certList != null && !certList.isEmpty()) {
+						String certificateNo = certList.get(0).getValue();
+						if (certificateNo != null && !certificateNo.isEmpty()) {
+						registrationDTO.addDemographicField("citizenshipCertificateNo", certificateNo);
+							break;
+						}
+					}
+				}
+
 		}
 		
 		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {
