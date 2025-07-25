@@ -148,18 +148,33 @@ public class RegistrationDTO {
 					date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat())));
 
 			JSONObject ageGroupConfig = new JSONObject((String) ApplicationContext.map().get(RegistrationConstants.AGE_GROUP_CONFIG));
-			ageGroupConfig.keySet().forEach( group -> {
-				String[] range = ageGroupConfig.getString(group).split("-");
-				int ageInYears = Period.between(date, LocalDate.now(ZoneId.of("UTC"))).getYears();
-				if(ValueRange.of(Long.valueOf(range[0]), Long.valueOf(range[1])).isValidIntValue(ageInYears)) {
-					AGE_GROUPS.put(String.format("%s_%s", fieldId, "ageGroup"), group);
-					AGE_GROUPS.put(String.format("%s_%s", fieldId, "age"), ageInYears);
+			ageGroupConfig.keySet().forEach(group -> {
+			    String[] range = ageGroupConfig.getString(group).split("-");
+			    LocalDate currentDate = LocalDate.now(ZoneId.of("UTC"));
+			    Period period = Period.between(date, currentDate);
 
-					if(APPLICANT_DOB_SUBTYPE.equals(subType)) {
-						AGE_GROUPS.put("ageGroup", group);
-						AGE_GROUPS.put("age", ageInYears);
-					}
-				}
+			    int ageInYears = period.getYears();
+			    int ageInMonths = (ageInYears * 12) + period.getMonths();
+			    int ageIndays = period.getDays(); 
+			    if (ageInMonths == 9 && ageIndays > 0) {
+			        ageInMonths += 1;
+			    }
+			    
+			    double currentAgeInYears = ageInMonths / 12.0;
+			    double startAge = Double.parseDouble(range[0]);
+			    double endAge = Double.parseDouble(range[1]);
+
+			    if (currentAgeInYears >= startAge && currentAgeInYears <= endAge) {
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "ageGroup"), group);
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "age"), ageInYears);
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "monthAge"), ageInMonths);
+
+			        if (APPLICANT_DOB_SUBTYPE.equals(subType)) {
+			            AGE_GROUPS.put("ageGroup", group);
+			            AGE_GROUPS.put("age", ageInYears);
+			            AGE_GROUPS.put("monthAge", ageInMonths);
+			        }
+			    }
 			});
 		}
 	}
