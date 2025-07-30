@@ -106,9 +106,8 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private List<Integer> returnCameraIndexes(int cameraIndex) {
 		var cameraIndexes = new ArrayList<Integer>();
 		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
-		LOGGER.info("Contrast of device at index {} : {}", cameraIndex, cap.get(Videoio.CAP_PROP_CONTRAST));
-	    if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
-	            && cap.isOpened()) {
+		LOGGER.info("Contrast of device at default index value is 1 : {}", cap.get(Videoio.CAP_PROP_CONTRAST));
+	    if (cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
 			cameraIndexes.add(cameraIndex);
 			cap.release();
 	    }
