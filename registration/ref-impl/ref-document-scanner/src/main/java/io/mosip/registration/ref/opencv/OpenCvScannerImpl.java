@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import javax.imageio.ImageIO;
 
@@ -70,8 +71,8 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public List<DocScanDevice> getConnectedDevices(String enabled) {
 		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
-		
-		var deviceIndexList = returnCameraIndexes(1);
+		var deviceIndexList = returnCameraIndexes();
+
 		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
 		deviceIndexList.parallelStream().forEach(index -> {
 			VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
@@ -82,7 +83,6 @@ public class OpenCvScannerImpl implements DocScannerService {
 				docScanDevice.setServiceName(getServiceName());
 				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
 				devices.add(docScanDevice);
-				LOGGER.info("Connected camera at index {} with backend {}", index, capture.getBackendName());
 				capture.release();
 			}
 		});
@@ -103,14 +103,21 @@ public class OpenCvScannerImpl implements DocScannerService {
 		return ImageIO.read(inputStream);
 	}
 	
-	private List<Integer> returnCameraIndexes(int cameraIndex) {
+	private List<Integer> returnCameraIndexes() {
 		var cameraIndexes = new ArrayList<Integer>();
-		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
-		LOGGER.info("Contrast of device at default index value is 1 : {}", cap.get(Videoio.CAP_PROP_CONTRAST));
-	    if (cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
-			cameraIndexes.add(cameraIndex);
+		var cap = new VideoCapture(0, Videoio.CAP_MSMF);
+		var cap1 = new VideoCapture(1, Videoio.CAP_MSMF);
+		LOGGER.info("Contrast of device at index is 0 : {}",  cap.get(Videoio.CAP_PROP_CONTRAST));
+		LOGGER.info("Contrast of device at index is 1 : {}",  cap1.get(Videoio.CAP_PROP_CONTRAST));
+		
+		if (cap1.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap1.isOpened()) {
+			cameraIndexes.add(1);
+			cap1.release();
+	    } else if(cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
+	    	cameraIndexes.add(0);
 			cap.release();
 	    }
 	    return cameraIndexes;
 	}
+	
 }
