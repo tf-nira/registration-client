@@ -137,6 +137,8 @@ public class TemplateGenerator extends BaseService {
 			LOGGER.info(LOG_TEMPLATE_GENERATOR, RegistrationConstants.APPLICATION_NAME,	RegistrationConstants.APPLICATION_ID,
 					"generateTemplate had been called for preparing Acknowledgement Template.");
 
+			LOGGER.info("Template text length: {}", templateText.length());
+			
 			Map<String, Object> templateValues = new WeakHashMap<>();
 			boolean isPrevTemplate = templateType.equals(RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE) ? false : true;
 			String firstSelectedLanguage = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
@@ -183,22 +185,29 @@ public class TemplateGenerator extends BaseService {
 
 			LOGGER.debug(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
 					"merge method of TemplateManager had been called for preparing Acknowledgement Template.");
-			Writer writer = new StringWriter();
-			TemplateManager templateManager = templateManagerBuilder.build();
-			InputStream inputStream = templateManager.merge(is, templateValues);
-			IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
-			LOGGER.debug(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-					"generateTemplate method has been ended for preparing Acknowledgement Template.");
+	        Writer writer = new StringWriter();
+	        TemplateManager templateManager = templateManagerBuilder.build();
+	        InputStream mergedStream = templateManager.merge(is, templateValues);
 
-			Map<String, Object> responseMap = new WeakHashMap<>();
-			responseMap.put(RegistrationConstants.TEMPLATE_NAME, writer);
-			setSuccessResponse(response, RegistrationConstants.SUCCESS, responseMap);
+	        try {
+	            IOUtils.copy(mergedStream, writer, StandardCharsets.UTF_8);
+	        } catch (NegativeArraySizeException e) {
+	            LOGGER.error("NegativeArraySizeException occurred while copying template content", e);
+	            throw new RegBaseCheckedException();
+	        }
+	        LOGGER.debug(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+	                "generateTemplate method completed successfully.");
 
-		} catch (RuntimeException | IOException runtimeException) {
-			setErrorResponse(response, RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, null);
-			LOGGER.error(runtimeException.getMessage(), runtimeException);
-		}
-		return response;
+	        Map<String, Object> responseMap = new WeakHashMap<>();
+	        responseMap.put(RegistrationConstants.TEMPLATE_NAME, writer);
+	        setSuccessResponse(response, RegistrationConstants.SUCCESS, responseMap);
+
+	    } catch (RuntimeException | IOException e) {
+	        setErrorResponse(response, RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, null);
+	        LOGGER.error("Exception occurred in generateTemplate: {}", e.getMessage(), e);
+	    }
+
+	    return response;
 	}
 
 	private Map<String, Object> getBiometericData(RegistrationDTO registration, UiFieldDTO field, boolean isPrevTemplate,

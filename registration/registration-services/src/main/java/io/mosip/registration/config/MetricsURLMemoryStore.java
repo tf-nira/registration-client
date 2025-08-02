@@ -14,9 +14,10 @@ public class MetricsURLMemoryStore implements io.tus.java.client.TusURLStore {
 
     @Override
     public void set(String s, URL url) {
-        LOGGER.info("set MetricsURLMemoryStore {}", s);
-        try(FileOutputStream fos = new FileOutputStream(getFileName(s));
-            ObjectOutputStream oos = new ObjectOutputStream(fos);) {
+        File file = getFileName(s);
+        LOGGER.info("Saving resumable URL for {} into file {}", s, file.getAbsolutePath());
+        try (FileOutputStream fos = new FileOutputStream(file);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(url);
         } catch (IOException e) {
             LOGGER.error("Failed to set resumable url in MetricsURLMemoryStore", e);
@@ -26,18 +27,21 @@ public class MetricsURLMemoryStore implements io.tus.java.client.TusURLStore {
     @Override
     public URL get(String s) {
         try(FileInputStream fis = new FileInputStream(getFileName(s));
-            ObjectInputStream ois = new ObjectInputStream(fis);) {
+            ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (URL) ois.readObject();
         } catch (Exception e) {
-            LOGGER.error("Failed to get resumable url in MetricsURLMemoryStore", e);
+            LOGGER.error("Failed to get resumable URL from MetricsURLMemoryStore for {}", s, e);
+            return null;
         }
-        return null;
     }
 
     @Override
     public void remove(String s) {
-        if (getFileName(s).delete()) {
-        	LOGGER.info("Deleted metrics");
+        File file = getFileName(s);
+        if (file.delete()) {
+            LOGGER.info("Deleted resumable upload file: {}", file.getAbsolutePath());
+        } else {
+            LOGGER.warn("Failed to delete resumable upload file: {}", file.getAbsolutePath());
         }
     }
 
