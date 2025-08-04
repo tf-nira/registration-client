@@ -137,7 +137,7 @@ public class TemplateGenerator extends BaseService {
 			LOGGER.info(LOG_TEMPLATE_GENERATOR, RegistrationConstants.APPLICATION_NAME,	RegistrationConstants.APPLICATION_ID,
 					"generateTemplate had been called for preparing Acknowledgement Template.");
 
-			LOGGER.info("Template text length: {}", templateText.length());
+			LOGGER.info("Template text length: {} ", templateText.length());
 			
 			Map<String, Object> templateValues = new WeakHashMap<>();
 			boolean isPrevTemplate = templateType.equals(RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE) ? false : true;
