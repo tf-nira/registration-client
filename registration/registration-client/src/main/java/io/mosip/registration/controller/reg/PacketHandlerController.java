@@ -548,6 +548,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(ackTemplateText, registrationDTO,
 						templateManagerBuilder, RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE, getImagePath(RegistrationConstants.CROSS_IMG, true),false);
+				LOGGER.info("Template generated Successfully*****", templateResponse);
 				if (templateResponse != null && templateResponse.getSuccessResponseDTO() != null) {
 					Writer stringWriter = (Writer) templateResponse.getSuccessResponseDTO().getOtherAttributes()
 							.get(RegistrationConstants.TEMPLATE_NAME);
