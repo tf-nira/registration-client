@@ -489,9 +489,9 @@ public class TemplateGenerator extends BaseService {
 			templateValues.put(RegistrationConstants.TEMPLATE_THUMBS_LABEL, getLabel("thumbs"));
 			templateValues.put("FaceLabel", getLabel("FACE"));
 
-			templateValues.put("LOGO1", getImage("/images/LOGO1.png"));
-			templateValues.put("LOGO2", getImage("/images/LOGO2.png"));
-			templateValues.put("LOGO3", getImage("/images/LOGO3.png"));
+			// templateValues.put("LOGO1", getImage("/images/LOGO1.png"));
+			// templateValues.put("LOGO2", getImage("/images/LOGO2.png"));
+			// templateValues.put("LOGO3", getImage("/images/LOGO3.png"));
 
 		} catch (RegBaseCheckedException ex) {
 			setErrorResponse(responseDTO, ex.getMessage(), null);
