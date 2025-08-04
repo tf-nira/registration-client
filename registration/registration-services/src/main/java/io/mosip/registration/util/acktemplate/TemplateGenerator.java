@@ -183,7 +183,7 @@ public class TemplateGenerator extends BaseService {
 			templateValues.put("documents", documentsData);
 			templateValues.put("biometrics", biometricsData);
 
-			LOGGER.debug(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
 					"merge method of TemplateManager had been called for preparing Acknowledgement Template.");
 	        Writer writer = new StringWriter();
 	        TemplateManager templateManager = templateManagerBuilder.build();
@@ -195,7 +195,7 @@ public class TemplateGenerator extends BaseService {
 	            LOGGER.error("NegativeArraySizeException occurred while copying template content", e);
 	            throw new RegBaseCheckedException();
 	        }
-	        LOGGER.debug(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+	        LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
 	                "generateTemplate method completed successfully.");
 
 	        Map<String, Object> responseMap = new WeakHashMap<>();
