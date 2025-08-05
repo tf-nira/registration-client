@@ -184,30 +184,56 @@ public class TemplateGenerator extends BaseService {
 			templateValues.put("biometrics", biometricsData);
 
 			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-					"merge method of TemplateManager had been called for preparing Acknowledgement Template.");
-	        Writer writer = new StringWriter();
-	        TemplateManager templateManager = templateManagerBuilder.build();
-	        InputStream mergedStream = templateManager.merge(is, templateValues);
+			        "Step 1: Starting Acknowledgement Template Generation");
 
-	        try {
-	            IOUtils.copy(mergedStream, writer, StandardCharsets.UTF_8);
-	        } catch (NegativeArraySizeException e) {
-	            LOGGER.error("NegativeArraySizeException occurred while copying template content", e);
-	            throw new RegBaseCheckedException();
-	        }
-	        LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-	                "generateTemplate method completed successfully.");
+			Writer writer = new StringWriter();
+			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			        "Step 2: Created StringWriter for merging template");
 
-	        Map<String, Object> responseMap = new WeakHashMap<>();
-	        responseMap.put(RegistrationConstants.TEMPLATE_NAME, writer);
-	        setSuccessResponse(response, RegistrationConstants.SUCCESS, responseMap);
+			TemplateManager templateManager = null;
+			try {
+			    templateManager = templateManagerBuilder.build();
+			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "Step 3: TemplateManager built successfully");
+			} catch (Exception e) {
+			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "ERROR: Failed to build TemplateManager", e);
+			    throw e; // or handle accordingly
+			}
 
-	    } catch (RuntimeException | IOException e) {
-	        setErrorResponse(response, RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, null);
-	        LOGGER.error("Exception occurred in generateTemplate: {}", e.getMessage(), e);
-	    }
+			InputStream inputStream = null;
+			try {
+			    inputStream = templateManager.merge(is, templateValues);
+			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "Step 4: Template merged successfully");
+			} catch (Exception e) {
+			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "ERROR: Template merging failed", e);
+			    throw e;
+			}
 
-	    return response;
+			try {
+			    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
+			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "Step 5: Template content copied successfully");
+			} catch (Exception e) {
+			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			            "ERROR: Failed to copy template content", e);
+			    throw e;
+			}
+
+			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
+			        "Step 6: Completed Acknowledgement Template Generation successfully");
+
+			Map<String, Object> responseMap = new WeakHashMap<>();
+			responseMap.put(RegistrationConstants.TEMPLATE_NAME, writer);
+			setSuccessResponse(response, RegistrationConstants.SUCCESS, responseMap);
+
+		} catch (RuntimeException | IOException runtimeException) {
+			setErrorResponse(response, RegistrationConstants.TEMPLATE_GENERATOR_ACK_RECEIPT_EXCEPTION, null);
+			LOGGER.error(runtimeException.getMessage(), runtimeException);
+		}
+		return response;
 	}
 
 	private Map<String, Object> getBiometericData(RegistrationDTO registration, UiFieldDTO field, boolean isPrevTemplate,
