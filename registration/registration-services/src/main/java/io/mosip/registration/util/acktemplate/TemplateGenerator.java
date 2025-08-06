@@ -138,7 +138,7 @@ public class TemplateGenerator extends BaseService {
 					"generateTemplate had been called for preparing Acknowledgement Template.");
 
 			LOGGER.info("Template text length: {} ", templateText.length());
-			
+
 			Map<String, Object> templateValues = new WeakHashMap<>();
 			boolean isPrevTemplate = templateType.equals(RegistrationConstants.ACKNOWLEDGEMENT_TEMPLATE) ? false : true;
 			String firstSelectedLanguage = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
@@ -184,46 +184,16 @@ public class TemplateGenerator extends BaseService {
 			templateValues.put("biometrics", biometricsData);
 
 			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			        "Step 1: Starting Acknowledgement Template Generation");
-
+					"merge method of TemplateManager had been called for preparing Acknowledgement Template.");
 			Writer writer = new StringWriter();
+			TemplateManager templateManager = templateManagerBuilder.build();
+			LOGGER.info("is : {}", is);
+			LOGGER.info("templateValues : {}", templateValues);
+			InputStream inputStream = templateManager.merge(is, templateValues);
+			LOGGER.info("Template Merged Successfully : {}", inputStream);
+			IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
 			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			        "Step 2: Created StringWriter for merging template");
-
-			TemplateManager templateManager = null;
-			try {
-			    templateManager = templateManagerBuilder.build();
-			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "Step 3: TemplateManager built successfully");
-			} catch (Exception e) {
-			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "ERROR: Failed to build TemplateManager", e);
-			    throw e; // or handle accordingly
-			}
-
-			InputStream inputStream = null;
-			try {
-			    inputStream = templateManager.merge(is, templateValues);
-			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "Step 4: Template merged successfully");
-			} catch (Exception e) {
-			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "ERROR: Template merging failed", e);
-			    throw e;
-			}
-
-			try {
-			    IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
-			    LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "Step 5: Template content copied successfully");
-			} catch (Exception e) {
-			    LOGGER.error(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			            "ERROR: Failed to copy template content", e);
-			    throw e;
-			}
-
-			LOGGER.info(LOG_TEMPLATE_GENERATOR, APPLICATION_NAME, APPLICATION_ID,
-			        "Step 6: Completed Acknowledgement Template Generation successfully");
+					"generateTemplate method has been ended for preparing Acknowledgement Template.");
 
 			Map<String, Object> responseMap = new WeakHashMap<>();
 			responseMap.put(RegistrationConstants.TEMPLATE_NAME, writer);
