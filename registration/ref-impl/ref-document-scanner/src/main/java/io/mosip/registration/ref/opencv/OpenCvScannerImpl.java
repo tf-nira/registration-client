@@ -82,6 +82,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 				docScanDevice.setServiceName(getServiceName());
 				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
 				devices.add(docScanDevice);
+				LOGGER.info("Connected camera at index {} with backend {}", index, capture.getBackendName());
 				capture.release();
 			}
 		});
@@ -112,10 +113,10 @@ public class OpenCvScannerImpl implements DocScannerService {
 		if (cap1.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap1.isOpened()) {
 			cameraIndexes.add(1);
 			cap1.release();
-	    	} else if(cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
-		    	cameraIndexes.add(0);
+	    } else if(cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
+		    cameraIndexes.add(0);
 			cap.release();
-	    	}
-	    	return cameraIndexes;
+	    }
+	    return cameraIndexes;
 	}
 }
