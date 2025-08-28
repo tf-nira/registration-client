@@ -441,12 +441,6 @@ public class DropDownFxControl extends FxControl {
 						fxControl2.selectAndSet("MLE");
 						fxControl2.setData("MLE");
 						fxControl2.getNode().setDisable(true);
-
-						// Nationality
-						FxControl fxControl3 =  getFxControl("declarantNationality");
-						fxControl3.selectAndSet("Ugandan");
-						fxControl3.setData("Ugandan");
-						fxControl3.getNode().setDisable(true);
 					}
 					else if (newValue.getName().equalsIgnoreCase("Mother")) {
 						for (int i=0; i<5; i++) {
@@ -492,19 +486,11 @@ public class DropDownFxControl extends FxControl {
 							fxControl2.setData("FRN");
 						}
 						fxControl2.getNode().setDisable(true);
-
-
-						// Nationality
-						FxControl fxControl4 =  getFxControl("declarantNationality");
-						fxControl4.selectAndSet("Ugandan");
-						fxControl4.setData("Ugandan");
-						fxControl4.getNode().setDisable(true);
 					}
 					else {
 						declarantFieldIds.add("declarantMaidenName");
 						declarantFieldIds.add("declarantGender");
 						declarantFieldIds.add("declarantResidenceStatus");
-						declarantFieldIds.add("declarantNationality");
 
 						for(String fieldId: declarantFieldIds) {
 							FxControl fxControl = getFxControl(fieldId);

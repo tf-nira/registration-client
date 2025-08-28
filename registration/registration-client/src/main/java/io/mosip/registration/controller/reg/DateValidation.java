@@ -438,7 +438,7 @@ public class DateValidation extends BaseController {
                 }
             }
 
-			if(isValid && !dateofbirth.equalsIgnoreCase("")){
+			if(isValid && !dateofbirth.equalsIgnoreCase("") && !getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.RENEWAL)){
 				// Parse both dob, current date and dateofbirth strings into LocalDate objects
 				LocalDate dobDate = LocalDate.parse(dob, formatter);
 				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);

@@ -173,6 +173,13 @@ public class DOBAgeFxControl extends FxControl {
 		    fxControl.setData("UGA");
 		    fxControl.getNode().setDisable(true);
 		}
+		
+		if(age < 18 && (flowType.equals(FlowType.NEW) || flowType.equals(FlowType.UPDATE))) {
+			FxControl fxControl = getFxControl(RegistrationConstants.DECLARANT_NATIONALITY);
+			fxControl.selectAndSet("Ugandan");
+		    fxControl.setData("Ugandan");
+		    fxControl.getNode().setDisable(true);
+		}
 	}
 
 	@Override
