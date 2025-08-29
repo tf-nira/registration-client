@@ -103,9 +103,11 @@ public class DateValidation extends BaseController {
 				mm.setText(null);
 				yyyy.setText(null);
 				populateAgeNull(parentPane, fieldId);
+				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE));
 			}
 		}
 		else{
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE));
 			return isValid;
 		}
 		boolean err=true;
