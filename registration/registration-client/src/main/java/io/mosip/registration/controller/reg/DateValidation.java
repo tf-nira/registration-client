@@ -98,6 +98,15 @@ public class DateValidation extends BaseController {
 			if (isValid) {
 				populateAge(parentPane, fieldId);
 			}
+			else{
+				dd.setText(null);
+				mm.setText(null);
+				yyyy.setText(null);
+				populateAgeNull(parentPane, fieldId);
+			}
+		}
+		else{
+			return isValid;
 		}
 		boolean err=true;
 		int enteredYear = Integer.parseInt(yyyy.getText());
@@ -266,6 +275,14 @@ public class DateValidation extends BaseController {
 
 		}
 	}
+	private void populateAgeNull(Pane parentPane, String fieldId) {
+
+		TextField ageField = (TextField) getFxElement(parentPane,
+				fieldId + RegistrationConstants.AGE_FIELD + RegistrationConstants.TEXT_FIELD);
+		if (ageField != null) {
+			ageField.setText(null);
+		}
+	}
 
 	private void populateDateFields(Pane parentPane, String fieldId, int age) {
 		TextField dd = (TextField) getFxElement(parentPane,
@@ -300,8 +317,8 @@ public class DateValidation extends BaseController {
 	private boolean isValidDate(Validator validator, Pane parentPane, String dd, String mm, String yyyy, String fieldId) {
 		if (isValidValue(dd) && isValidValue(mm) && isValidValue(yyyy)) {
 			try {
-				if (dd.length() != 2 || mm.length() != 2) {
-					return false;  // Invalid if dd or mm is not exactly two digits
+				if (dd.length() != 2 || mm.length() != 2 || yyyy.length() != 4) {
+					return false;
 				}
 
 				// Format the day and month as two digits
@@ -309,6 +326,10 @@ public class DateValidation extends BaseController {
 				String formattedMonth = String.format("%02d", Integer.parseInt(mm));
 
 				LocalDate date = LocalDate.of(Integer.valueOf(yyyy), Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+				int minYear = LocalDate.now().minusYears(120).getYear();
+				if (Integer.valueOf(yyyy) < minYear) {
+					return false; // too old
+				}
 
 				if (LocalDate.now().compareTo(date) >= 0) {
 					String dob = date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
