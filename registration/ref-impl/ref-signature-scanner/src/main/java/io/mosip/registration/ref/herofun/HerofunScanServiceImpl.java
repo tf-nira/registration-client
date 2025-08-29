@@ -100,16 +100,19 @@ public class HerofunScanServiceImpl implements SignatureService {
 	}
 
 	public BufferedImage getSignatureImage(SignaturePad signaturepad) throws InterruptedException, ExecutionException, TimeoutException {
+	    // Create an ExecutorService to handle the thread and return the result
 	    ExecutorService executorService = Executors.newSingleThreadExecutor();
 	    LOGGER.info("Signature Processing Started..."+signaturepad );
 
+	    // Define the task to be executed in the thread
 	    Callable<BufferedImage> task = () -> {
 	        try {
 	            int statusCode = 0;
-	            int timeoutInSeconds = 60;
+	            int timeoutInSeconds = 60; // Set a maximum wait time (e.g., 1 minutes)
 	            int elapsedSeconds = 0;
-	            	           
+
 	            while (statusCode != 1 && elapsedSeconds < timeoutInSeconds) {
+	                // Check the status of the signature pad
 	                statusCode = signaturepad.HWIsOK();
 	                if (statusCode == 0) {
 	                    LOGGER.info("Signature pad not ready. Waiting...");
@@ -119,11 +122,13 @@ public class HerofunScanServiceImpl implements SignatureService {
 	                } else {
 	                    LOGGER.warn("Unknown status code from pad: {}", statusCode);
 	                }
+	                // Wait for 1 second before checking again
 	                Thread.sleep(1000);
 	                elapsedSeconds++;
 	                LOGGER.info("Signature Capturing "+elapsedSeconds);
 	            }
 
+	            // Handle timeout
 	            if (elapsedSeconds >= timeoutInSeconds) {
 	                LOGGER.error("Timeout occurred. The applicant did not complete the signature process.");
 	                throw new TimeoutException("Signature process timed out.");
@@ -162,7 +167,9 @@ public class HerofunScanServiceImpl implements SignatureService {
 	        }
 	    };
 
+	    // Submit the task to the executor service
 	    Future<BufferedImage> future = executorService.submit(task);
+	    
 	    try {
 	        return future.get(60, TimeUnit.SECONDS); // Slightly higher than capture timeout
 	    } catch (TimeoutException e) {
@@ -182,7 +189,5 @@ public class HerofunScanServiceImpl implements SignatureService {
 	        executorService.shutdown();
 	    }
 	}
-
-
 
 }

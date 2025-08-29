@@ -3,6 +3,7 @@ package io.mosip.registration.controller.reg;
 import static io.mosip.registration.constants.LoggerConstants.PACKET_HANDLER;
 import static io.mosip.registration.constants.RegistrationConstants.*;
 import static io.mosip.registration.constants.RegistrationConstants.COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
@@ -465,7 +466,6 @@ public class PacketHandlerController extends BaseController implements Initializ
 			//slip acknowledgement
 			String slipAckTemplateText = null;
 
-			//this condition only allowing for NEW, UPDATE, RENEWAL packets
 			if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
@@ -517,6 +517,8 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				}
 			}
+
+
 			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
@@ -533,8 +535,14 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 			//A4 ack
-			String ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+			String ackTemplateText = "" ;
+			if(registrationDTO.getProcessId().equalsIgnoreCase("UPDATE")) {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_COP,
 					platformLanguageCode);
+			} else {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+						platformLanguageCode);
+			}
 
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 
@@ -711,7 +719,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			} catch (RuntimeException runtimeException) {
 				LOGGER.error("", runtimeException);
 			}
-		} else {
+        } else {
 			if (response.getErrorResponseDTOs() != null && response.getErrorResponseDTOs().get(0).getCode()
 					.equals(RegistrationExceptionConstants.AUTH_ADVICE_USR_ERROR.getErrorCode())) {
 				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.AUTH_ADVICE_FAILURE));

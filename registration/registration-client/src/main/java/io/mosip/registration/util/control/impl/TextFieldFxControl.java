@@ -14,6 +14,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import org.springframework.context.ApplicationContext;
 
@@ -340,6 +341,26 @@ public class TextFieldFxControl extends FxControl {
 				.getBundle(langCode, RegistrationConstants.LABELS).getString("language"));
 		textField.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_TEXTFIELD);
 		textField.setDisable(isDisable);
+
+		// Handle Ctrl key commands in KEY_PRESSED
+		textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+			if (event.isControlDown()) {
+				switch (event.getCode()) {
+					case A: textField.selectAll(); event.consume(); break;
+					case C: textField.copy(); event.consume(); break;
+					case V: textField.paste(); event.consume(); break;
+					case X: textField.cut(); event.consume(); break;
+					case Z: textField.undo(); event.consume(); break;
+				}
+			}
+		});
+
+		// Block typing 'a', 'c', 'v', 'x' when Ctrl is down
+		textField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+			if (event.isControlDown()) {
+				event.consume();
+			}
+		});
 
 		return textField;
 	}

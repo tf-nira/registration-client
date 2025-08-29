@@ -17,6 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
@@ -194,7 +197,7 @@ public class GenericController extends BaseController {
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
-			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
@@ -553,13 +556,24 @@ public class GenericController extends BaseController {
 							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
+							FlowType flowType = getRegistrationDTOFromSession().getFlowType();
 							Object sessionValue = getRegistrationDTOFromSession().getDemographics().get(field.getId());
 							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
-							if (data != null) {
+							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
+								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+								enrolmentControl.selectAndSet("UGA");
+								enrolmentControl.setData("UGA");
+								enrolmentControl.getNode().setDisable(true);
+							}
+							
+							if (flowType.equals(FlowType.UPDATE) && data != null) {
 							    fxControl.selectAndSet(data);
+							    fxControl.setData(data);
+							} else if(!flowType.equals(FlowType.UPDATE) && !field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT) && !field.getId().equalsIgnoreCase(RegistrationConstants.ENROLLMENT_COUNTRY)){
+								fxControl.selectAndSet(data);
 							    fxControl.setData(data);
 							}
 							break;
@@ -1055,7 +1069,14 @@ public class GenericController extends BaseController {
 		// Only show the custom message if the fieldName matches the condition
 		if ("Please accept the terms and conditions to proceed with the application.".equals(fieldName)) {
 			notification.setText(fieldName); // Show the message if condition is met
-		} else {
+		}
+		else if("Applicant Biometrics".equals(fieldName) ){
+			notification.setText("Please complete biometric capture to proceed with the application");
+		}
+		else if("Introducer Biometrics".equals(fieldName)){
+			notification.setText("Please complete Introducer biometric capture to proceed with the application.");
+		}
+		else {
 			notification.setText(
 					(fieldName == null) ? EMPTY
 							: ApplicationContext
@@ -1858,21 +1879,60 @@ public class GenericController extends BaseController {
 								}
 
 								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-									boolean check1 = fxControl.isFieldDefaultValue(field);
-									boolean check2 = fxControl.isFieldDefaultValue2(field);
+								    boolean check1 = fxControl.isFieldDefaultValue(field);
+								    boolean check2 = fxControl.isFieldDefaultValue2(field);
 
-									if(check1) {
-										fxControl.selectAndSet("Y");
-										fxControl.getNode().setDisable(true);
-									}
-									else if(check2) {
-										fxControl.selectAndSet("N");
-										fxControl.getNode().setDisable(true);
-									}
-									else {
-										fxControl.selectAndSet("N");
-										fxControl.getNode().setDisable(false);
-									}
+								    Set<String> copCat = Set.of(
+								        "familyInformationCat"
+								    );
+
+								    // Get demographics list
+								    Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
+								 
+								    String dateOfBirthStr = null;
+
+								    Object dobObj = demographics.get("dateOfBirthCop");
+
+								    if (dobObj instanceof String) {
+								        dateOfBirthStr = (String) dobObj;
+								    } else if (dobObj instanceof List<?>) {
+								        List<?> dobList = (List<?>) dobObj;
+								        if (!dobList.isEmpty() && dobList.get(0) instanceof SimpleDto) {
+								            dateOfBirthStr = ((SimpleDto) dobList.get(0)).getValue();
+								        }
+								    }
+
+								    int applicantAgeCop = 0;
+								    if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+								        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+								        LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr, formatter);
+								        applicantAgeCop = Period.between(dateOfBirth, LocalDate.now()).getYears();
+								    }
+								    
+							        String citizenshipTypeCatValue = demographics.get("citizenshipTypeCat") != null ?
+							                String.valueOf(demographics.get("citizenshipTypeCat")) : "N";
+								    // Check if any copCat field has value "Y"
+							        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+							        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+							        
+								    if (check1) {
+								        fxControl.selectAndSet("Y");
+								        fxControl.getNode().setDisable(true);
+								    } else if (check2) {
+								        fxControl.selectAndSet("N");
+								        if (fxControl != null && !anyCopCatFieldHasY) {
+								            if ("Y".equals(citizenshipTypeCatValue) && applicantAgeCop >= 16) {
+								                fxControl.getNode().setDisable(false); // Enable - allow change
+								            } else {
+								                fxControl.getNode().setDisable(true);  // Disable - not allowed to change
+								            }
+								        } else {
+								            fxControl.getNode().setDisable(false);
+								        }
+								    } else {
+								        fxControl.selectAndSet("N");
+								        fxControl.getNode().setDisable(false);
+								    }
 								}
 						}
 					}
@@ -1883,24 +1943,21 @@ public class GenericController extends BaseController {
 			for (UiScreenDTO screenDTO : orderedScreens.values()) {
 				for (UiFieldDTO field : screenDTO.getFields()) {
 					FxControl fxControl = getFxControl(field.getId());
-					if (fxControl != null) {
-						if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-							boolean check1 = fxControl.isFieldDefaultValue(field);
-							boolean check2 = fxControl.isFieldDefaultValue2(field);
+					Set<String> excludedFields = Set.of(
+							"inDepthCitizenshipVerification",
+							"enrollmentOfficerComment",
+							"PRNId",
+							"enrolmentCountry",
+							"applicantPlaceOfEnrolmentDistrict",
+							"applicantPlaceOfEnrolmentCounty",
+							"applicantPlaceOfEnrolmentSubCounty",
+							"applicantPlaceOfEnrolmentParish",
+							"applicantPlaceOfEnrolmentVillage",
+							"sameAsPlaceOfResidenceCheckBoxEnrolment"
+					);
 
-							if(check1) {
-								fxControl.selectAndSet("Y");
-								fxControl.getNode().setDisable(true);
-							}
-							else if(check2) {
-								fxControl.selectAndSet("N");
-								fxControl.getNode().setDisable(true);
-							}
-							else {
-								fxControl.selectAndSet("N");
-								fxControl.getNode().setDisable(false);
-							}
-						}
+					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
+						fxControl.getNode().setDisable(true);
 					}
 				}
 			}
@@ -1965,28 +2022,54 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	public String validateNin(String fieldId, String value ){
-		if(familyRoles.contains(fieldId)){
-			initNinMap();
-			for (Map.Entry<String, String> entry : ninMap.entrySet()) {
-				if (!entry.getKey().equals(fieldId) && entry.getValue().equals(value)) {
-					if ((entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN"))) {
-						if (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")) {
-							return entry.getKey().equals("fatherNIN") ? "Father's NIN" : "Mother's NIN";
+	public String validateNin(String fieldId, String value) {
+	    if (familyRoles.contains(fieldId)) {
+	        initNinMap();
 
-						} else{
-							String label = getFxControl(entry.getKey()).getUiSchemaDTO().getLabel()
-									.getOrDefault(ApplicationContext.applicationLanguage(), entry.getKey());
-							return label;
-						}
-					}
-				}
-			}
-		}
+	        String declarant = null;
+	        if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	            Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
+	            if (declarantObj instanceof List<?>) {
+	                List<?> declarantList = (List<?>) declarantObj;
+	                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+	                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+	                    if (dto.getValue() != null) {
+	                        declarant = dto.getValue().trim().toLowerCase(); // Normalize
+	                    }
+	                }
+	            }
+	        }
 
-		return null;
+	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
+	            String key = entry.getKey();
+	            String ninValue = entry.getValue();
 
+	            if (key.equals(fieldId) || ninValue.isEmpty())
+	            	continue;
+
+	            if (value.equals(ninValue)) {
+	                if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || 
+	                    "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	                    
+	                    boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                             ("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) || 
+	                                                    ("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
+	                    if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
+	                        continue;
+	                    }
+	                }
+	                return key; // Duplicate NIN found
+	            }
+	        }
+	    }
+	    return null; // No duplicate found
 	}
+
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
 	 * fields.stream().filter(field ->

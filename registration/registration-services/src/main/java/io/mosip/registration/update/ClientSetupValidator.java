@@ -8,6 +8,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -139,7 +140,10 @@ public class ClientSetupValidator {
         logger.info("Checksum validation completed validation_failed : {}, patch_downloaded : {}", validation_failed,
                 patch_downloaded);
     }
-    
+
+
+
+
     public void validateBioSDK() {
     	if("LOCAL".equals(environment)) {
             logger.warn("NOTE :: IGNORING LOCAL REGISTRATION CLIENT SETUP VALIDATION AS ITS LOCAL ENVIRONMENT");

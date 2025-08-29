@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
+
 import javafx.scene.control.TextArea;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -69,7 +70,6 @@ public class RejectionController extends BaseController implements Initializable
 	 */
 	@FXML
 	private TextArea rejectionComment;
-	
 	@FXML
 	private Button rejectionSubmit;
 
@@ -226,7 +226,7 @@ public class RejectionController extends BaseController implements Initializable
 			rejectionSubmit.disableProperty().set(false);
 		}
 	}
-	
+
 	public void rejectionCommentAction (){
       if(rejectionComment.getText().isEmpty()){
 		  rejectionSubmit.disableProperty().set(true);

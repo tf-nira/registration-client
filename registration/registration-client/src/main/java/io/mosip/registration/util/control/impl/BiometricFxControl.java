@@ -390,7 +390,7 @@ public class BiometricFxControl extends FxControl {
 				getRegistrationDTo()).isEmpty()) {
 			return true;
 		}
-
+		boolean valid = false;
 		Map<String, Boolean> capturedDetails = bioService.getCapturedBiometrics(uiFieldDTO,
 				getRegistrationDTo().getIdSchemaVersion(), getRegistrationDTo());
 
@@ -401,7 +401,11 @@ public class BiometricFxControl extends FxControl {
 			expression = selectedCondition.getValidationExpr();
 		}
 
-		boolean valid = MVEL.evalToBoolean(expression, capturedDetails);
+		if(selectedCondition != null && uiFieldDTO.getId().equalsIgnoreCase("individualBiometrics") && selectedCondition.getAgeGroup().equalsIgnoreCase(RegistrationConstants.CHILD)) {
+			valid = true;
+		} else {
+			valid = MVEL.evalToBoolean(expression, capturedDetails);
+		}
 		boolean exceptionExists = getRegistrationDTo().isBiometricExceptionAvailable(this.uiFieldDTO.getId());
 		valid = ( this.uiFieldDTO.isExceptionPhotoRequired() && exceptionExists ) ?
 				valid && biometricsController.isBiometricExceptionProofCollected(this.uiFieldDTO.getId()) : valid;

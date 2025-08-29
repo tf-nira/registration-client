@@ -33,7 +33,6 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private static final String SERVICE_NAME = "OpenCV";
 	private static final String DELIMITER = ":";
 
-
 	public OpenCvScannerImpl() {
 		OpenCV.loadShared();
 	}
@@ -71,8 +70,8 @@ public class OpenCvScannerImpl implements DocScannerService {
 	@Override
 	public List<DocScanDevice> getConnectedDevices(String enabled) {
 		LOGGER.info("Entering the opencv device impl getconnected device*************************************");
-		var deviceIndexList = returnCameraIndexes();
-
+		
+		var deviceIndexList = returnCameraIndexes(1);
 		List<DocScanDevice> devices = Collections.synchronizedList(new ArrayList<>());
 		deviceIndexList.parallelStream().forEach(index -> {
 			VideoCapture capture = new VideoCapture(index, Videoio.CAP_MSMF);
@@ -83,6 +82,7 @@ public class OpenCvScannerImpl implements DocScannerService {
 				docScanDevice.setServiceName(getServiceName());
 				docScanDevice.setId(SERVICE_NAME + DELIMITER + capture.getBackendName());
 				devices.add(docScanDevice);
+				LOGGER.info("Connected camera at index {} with backend {}", index, capture.getBackendName());
 				capture.release();
 			}
 		});
@@ -102,24 +102,16 @@ public class OpenCvScannerImpl implements DocScannerService {
 		InputStream inputStream = new ByteArrayInputStream(bytes.toArray());
 		return ImageIO.read(inputStream);
 	}
-
-	private List<Integer> returnCameraIndexes() {
+	
+	private List<Integer> returnCameraIndexes(int cameraIndex) {
 		var cameraIndexes = new ArrayList<Integer>();
-		var iterator = 0;
-		var end = 5;
-		while (end > 0) {
-			var cap = new VideoCapture(iterator);
-			LOGGER.info("contrast of device*****index" + iterator + "******" + cap.get(Videoio.CAP_PROP_CONTRAST));
-			if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
-					&& cap.isOpened()) {
-				cameraIndexes.add(iterator);
-				cap.release();
-				break;
-			}
-			iterator++;
-			end--;
-		}
-
-		return cameraIndexes;
+		var cap = new VideoCapture(cameraIndex, Videoio.CAP_MSMF);
+		LOGGER.info("Contrast of device at index {} : {}", cameraIndex, cap.get(Videoio.CAP_PROP_CONTRAST));
+	    if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
+	            && cap.isOpened()) {
+			cameraIndexes.add(cameraIndex);
+			cap.release();
+	    }
+	    return cameraIndexes;
 	}
 }

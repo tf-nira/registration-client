@@ -305,13 +305,24 @@ public class DropDownFxControl extends FxControl {
 				if (uiFieldDTO.isSetRequired()){
 					resetValue();
 				}
+				
+				List<String> fieldHierarchy = List.of(
+						RegistrationConstants.ENROLLMENT_DISTRICT,
+						RegistrationConstants.ENROLLMENT_COUNTY,
+						RegistrationConstants.ENROLLMENT_SUB_COUNTY,
+						RegistrationConstants.ENROLLMENT_PARISH,
+						RegistrationConstants.ENROLLMENT_VILLAGE
+					);
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("genderCop")){
-					FxControl fxControl2 =  getFxControl("addSpouse");
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
-				}
+					String changedFieldId = uiFieldDTO.getId();
+					int changedIndex = fieldHierarchy.indexOf(changedFieldId);
+
+					if (changedIndex != -1 && changedIndex < fieldHierarchy.size() - 1) {
+					    for (int i = changedIndex + 1; i < fieldHierarchy.size(); i++) {
+					        getRegistrationDTo().removeDemographicField(fieldHierarchy.get(i));
+					    }
+					}
+
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");
@@ -362,6 +373,31 @@ public class DropDownFxControl extends FxControl {
 				        }
 				    }
 				}
+				
+				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.CARD_REQUIRED)) {
+				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+				    String cardValue = genericController.getRegistrationDTOFromSession().getDemographic(RegistrationConstants.CARD_REQUIRED);
+				    Set<String> copCat = Set.of(
+					        "familyInformationCat",
+					        "citizenshipTypeCat"
+					);
+				    
+				    // Get demographics list
+				    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+				    
+				    // Check if any copCat field has value "Y"
+			        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+			        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+			        
+			        FxControl fxControl = getFxControl(uiFieldDTO.getId()); // Assuming you have a FxControl store
+			        if (fxControl != null) {
+			        	if ("Yes".equalsIgnoreCase(cardValue) && anyCopCatFieldHasY && !fxControl.getNode().isDisable()) {
+			                fxControl.setMessage("This is subject to card change charges");
+			            } else {
+			                fxControl.setMessage(null); // or use null if your method handles that safely
+			            }
+			        }
+				}
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
 
@@ -405,12 +441,6 @@ public class DropDownFxControl extends FxControl {
 						fxControl2.selectAndSet("MLE");
 						fxControl2.setData("MLE");
 						fxControl2.getNode().setDisable(true);
-
-						// Nationality
-						FxControl fxControl3 =  getFxControl("declarantNationality");
-						fxControl3.selectAndSet("Ugandan");
-						fxControl3.setData("Ugandan");
-						fxControl3.getNode().setDisable(true);
 					}
 					else if (newValue.getName().equalsIgnoreCase("Mother")) {
 						for (int i=0; i<5; i++) {
@@ -456,19 +486,11 @@ public class DropDownFxControl extends FxControl {
 							fxControl2.setData("FRN");
 						}
 						fxControl2.getNode().setDisable(true);
-
-
-						// Nationality
-						FxControl fxControl4 =  getFxControl("declarantNationality");
-						fxControl4.selectAndSet("Ugandan");
-						fxControl4.setData("Ugandan");
-						fxControl4.getNode().setDisable(true);
 					}
 					else {
 						declarantFieldIds.add("declarantMaidenName");
 						declarantFieldIds.add("declarantGender");
 						declarantFieldIds.add("declarantResidenceStatus");
-						declarantFieldIds.add("declarantNationality");
 
 						for(String fieldId: declarantFieldIds) {
 							FxControl fxControl = getFxControl(fieldId);

@@ -678,7 +678,7 @@ public class GenericBiometricsController extends BaseController {
 							fieldId, modalityName.name(), retry),
 							sdkScore / biometricsDtos.size());
 					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
-									fieldId, modalityName.name(), retry),
+							fieldId, modalityName.name(), retry),
 							biometricsDtos);
 					break;
 				case IRIS_DOUBLE:
@@ -718,6 +718,7 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							faceDto.getSdkScore());
+
 					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
 									fieldId, modalityName.name(), retry),
 							biometricsDtos);

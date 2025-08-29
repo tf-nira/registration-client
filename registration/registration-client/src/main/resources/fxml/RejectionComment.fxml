@@ -27,7 +27,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </ComboBox>
-            <TextArea fx:id="rejectionComment" layoutX="49.0" layoutY="75.0" prefWidth="300.0" prefHeight="60.0" onKeyPressed="#rejectionCommentAction" promptText="%enterComment" wrapText="true" styleClass="commentTextArea"/>  
+            <TextArea fx:id="rejectionComment" layoutX="49.0" layoutY="75.0" prefWidth="300.0" prefHeight="60.0" onKeyPressed="#rejectionCommentAction" promptText="%enterComment" wrapText="true" styleClass="commentTextArea"/>
          </children>
       </AnchorPane>
    </children>

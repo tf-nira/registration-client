@@ -250,7 +250,23 @@ public class RegistrationConstants {
 	public static final String REG_DDC_004 = "REG_DDC_004";
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
+	public static final String CONSENT = "consent";
+	public static final String OTHER = "Other";
+	public static final String GUARDIAN = "guardian";
+	public static final String CHILD_FOR_AGE = "child";
+	public static final String SPOUSE = "spouse";
+	public static final String RENEWAL = "RENEWAL";
+	public static final String REMOVE_SPOUSE = "removeSpouse";
+	public static final String DECLARANT_NATIONALITY = "declarantNationality";
+	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
+	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
+	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
+	public static final String ENROLLMENT_SUB_COUNTY = "applicantPlaceOfEnrolmentSubCounty";
+	public static final String ENROLLMENT_PARISH = "applicantPlaceOfEnrolmentParish";
+	public static final String ENROLLMENT_VILLAGE = "applicantPlaceOfEnrolmentVillage";
 	public static final String POSTAL_CODE = "postalCode";
+	public static final String CARD_REQUIRED = "isCardRequired";
+	public static final String TOAST_MSG = "This is subject to card change charges";
 	public static final String CNI_OR_PIN = "cniOrPinNumber";
 	public static final String UIN_ID = "uinId";
 	public static final String EMAIL_ID = "emailId";
@@ -795,6 +811,7 @@ public class RegistrationConstants {
 
 
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";//for A4 Ack
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_COP = "reg-cop-ack-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE = "reg-preview-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE_COP = "reg-cop-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
@@ -1847,8 +1864,10 @@ public class RegistrationConstants {
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
-	public static final String MINIMUM_AGE_DIFF="MINIMUM_AGE_DIFF";
-	public static final String AGE_DIFF="AGE_DIFF";
+	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
+	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
+	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
+	public static final String MINOR_GUARDIAN="MINOR_GUARDIAN";
 
 	public static final String ICONS_HBOX = "iconsHBox";
 	public static final String KEYBOARD_PANE = "keyboardPane";
@@ -2049,7 +2068,8 @@ public class RegistrationConstants {
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "ack_a6slip_template_part_out";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "renewal-reg_ack_a6slip_template_part";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "renewal-ack_a6slip_template_part_out";
-	public static final String COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE="cop_thermal_printer_template_part";
+	public static final String COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "cop_thermal_printer_template_part";
+
 	public static final String A6_THERMAL_PRINTER  = "mosip.registration.ack.printer.a6.thermal";
 
 }

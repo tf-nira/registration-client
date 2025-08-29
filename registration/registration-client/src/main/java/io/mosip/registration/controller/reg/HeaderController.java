@@ -471,7 +471,7 @@ public class HeaderController extends BaseController {
 			auditFactory.audit(AuditEvent.SYNC_PRE_REGISTRATION_PACKET, Components.SYNC_SERVER_TO_CLIENT,
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
-//			executeDownloadPreRegDataTask(packetHandlerController.getPreRegDataPane());
+			//executeDownloadPreRegDataTask(packetHandlerController.getPreRegDataPane());
 
 		} catch (RuntimeException exception) {
 			LOGGER.error("REGISTRATION - REDIRECTHOME - HEADER_CONTROLLER", APPLICATION_NAME, APPLICATION_ID,
