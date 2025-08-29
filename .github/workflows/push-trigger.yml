@@ -22,11 +22,9 @@ on:
       - MOSIP*
       - niradev-1.2.0.2-N1
       - tf_nira_dev
-<<<<<<< HEAD
       - tf_nira_prod
-=======
       - tf-nira-dev-jar
->>>>>>> tf_nira_dev
+
 
 jobs:
   build-regclient:
