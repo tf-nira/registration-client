@@ -539,6 +539,9 @@ public class PacketHandlerController extends BaseController implements Initializ
 			if(registrationDTO.getProcessId().equalsIgnoreCase("UPDATE")) {
 				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_COP,
 					platformLanguageCode);
+			} else if(registrationDTO.getProcessId().equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO,
+						platformLanguageCode);
 			} else {
 				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
 						platformLanguageCode);
