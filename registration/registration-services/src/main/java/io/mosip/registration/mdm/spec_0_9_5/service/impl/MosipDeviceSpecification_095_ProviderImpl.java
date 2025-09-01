@@ -221,8 +221,9 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 			LOGGER.info("captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
 
 			List<BiometricsDto> biometricDTOs = new LinkedList<>();
-			if (captureResponseBiometricsDTOs.size() == 4) {
-				Collections.reverse(captureResponseBiometricsDTOs);
+			if (captureResponseBiometricsDTOs.size() == 2 
+	                && mdmRequestDto.getModality().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+	            Collections.swap(captureResponseBiometricsDTOs, 0, 1);
 	            LOGGER.info("After swap captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
 	        }
 			for (RCaptureResponseBiometricsDTO rCaptureResponseBiometricsDTO : captureResponseBiometricsDTOs) {
