@@ -704,14 +704,13 @@ public class GenericBiometricsController extends BaseController {
 					break;
 
 				case EXCEPTION_PHOTO:
-				case FACE:
 					BiometricsDto faceDto = biometricsDtos.values().toArray(new BiometricsDto[0])[0];
-					ConvertRequestDto convertRequestDto = new ConvertRequestDto();
-					convertRequestDto.setVersion("ISO19794_5_2011");
-					convertRequestDto.setInputBytes(faceDto.getAttributeISO());
+					ConvertRequestDto convertRequestExceptionDto = new ConvertRequestDto();
+					convertRequestExceptionDto.setVersion("ISO19794_5_2011");
+					convertRequestExceptionDto.setInputBytes(faceDto.getAttributeISO());
 					getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.getAttributes().get(0), retry),
-							FaceDecoder.convertFaceISOToImageBytes(convertRequestDto));
+							FaceDecoder.convertFaceISOToImageBytes(convertRequestExceptionDto));
 					getRegistrationDTOFromSession().BIO_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							faceDto.getQualityScore());
@@ -723,6 +722,27 @@ public class GenericBiometricsController extends BaseController {
 									fieldId, modalityName.name(), retry),
 							biometricsDtos);
 					break;
+				case FACE:
+					for (BiometricsDto dto : biometricsDtos.values()) {
+				        ConvertRequestDto convertRequestDto = new ConvertRequestDto();
+				        convertRequestDto.setVersion("ISO19794_5_2011");
+				        convertRequestDto.setInputBytes(dto.getAttributeISO());
+				        getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
+				                        fieldId, dto.getBioAttribute(), retry),
+				                FaceDecoder.convertFaceISOToImageBytes(convertRequestDto));
+				        score += dto.getQualityScore();
+				        sdkScore += dto.getSdkScore();
+				    }
+				    getRegistrationDTOFromSession().BIO_SCORES.put(String.format("%s_%s_%s",
+				                    fieldId, modalityName.name(), retry),
+				            score / biometricsDtos.size());
+				    getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
+				                    fieldId, modalityName.name(), retry),
+				            sdkScore / biometricsDtos.size());
+				    getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
+				                    fieldId, modalityName.name(), retry),
+				            biometricsDtos);
+				    break;
 			}
 		} catch (Exception exception) {
 			LOGGER.error("Failed to extract image from ISO", exception);
