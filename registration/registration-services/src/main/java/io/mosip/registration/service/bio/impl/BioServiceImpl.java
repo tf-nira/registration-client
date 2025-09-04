@@ -1,6 +1,8 @@
 package io.mosip.registration.service.bio.impl;
 
 import static io.mosip.registration.constants.LoggerConstants.BIO_SERVICE;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_ID;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
 
@@ -83,6 +85,7 @@ public class BioServiceImpl extends BaseService implements BioService {
 		List<BiometricsDto> list = new ArrayList<BiometricsDto>();
 
 		try {
+			ObjectMapper objectMapper = new ObjectMapper();
 			LOGGER.info("mdmRequestDto details: {}", mdmRequestDto);
 			MdmBioDevice bioDevice = deviceSpecificationFactory.getDeviceInfoByModality(mdmRequestDto.getModality());
 			LOGGER.info("BioDevice details: {}", bioDevice);
@@ -91,6 +94,17 @@ public class BioServiceImpl extends BaseService implements BioService {
 			LOGGER.info("deviceSpecificationProvider details: {}", deviceSpecificationProvider);
 			List<BiometricsDto> biometricsDtos = deviceSpecificationProvider.rCapture(bioDevice, mdmRequestDto);
 			LOGGER.info("biometricsDtos: {}", biometricsDtos);
+			if (biometricsDtos.size() == 2 && mdmRequestDto.getModality().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			    BiometricsDto secondDto = biometricsDtos.get(1);
+			    try {
+			        Map<String, String> payloadMap = objectMapper.readValue(secondDto.getPayLoad(), Map.class);
+			        payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
+			        String updatedPayload = objectMapper.writeValueAsString(payloadMap);
+			        secondDto.setPayLoad(updatedPayload);
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+			}
 
 			for (BiometricsDto biometricsDto : biometricsDtos) {
 				if (biometricsDto == null) {
