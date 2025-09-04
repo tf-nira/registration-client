@@ -33,7 +33,12 @@ public class BIRBuilder {
 
 	public BIR buildBIR(BiometricsDto bioDto) {
 		LOGGER.debug("started building BIR for for bioAttribute : {}", bioDto.getBioAttribute());
-		BiometricType biometricType = Biometric.getSingleTypeByAttribute(bioDto.getBioAttribute());
+		BiometricType biometricType = null;
+		if(bioDto.getBioAttribute().equalsIgnoreCase(RegistrationConstants.FACE_RAW)) {
+			biometricType = BiometricType.FACE;
+		} else {
+			biometricType = Biometric.getSingleTypeByAttribute(bioDto.getBioAttribute());
+		}
 		// Format
 		RegistryIDType birFormat = new RegistryIDType();
 		birFormat.setOrganization(PacketManagerConstants.CBEFF_DEFAULT_FORMAT_ORG);

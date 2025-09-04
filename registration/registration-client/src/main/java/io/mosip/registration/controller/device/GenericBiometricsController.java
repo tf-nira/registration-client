@@ -16,6 +16,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.mosip.biometrics.util.ConvertRequestDto;
 import io.mosip.biometrics.util.face.FaceDecoder;
 import io.mosip.biometrics.util.finger.FingerDecoder;
@@ -305,6 +307,13 @@ public class GenericBiometricsController extends BaseController {
 					}
 				}
 			}
+		}
+		if (isFace(modality)) {
+			fxControl.getSendOriginalCheckBoxContainer().setVisible(true);
+			fxControl.getSendOriginalCheckBoxContainer().setManaged(true);
+		} else {
+			fxControl.getSendOriginalCheckBoxContainer().setVisible(false);
+			fxControl.getSendOriginalCheckBoxContainer().setManaged(false);
 		}
 
 		/*if (nonExceptionBioAttributes != null) {
@@ -619,16 +628,29 @@ public class GenericBiometricsController extends BaseController {
 							getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0) + 1);
 					List<String> exceptionBioAttributes = getSelectedExceptionsByBioType();
 					Map<String, BiometricsDto> biometricsMap = new LinkedHashMap<>();
+			        int dtoCount = 1;
 					for (BiometricsDto biometricsDto : mdsCapturedBiometricsList) {
 						if (exceptionBioAttributes.contains(biometricsDto.getBioAttribute())) {
 							LOGGER.debug("As bio atrribute marked as exception, not storing into registration DTO : {}", biometricsDto.getBioAttribute());
 							continue;
 						}
-						LOGGER.info("Adding registration biometric data >> {}", biometricsDto.getBioAttribute());
-						biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
-						biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.get(String.format("%s_%s",
-								fxControl.getUiSchemaDTO().getId(), currentModality)));
-						biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+						ObjectMapper objectMapper = new ObjectMapper();
+				        Map<String, String> payloadMap = objectMapper.readValue(biometricsDto.getPayLoad(), Map.class);
+				        String bioSubType = payloadMap.get("bioSubType");
+				        if ("UNKNOWN".equalsIgnoreCase(bioSubType) && dtoCount == 2 && mdsCapturedBiometricsList.size()==2 && biometricsDto.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+				            biometricsDto.setBioAttribute(RegistrationConstants.FACE_RAW);
+				            biometricsDto.setSubType(RegistrationConstants.APPLICANT_RAW);
+				            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
+				                String.format("%s_%s", RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW, currentModality), 0));
+				            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+				        } else {
+				            biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
+				            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
+				                String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0));
+				            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+				        }
+				        LOGGER.info("Adding registration biometric data >> {}", biometricsDto.getBioAttribute());
+				        dtoCount++;
 					}
 					fxControl.setData(biometricsMap);
 					LOGGER.debug("Completed Saving filtered biometrics into registration DTO");
