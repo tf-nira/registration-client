@@ -158,7 +158,7 @@ public class RegistrationDTO {
 			    int ageInYears = period.getYears();
 			    int ageInMonths = (ageInYears * 12) + period.getMonths();
 			    int ageIndays = period.getDays(); 
-			    if (ageInMonths == 9 && ageIndays > 0) {
+			    if ((ageInMonths == 9 && ageIndays > 0) || (ageInYears == 5 && period.getMonths() == 0 && ageIndays > 0) || (ageInYears == 15 && period.getMonths() == 0 && ageIndays > 0) ) {
 			        ageInMonths += 1;
 			    }
 			    
