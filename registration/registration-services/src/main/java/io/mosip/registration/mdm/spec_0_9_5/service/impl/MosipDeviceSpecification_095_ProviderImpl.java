@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -219,13 +218,8 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 			List<RCaptureResponseBiometricsDTO> captureResponseBiometricsDTOs = captureResponse.getBiometrics();
 			LOGGER.info("captureResponseBiometricsDTOs Size : {}", captureResponseBiometricsDTOs.size());
 			LOGGER.info("captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
-
+			
 			List<BiometricsDto> biometricDTOs = new LinkedList<>();
-			if (captureResponseBiometricsDTOs.size() == 2 
-	                && mdmRequestDto.getModality().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
-	            Collections.swap(captureResponseBiometricsDTOs, 0, 1);
-	            LOGGER.info("After swap captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
-	    }
 			for (RCaptureResponseBiometricsDTO rCaptureResponseBiometricsDTO : captureResponseBiometricsDTOs) {
 
 				LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID,
