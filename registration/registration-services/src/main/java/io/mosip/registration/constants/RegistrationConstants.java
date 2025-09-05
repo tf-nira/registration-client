@@ -375,6 +375,7 @@ public class RegistrationConstants {
 	public static final String UIN_UPDATE_GENDER_LBL = "Gender";
 	public static final String MALE_CODE = "MLE";
 	public static final String FEMALE_CODE = "FLE";
+	public static final String OTHERS = "Others";
 	public static final String STREAMER_THREAD = "STREAMER_THREAD";
 
 	public static final String UIN_UPDATE_PARENT_DETAILS_LBL = "Parent/Guardian details";

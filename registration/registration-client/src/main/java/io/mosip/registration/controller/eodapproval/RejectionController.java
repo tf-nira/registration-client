@@ -162,7 +162,8 @@ public class RejectionController extends BaseController implements Initializable
 		map.put(RegistrationConstants.PACKET_APPLICATION_ID, rejRegData.getId());
 		map.put(RegistrationConstants.PACKET_ID, rejRegData.getPacketId());
 		map.put(RegistrationConstants.STATUSCODE, RegistrationClientStatusCode.REJECTED.getCode());
-		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase("Others")){
+		map.put(RegistrationConstants.STATUSCOMMENT, rejectionComboBox.getSelectionModel().getSelectedItem());
+		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase(RegistrationConstants.OTHERS)){
 			map.put(RegistrationConstants.STATUSCOMMENT, rejectionComment.getText());
 		}
 		else {
@@ -215,7 +216,7 @@ public class RejectionController extends BaseController implements Initializable
 	 * @param event
 	 */
 	public void rejectionComboboxAction() {
-		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase("Others")){
+		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase(RegistrationConstants.OTHERS)){
 			rejectionComment.disableProperty().set(false);
 			rejectionSubmit.disableProperty().set(true);
 		}
@@ -225,11 +226,13 @@ public class RejectionController extends BaseController implements Initializable
 			rejectionSubmit.disableProperty().set(false);
 		}
 	}
+
 	public void rejectionCommentAction (){
       if(rejectionComment.getText().isEmpty()){
 		  rejectionSubmit.disableProperty().set(true);
 	  }
-	  else
+	  else {
 		  rejectionSubmit.disableProperty().set(false);
+	  }
 	}
 }
