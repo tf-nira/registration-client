@@ -197,8 +197,8 @@ public class RegistrationConstants {
 	public static final String PWORD = "PWD";
 	public static final String OTP = "OTP";
 	public static final String FACE = "FACE";
+	public static final String RAW = "RAW";
 	public static final String FACE_RAW = "faceRaw";
-	public static final String APPLICANT_RAW = "applicantRaw";
 	public static final String INDIVIDUAL_BIOMETRICS_RAW = "individualBiometricsRaw";
 	public static final String ORIGINAL_IMAGE = "originalImage";
 	public static final String FACE_FULLFACE = "FACE_FULL FACE";
