@@ -5,6 +5,7 @@ import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.dto.*;
 import io.mosip.registration.dto.mastersync.GenericDto;
 import io.mosip.registration.dto.schema.ValuesDTO;
+
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
@@ -2111,3 +2112,4 @@ public class GenericController extends BaseController {
 	}
 
 }
+
