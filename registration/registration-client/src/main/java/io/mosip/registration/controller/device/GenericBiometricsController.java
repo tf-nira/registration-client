@@ -628,7 +628,7 @@ public class GenericBiometricsController extends BaseController {
 							getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0) + 1);
 					List<String> exceptionBioAttributes = getSelectedExceptionsByBioType();
 					Map<String, BiometricsDto> biometricsMap = new LinkedHashMap<>();
-			        int dtoCount = 1;
+					BiometricsDto showOnUIBiometricDto = null;
 					for (BiometricsDto biometricsDto : mdsCapturedBiometricsList) {
 						if (exceptionBioAttributes.contains(biometricsDto.getBioAttribute())) {
 							LOGGER.debug("As bio atrribute marked as exception, not storing into registration DTO : {}", biometricsDto.getBioAttribute());
@@ -637,22 +637,24 @@ public class GenericBiometricsController extends BaseController {
 						ObjectMapper objectMapper = new ObjectMapper();
 				        Map<String, String> payloadMap = objectMapper.readValue(biometricsDto.getPayLoad(), Map.class);
 				        String bioSubType = payloadMap.get("bioSubType");
-				        if ("UNKNOWN".equalsIgnoreCase(bioSubType) && dtoCount == 2 && mdsCapturedBiometricsList.size()==2 && biometricsDto.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
-				            biometricsDto.setBioAttribute(RegistrationConstants.FACE_RAW);
-				            biometricsDto.setSubType(RegistrationConstants.APPLICANT_RAW);
-				            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
-				                String.format("%s_%s", RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW, currentModality), 0));
-				            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
-				        } else {
-				            biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
-				            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
-				                String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0));
-				            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+				        
+				        if (!RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && RegistrationConstants.FACE_FULLFACE.equalsIgnoreCase(biometricsDto.getModalityName())) {
+				            showOnUIBiometricDto = biometricsDto;
+				        } else if(RegistrationConstants.FACE_FULLFACE.equalsIgnoreCase(biometricsDto.getModalityName())){
+				        	biometricsDto.setBioAttribute(RegistrationConstants.FACE_RAW);
 				        }
+
+				        biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
+			            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
+			                String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0));
+			            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
 				        LOGGER.info("Adding registration biometric data >> {}", biometricsDto.getBioAttribute());
-				        dtoCount++;
 					}
 					fxControl.setData(biometricsMap);
+					if(showOnUIBiometricDto!=null) {
+						biometricsMap = new LinkedHashMap<>();
+						biometricsMap.put(showOnUIBiometricDto.getBioAttribute(), showOnUIBiometricDto);
+					}
 					LOGGER.debug("Completed Saving filtered biometrics into registration DTO");
 					addStreamImageAndScoreToCache(fxControl.getUiSchemaDTO().getId(), currentModality, biometricsMap,
 							getRegistrationDTOFromSession().ATTEMPTS.get(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality)));
@@ -726,6 +728,7 @@ public class GenericBiometricsController extends BaseController {
 					break;
 
 				case EXCEPTION_PHOTO:
+				case FACE:
 					BiometricsDto faceDto = biometricsDtos.values().toArray(new BiometricsDto[0])[0];
 					ConvertRequestDto convertRequestExceptionDto = new ConvertRequestDto();
 					convertRequestExceptionDto.setVersion("ISO19794_5_2011");
@@ -743,27 +746,6 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
 									fieldId, modalityName.name(), retry),
 							biometricsDtos);
-					break;
-				case FACE:
-					for (BiometricsDto dto : biometricsDtos.values()) {
-				        ConvertRequestDto convertRequestDto = new ConvertRequestDto();
-				        convertRequestDto.setVersion("ISO19794_5_2011");
-				        convertRequestDto.setInputBytes(dto.getAttributeISO());
-				        getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
-				                        fieldId, dto.getBioAttribute(), retry),
-				                FaceDecoder.convertFaceISOToImageBytes(convertRequestDto));
-				        score += dto.getQualityScore();
-				        sdkScore += dto.getSdkScore();
-				    }
-				    getRegistrationDTOFromSession().BIO_SCORES.put(String.format("%s_%s_%s",
-				                    fieldId, modalityName.name(), retry),
-				            score / biometricsDtos.size());
-				    getRegistrationDTOFromSession().SDK_SCORES.put(String.format("%s_%s_%s",
-				                    fieldId, modalityName.name(), retry),
-				            sdkScore / biometricsDtos.size());
-				    getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
-				                    fieldId, modalityName.name(), retry),
-				            biometricsDtos);
 				    break;
 			}
 		} catch (Exception exception) {

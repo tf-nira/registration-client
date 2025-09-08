@@ -158,7 +158,6 @@ public class RegistrationDTO {
 			    int ageInYears = period.getYears();
 			    int ageInMonths = (ageInYears * 12) + period.getMonths();
 			    int ageIndays = period.getDays(); 
-
 			    if ((ageInMonths == 9 && ageIndays > 0) || (ageInYears == 5 && period.getMonths() == 0 && ageIndays > 0) || (ageInYears == 15 && period.getMonths() == 0 && ageIndays > 0) ) {
 			        ageInMonths += 1;
 			    }
@@ -406,7 +405,6 @@ public class RegistrationDTO {
 				isQualityCheckPassed = true;
 
 			/** Modify the Biometrics DTO and save */
-			int entryCount = 1;
 			for (Entry<String, BiometricsDto> entry : biometricsDTOMap.entrySet()) {
 			    BiometricsDto savedRegistrationBiometric = getBiometric(fieldId, entry.getKey());
 			    BiometricsDto value = entry.getValue();
@@ -417,7 +415,10 @@ public class RegistrationDTO {
 			    try {
 			        Map<String, String> payloadMap = objectMapper.readValue(value.getPayLoad(), Map.class);
 			        String bioSubType = payloadMap.get("bioSubType");
-			        if (RegistrationConstants.UNKNOWN.equalsIgnoreCase(bioSubType) && entryCount == 2 && biometricsDTOMap.size() == 2 && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			        if (RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			        	payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
+			        	String updatedPayload = objectMapper.writeValueAsString(payloadMap);
+			        	value.setPayLoad(updatedPayload);
 			            effectiveFieldId = RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW;
 			        }
 			    } catch (Exception e) {
@@ -429,7 +430,6 @@ public class RegistrationDTO {
 			            value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
 			        addBiometric(effectiveFieldId, entry.getKey(), value);
 			    }
-			    entryCount++;
 			}
 		}
 		//return savedBiometrics;
