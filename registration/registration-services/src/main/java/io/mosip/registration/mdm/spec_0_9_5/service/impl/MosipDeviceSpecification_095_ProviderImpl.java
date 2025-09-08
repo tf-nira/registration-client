@@ -220,6 +220,7 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 			LOGGER.info("captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
 			
 			List<BiometricsDto> biometricDTOs = new LinkedList<>();
+
 			for (RCaptureResponseBiometricsDTO rCaptureResponseBiometricsDTO : captureResponseBiometricsDTOs) {
 
 				LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID,

@@ -415,7 +415,8 @@ public class RegistrationDTO {
 			    try {
 			        Map<String, String> payloadMap = objectMapper.readValue(value.getPayLoad(), Map.class);
 			        String bioSubType = payloadMap.get("bioSubType");
-			        if (RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {			        	payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
+			        if (RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			        	payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
 			        	String updatedPayload = objectMapper.writeValueAsString(payloadMap);
 			        	value.setPayLoad(updatedPayload);
 			            effectiveFieldId = RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW;
