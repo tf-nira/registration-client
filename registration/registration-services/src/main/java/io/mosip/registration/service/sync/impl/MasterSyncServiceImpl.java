@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -288,6 +289,27 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 			LOGGER.error("Failed to fetch values for field : " + fieldName, exception);
 		}
 		return Collections.EMPTY_LIST;
+	}
+	
+	public List<GenericDto> getFilteredFieldValues(String fieldName, String hierarchyName, String langCode,
+            boolean isHierarchical, String residenceStatus) {
+		List<GenericDto> originalList = null;
+		try {
+			originalList = getFieldValues(fieldName, langCode, isHierarchical);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (RegistrationConstants.INSIDE_UGANDA.equalsIgnoreCase(residenceStatus) && residenceStatus != null) {
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().matches("\\d+"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.OUTSIDE_UGANDA.equalsIgnoreCase(residenceStatus) && residenceStatus != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().matches("[A-Za-z]+"))
+					.collect(Collectors.toList());
+		} else {
+			return originalList;
+		}
 	}
 
 	/**
