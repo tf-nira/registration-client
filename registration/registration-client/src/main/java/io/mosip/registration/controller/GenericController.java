@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.TextAlignment;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -1201,12 +1203,40 @@ public class GenericController extends BaseController {
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
-
 					if (groupEntry.getKey().equals("COP Categories and Services")) {
 						label.setPadding(new Insets(0, 0, 10, 0));
 					}
 
 					groupFlowPane.add(label, 0, 0, 2, 1);
+					
+					if (groupEntry.getKey().equals(RegistrationConstants.DECLARATION)) {
+					    Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
+					    declarationHeading.getStyleClass().add("demoGraphicCustomLabel");
+					    declarationHeading.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
+					    groupFlowPane.add(declarationHeading, 0, 0, 3, 1);
+
+					    boolean isDeclarationAdded = false;
+					    for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
+					        if ("declarationCheckBox".equals(fieldDTO.getId()) && !isDeclarationAdded) {
+					            String declarationText = fieldDTO.getLabel().get(RegistrationConstants.LANG);
+					            CheckBox declarationCheckBox = new CheckBox();
+					            Label declarationLabel = new Label(declarationText);
+					            declarationLabel.setWrapText(true);
+					            declarationLabel.setTextAlignment(TextAlignment.JUSTIFY);
+					            declarationLabel.setMaxWidth(800);
+
+					            // Put checkbox and label in an HBox
+					            HBox checkboxContainer = new HBox(10);
+					            checkboxContainer.setAlignment(Pos.TOP_LEFT);
+					            checkboxContainer.setPrefWidth(Double.MAX_VALUE);
+					            HBox.setHgrow(declarationLabel, Priority.ALWAYS);
+
+					            checkboxContainer.getChildren().addAll(declarationCheckBox, declarationLabel);
+					            groupFlowPane.add(checkboxContainer, 0, 1, 3, 1);
+					            isDeclarationAdded = true;
+					        }
+					    }
+					}
 				}
 				int fieldIndex = 0;
 				int gRowIndex = 0;
