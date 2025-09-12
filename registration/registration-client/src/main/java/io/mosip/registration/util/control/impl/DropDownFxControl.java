@@ -227,6 +227,9 @@ public class DropDownFxControl extends FxControl {
 				}
 				getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), values);
 				getRegistrationDTo().SELECTED_CODES.put(uiFieldDTO.getId()+"Code", selectedCode);
+				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.RESIDENCE_STATUS)) {
+					updateEnrollmentDistrictList();
+				}
 				break;
 			default:
 				Optional<GenericDto> result = getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)).stream()
@@ -239,6 +242,31 @@ public class DropDownFxControl extends FxControl {
 		}
 	}
 
+	private void updateEnrollmentDistrictList() {
+		String resValue = null;
+		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.RESIDENCE_STATUS);
+        if (residenceStatus instanceof List<?>) {
+            List<?> residenceStatusList = (List<?>) residenceStatus;
+            if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) {
+                SimpleDto dto = (SimpleDto) residenceStatusList.get(0);
+                if (dto.getValue() != null) {
+                	resValue = dto.getValue().trim().toLowerCase(); // Normalize
+                }
+            }
+        }
+        if (resValue != null) {
+            FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_DISTRICT);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFilteredFieldValues(
+                    RegistrationConstants.UGA, RegistrationConstants.DISTRICT, langCode, true, resValue);
+
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
+	}
+	
 	@Override
 	public Object getData() {
 		return getRegistrationDTo().getDemographics().get(uiFieldDTO.getId());
