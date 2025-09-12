@@ -149,5 +149,8 @@ public interface MasterSyncService {
 	 */
 	List<GenericDto> getFieldValues(String fieldName, String hierarchyLevelName, String langCode,
 									boolean isHierarchical);
+	
+	List<GenericDto> getFilteredFieldValues(String fieldName, String hierarchyLevelName, String langCode,
+			boolean isHierarchical, String resValue);
 
 }

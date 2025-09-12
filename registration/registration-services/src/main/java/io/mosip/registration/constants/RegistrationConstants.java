@@ -263,6 +263,13 @@ public class RegistrationConstants {
 	public static final String REMOVE_SPOUSE = "removeSpouse";
 	public static final String DECLARANT_NATIONALITY = "declarantNationality";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
+	public static final String DISTRICT = "District";
+	public static final String UGA = "UGA";
+	public static final String INSIDE_UGANDA = "In Uganda";
+	public static final String OUTSIDE_UGANDA = "Outside Uganda";
+	public static final String LANG = "eng";
+	public static final String DECLARATION_ID = "declarationCheckBox";
+	public static final String DECLARATION = "Declaration";
 	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
 	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
 	public static final String ENROLLMENT_SUB_COUNTY = "applicantPlaceOfEnrolmentSubCounty";
