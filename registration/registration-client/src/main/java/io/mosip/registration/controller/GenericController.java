@@ -1210,27 +1210,20 @@ public class GenericController extends BaseController {
 					groupFlowPane.add(label, 0, 0, 2, 1);
 					
 					if (groupEntry.getKey().equals(RegistrationConstants.DECLARATION)) {
-
-					    // Add the Declaration heading
 					    Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
 					    declarationHeading.getStyleClass().add("demoGraphicCustomLabel");
 					    declarationHeading.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
 					    groupFlowPane.add(declarationHeading, 0, 0, 3, 1);
 
 					    boolean isDeclarationAdded = false;
-
 					    for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
-
 					        if ("declarationCheckBox".equals(fieldDTO.getId()) && !isDeclarationAdded) {
-
 					            String declarationText = fieldDTO.getLabel().get(RegistrationConstants.LANG);
-
 					            CheckBox declarationCheckBox = new CheckBox();
-
 					            Label declarationLabel = new Label(declarationText);
 					            declarationLabel.setWrapText(true);
 					            declarationLabel.setTextAlignment(TextAlignment.JUSTIFY);
-					            declarationLabel.setMaxWidth(800); // Set preferred max width
+					            declarationLabel.setMaxWidth(800);
 
 					            // Put checkbox and label in an HBox
 					            HBox checkboxContainer = new HBox(10);
@@ -1239,9 +1232,7 @@ public class GenericController extends BaseController {
 					            HBox.setHgrow(declarationLabel, Priority.ALWAYS);
 
 					            checkboxContainer.getChildren().addAll(declarationCheckBox, declarationLabel);
-
 					            groupFlowPane.add(checkboxContainer, 0, 1, 3, 1);
-
 					            isDeclarationAdded = true;
 					        }
 					    }
