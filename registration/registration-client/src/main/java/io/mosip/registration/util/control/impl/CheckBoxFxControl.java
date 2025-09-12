@@ -64,9 +64,15 @@ public class CheckBoxFxControl extends FxControl {
 		double prefWidth = simpleTypeVBox.getPrefWidth();
 
 		/** CheckBox */
-		CheckBox checkBox = getCheckBox(fieldName,
-				String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
-				RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		CheckBox checkBox = null;
+		if(fieldName.equalsIgnoreCase(RegistrationConstants.DECLARATION_ID)) {
+			checkBox = getCheckBox(fieldName,
+		            "", RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		} else {
+			checkBox = getCheckBox(fieldName,
+					String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
+					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		}
 
 		setListener(checkBox);
 		simpleTypeVBox.getChildren().add(checkBox);
