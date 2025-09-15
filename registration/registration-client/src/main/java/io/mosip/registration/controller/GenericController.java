@@ -1203,11 +1203,13 @@ public class GenericController extends BaseController {
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
+					label.setWrapText(true);
+					label.setMaxWidth(900);
 					if (groupEntry.getKey().equals("COP Categories and Services")) {
 						label.setPadding(new Insets(0, 0, 10, 0));
 					}
 
-					groupFlowPane.add(label, 0, 0, 2, 1);
+					groupFlowPane.add(label, 0, 0, 3, 1);
 					
 					if (groupEntry.getKey().equals(RegistrationConstants.DECLARATION)) {
 					    Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
