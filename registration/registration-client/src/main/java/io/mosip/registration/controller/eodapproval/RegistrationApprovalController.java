@@ -343,7 +343,8 @@ public class RegistrationApprovalController extends BaseController implements In
 			try{
 				String acknowledgementContent = packetHandlerService.getAcknowledgmentReceipt(table.getSelectionModel().getSelectedItem().getPacketId(),
 						table.getSelectionModel().getSelectedItem().getAcknowledgementFormPath());
-				webView.getEngine().loadContent(acknowledgementContent);				webView.setZoom(0.8);
+				webView.getEngine().loadContent(acknowledgementContent);
+				webView.setZoom(0.7);
 			} catch (RegBaseCheckedException | io.mosip.kernel.core.exception.IOException ex) {
 				LOGGER.error("REGSITRATION_ACKNOWLEDGEMNT_PAGE_LOADING_FAILED", ex);
 			}
@@ -704,5 +705,6 @@ public class RegistrationApprovalController extends BaseController implements In
 				.ofPattern(RegistrationConstants.EOD_PROCESS_DATE_FORMAT_FOR_FILE);
 		return LocalDateTime.now().format(format);
 	}
+
 
 }
