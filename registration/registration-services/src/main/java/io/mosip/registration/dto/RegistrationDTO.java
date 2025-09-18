@@ -177,7 +177,7 @@ public class RegistrationDTO {
 			            AGE_GROUPS.put("monthAge", ageInMonths);
 			        }
 			    }
-			});s
+			});
 		}
 	}
 
@@ -454,5 +454,6 @@ public class RegistrationDTO {
 	}
 	
 }
+
 
 
