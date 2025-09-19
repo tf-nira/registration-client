@@ -292,18 +292,18 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 	}
 	
 	public List<GenericDto> getFilteredFieldValues(String fieldName, String hierarchyName, String langCode,
-            boolean isHierarchical, String residenceStatus) {
+            boolean isHierarchical, String enrolmentStatus) {
 		List<GenericDto> originalList = null;
 		try {
 			originalList = getFieldValues(fieldName, langCode, isHierarchical);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if (RegistrationConstants.INSIDE_UGANDA.equalsIgnoreCase(residenceStatus) && residenceStatus != null) {
+		if (RegistrationConstants.INSIDE_UGANDA.equalsIgnoreCase(enrolmentStatus) && enrolmentStatus != null) {
 			return originalList.stream()
 					.filter(dto -> dto.getCode() != null && dto.getCode().matches("\\d+"))
 					.collect(Collectors.toList());
-		} else if(RegistrationConstants.OUTSIDE_UGANDA.equalsIgnoreCase(residenceStatus) && residenceStatus != null){
+		} else if(RegistrationConstants.OUTSIDE_UGANDA.equalsIgnoreCase(enrolmentStatus) && enrolmentStatus != null){
 			return originalList.stream()
 					.filter(dto -> dto.getCode() != null && dto.getCode().matches("[A-Za-z]+"))
 					.collect(Collectors.toList());
