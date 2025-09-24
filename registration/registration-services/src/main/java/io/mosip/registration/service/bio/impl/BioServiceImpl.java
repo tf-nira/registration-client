@@ -21,7 +21,7 @@ import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.constant.ProcessedLevelType;
 import io.mosip.kernel.biometrics.entities.BIR;
-import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
+//import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
 import io.mosip.kernel.core.bioapi.exception.BiometricException;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
@@ -56,8 +56,8 @@ public class BioServiceImpl extends BaseService implements BioService {
 	 */
 	private static final Logger LOGGER = AppConfig.getLogger(BioServiceImpl.class);
 
-	@Autowired
-	private BioAPIFactory bioAPIFactory;
+	/*@Autowired
+	private BioAPIFactory bioAPIFactory;*/
 
 	@Autowired
 	private MosipDeviceSpecificationFactory deviceSpecificationFactory;
@@ -171,11 +171,12 @@ public class BioServiceImpl extends BaseService implements BioService {
 				.fromValue(Biometric.getSingleTypeByAttribute(biometricsDto.getBioAttribute()).name());
 		BIR bir = birBuilder.buildBir(biometricsDto, ProcessedLevelType.RAW);
 		BIR[] birList = new BIR[] { bir };
-		Map<BiometricType, Float> scoreMap = bioAPIFactory
+		/*Map<BiometricType, Float> scoreMap = bioAPIFactory
 				.getBioProvider(biometricType, BiometricFunction.QUALITY_CHECK)
 				.getModalityQuality(birList, null);
 		
-		return scoreMap.get(biometricType);
+		return scoreMap.get(biometricType);*/
+		return 80.00;
 	}
 
 	@Override

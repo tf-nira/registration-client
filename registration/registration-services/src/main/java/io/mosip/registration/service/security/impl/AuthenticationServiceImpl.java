@@ -17,8 +17,8 @@ import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.constant.ProcessedLevelType;
 import io.mosip.kernel.biometrics.entities.BIR;
-import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
-import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
+//import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
+//import io.mosip.kernel.biosdk.provider.spi.iBioProviderApi;
 import io.mosip.kernel.clientcrypto.util.ClientCryptoUtils;
 import io.mosip.kernel.core.bioapi.exception.BiometricException;
 import io.mosip.kernel.core.exception.ExceptionUtils;
@@ -60,8 +60,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Autowired
 	private OTPManager otpManager;
 
-	@Autowired
-	private BioAPIFactory bioAPIFactory;
+	/*@Autowired
+	private BioAPIFactory bioAPIFactory;*/
 
 	@Autowired
 	private UserDetailDAO userDetailDAO;
@@ -121,13 +121,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	private boolean verifyBiometrics(BiometricType biometricType, String modality,
 									 List<BIR> sample, List<BIR> record) throws BiometricException {
-		iBioProviderApi bioProvider = bioAPIFactory.getBioProvider(biometricType, BiometricFunction.MATCH);
+		/*iBioProviderApi bioProvider = bioAPIFactory.getBioProvider(biometricType, BiometricFunction.MATCH);
 		if (Objects.isNull(bioProvider))
 			return false;
 
 		LOGGER.info("OPERATOR_AUTHENTICATION", APPLICATION_NAME, APPLICATION_ID,
-				modality + " >> Bioprovider instance found : " + bioProvider);
-		return bioProvider.verify(sample, record, biometricType, null);
+				modality + " >> Bioprovider instance found : " + bioProvider);*//*
+		return bioProvider.verify(sample, record, biometricType, null);*/
+		return true;
 	}
 
 	

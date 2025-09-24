@@ -488,7 +488,7 @@ public class LoginServiceImpl extends BaseService implements LoginService {
 		try {
 			getUserDetailValidation(userId);
 			UserDTO userDTO = getUserDetail(userId);
-			if (userDTO == null || !userDTO.getId().equals(userId)) {
+			if (userDTO == null || !userDTO.getId().equalsIgnoreCase(userId)) {
 				setErrorResponse(responseDTO, RegistrationConstants.USER_NAME_VALIDATION, null);
 				return responseDTO;
 			}

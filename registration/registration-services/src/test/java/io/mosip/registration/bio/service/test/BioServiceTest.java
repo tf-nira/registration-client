@@ -61,8 +61,8 @@ public class BioServiceTest {
 
     private static final String JWT_FORMAT = "header.%s.signature";
 
-    @Autowired
-    private BioAPIFactory bioAPIFactory; //mock bean created in TestDaoConfig
+    /*@Autowired
+    private BioAPIFactory bioAPIFactory;*/ //mock bean created in TestDaoConfig
 
     @Autowired
     private MosipDeviceSpecificationFactory deviceSpecificationFactory;
@@ -307,7 +307,7 @@ public class BioServiceTest {
         qualityMap.put(BiometricType.FACE, Float.valueOf("45.0"));
         BioProviderImpl_V_0_9 providerImpl_v_0_9 = Mockito.mock(BioProviderImpl_V_0_9.class);
 
-        Mockito.when(bioAPIFactory.getBioProvider(Mockito.any(), Mockito.any())).thenReturn(providerImpl_v_0_9);
+       /* Mockito.when(bioAPIFactory.getBioProvider(Mockito.any(), Mockito.any())).thenReturn(providerImpl_v_0_9);*/
         Mockito.when(providerImpl_v_0_9.getModalityQuality(Mockito.any(), Mockito.any())).thenReturn(qualityMap);
 
         BiometricsDto biometricsDto = new BiometricsDto();

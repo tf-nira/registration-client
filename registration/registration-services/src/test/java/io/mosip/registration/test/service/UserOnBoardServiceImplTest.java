@@ -119,8 +119,8 @@ public class UserOnBoardServiceImplTest {
 	@Mock
 	private CryptomanagerService cryptomanagerService;
 	
-	@Mock
-	private BioAPIFactory bioAPIFactory;
+	/*@Mock
+	private BioAPIFactory bioAPIFactory;*/
 	
 	@Mock
 	private iBioProviderApi bioProvider;

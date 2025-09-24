@@ -41,7 +41,7 @@ import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.constant.ProcessedLevelType;
 import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biometrics.entities.SingleAnySubtypeType;
-import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
+//import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
 import io.mosip.kernel.core.bioapi.exception.BiometricException;
 import io.mosip.kernel.core.crypto.spi.CryptoCoreSpec;
 import io.mosip.kernel.core.exception.ExceptionUtils;
@@ -103,8 +103,8 @@ public class UserOnboardServiceImpl extends BaseService implements UserOnboardSe
 	@Autowired
 	private KeymanagerService keymanagerService;
 
-	@Autowired
-	private BioAPIFactory bioAPIFactory;
+	/*@Autowired
+	private BioAPIFactory bioAPIFactory;*/
 
 	@Autowired
 	private BIRBuilder birBuilder;
@@ -429,10 +429,10 @@ public class UserOnboardServiceImpl extends BaseService implements UserOnboardSe
 				birList.add(bir);
 			}
 
-			templates = bioAPIFactory
+			/*templates = bioAPIFactory
 					.getBioProvider(BiometricType.fromValue(birList.get(0).getBdbInfo().getType().get(0).value()),
 							BiometricFunction.EXTRACT)
-					.extractTemplate(birList, null);
+					.extractTemplate(birList, null);*/
 		}
 		return templates;
 	}

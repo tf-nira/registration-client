@@ -71,8 +71,8 @@ public class AuthenticationServiceTest {
 	@Mock
 	private BIRBuilder birBuilder;
 	
-	@Mock
-	private BioAPIFactory bioAPIFactory;
+	/*@Mock
+	private BioAPIFactory bioAPIFactory;*/
 	
 	@Mock
 	private BioProviderImpl_V_0_9 bioProviderImpl;

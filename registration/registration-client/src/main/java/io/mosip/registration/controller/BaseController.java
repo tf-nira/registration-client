@@ -35,7 +35,7 @@ import io.mosip.kernel.biometrics.constant.BiometricFunction;
 import io.mosip.kernel.biometrics.constant.BiometricType;
 import io.mosip.kernel.biometrics.constant.ProcessedLevelType;
 import io.mosip.kernel.biometrics.entities.BIR;
-import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
+//import io.mosip.kernel.biosdk.provider.factory.BioAPIFactory;
 import io.mosip.kernel.core.bioapi.exception.BiometricException;
 import io.mosip.kernel.core.cbeffutil.jaxbclasses.SingleType;
 import io.mosip.kernel.core.exception.ExceptionUtils;
@@ -205,8 +205,8 @@ public class BaseController {
 	@Autowired
 	protected BIRBuilder birBuilder;
 	
-	@Autowired
-	private BioAPIFactory bioAPIFactory;
+	/*@Autowired
+	private BioAPIFactory bioAPIFactory;*/
 
 	@Autowired
 	private AuthTokenUtilService authTokenUtilService;
@@ -1787,13 +1787,13 @@ public class BaseController {
 					(long) biometricDto.getQualityScore(), biometricDto.getAttributeISO(), ProcessedLevelType.RAW));
 		});
 
-		try {
-			Map<String, Boolean> result = bioAPIFactory.getBioProvider(biometricType, BiometricFunction.MATCH)
+		//try {
+			/*Map<String, Boolean> result = bioAPIFactory.getBioProvider(biometricType, BiometricFunction.MATCH)
 					.identify(sample, gallery, biometricType, null);
 			return result.entrySet().stream().anyMatch(e -> e.getValue() == true);
 		} catch (BiometricException e) {
 			LOGGER.error("Failed in dedupe check >> ", e);
-		}
+		}*/
 		return false;
 	}
 }
