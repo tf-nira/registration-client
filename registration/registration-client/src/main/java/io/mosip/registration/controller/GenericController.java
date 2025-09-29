@@ -1979,6 +1979,7 @@ public class GenericController extends BaseController {
 							"inDepthCitizenshipVerification",
 							"enrollmentOfficerComment",
 							"PRNId",
+							"enrolmentStatus",
 							"enrolmentCountry",
 							"applicantPlaceOfEnrolmentDistrict",
 							"applicantPlaceOfEnrolmentCounty",
@@ -2143,3 +2144,4 @@ public class GenericController extends BaseController {
 	}
 
 }
+
