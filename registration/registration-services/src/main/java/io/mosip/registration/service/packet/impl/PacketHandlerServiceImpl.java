@@ -473,6 +473,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				case RENEWAL:
 				case NEW:
 				case FIRSTID:
+				case ALIENNEW: 
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);
