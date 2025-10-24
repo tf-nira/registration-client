@@ -244,7 +244,7 @@ public class DropDownFxControl extends FxControl {
 
 	private void updateEnrollmentDistrictList() {
 		String resValue = null;
-		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.RESIDENCE_STATUS);
+		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.ENROLMENT_STATUS);
         if (residenceStatus instanceof List<?>) {
             List<?> residenceStatusList = (List<?>) residenceStatus;
             if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) {
