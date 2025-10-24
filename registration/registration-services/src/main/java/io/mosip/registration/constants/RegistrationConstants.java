@@ -820,6 +820,8 @@ public class RegistrationConstants {
 	public static final String PREVIEW_TEMPLATE_CODE_COP = "reg-cop-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO = "reg-bio-ack-template-part";
+	public static final String PREVIEW_TEMPLATE_CODE_BIO = "reg-bio-preview-template-part";
 
 	// Notification Service
 	public static final String EMAIL_SUBJECT = "MOSIP REGISTRATION NOTIFICATION";
