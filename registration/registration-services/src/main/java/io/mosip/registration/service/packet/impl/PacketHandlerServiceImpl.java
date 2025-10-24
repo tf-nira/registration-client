@@ -192,6 +192,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			responseDTO.getErrorResponseDTOs().add(errorResponseDTO);
 			return responseDTO;
 		}
+		
+		if(registrationDTO.getProcessId().equalsIgnoreCase("ALIENNEW")) {
+			registrationDTO.setProcessId("NEW");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
+	        registrationDTO.addDemographicField("userServiceType", values);
+		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
 		
