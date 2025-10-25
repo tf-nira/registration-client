@@ -255,7 +255,7 @@ public class DropDownFxControl extends FxControl {
             }
         }
         if (resValue != null) {
-            FxControl fxControl = getFxControl(RegistrationConstants.ENROLMENT_STATUS);
+            FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_DISTRICT);
             String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
 
             List<GenericDto> filteredValues = masterSyncService.getFilteredFieldValues(
