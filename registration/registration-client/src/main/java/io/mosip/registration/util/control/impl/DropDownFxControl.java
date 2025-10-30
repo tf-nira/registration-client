@@ -357,12 +357,19 @@ public class DropDownFxControl extends FxControl {
 				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");
 					FxControl fxControl2 =  getFxControl("numberOfOtherSpouses");
+					FxControl fxControl3 =  getFxControl("numberOfOtherSpousesAlien");
 					fxControl1.selectAndSet(null);
 					fxControl1.setData(null);
 					fxControl1.getNode().setDisable(false);
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
+					if(fxControl2 != null) {
+						fxControl2.selectAndSet(null);
+						fxControl2.setData(null);
+						fxControl2.getNode().setDisable(false);
+					} else if(fxControl3 != null) {
+						fxControl3.selectAndSet(null);
+						fxControl3.setData(null);
+						fxControl3.getNode().setDisable(false);
+					}
 				}
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
@@ -371,16 +378,28 @@ public class DropDownFxControl extends FxControl {
 					SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("gender")).get(0);
 					SimpleDto maritalStatusData = (SimpleDto) ((ArrayList) demographics.get("maritalStatus")).get(0);
 					FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
+					FxControl fxControl2 =  getFxControl("numberOfOtherSpousesAlien");
 					if (genderData.getValue().equalsIgnoreCase("Female") && !(maritalStatusData.getValue().equalsIgnoreCase("Single"))) {
-						fxControl1.selectAndSet("1");
-						fxControl1.setData("1");
-						fxControl1.getNode().setDisable(true);
-
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet("1");
+							fxControl1.setData("1");
+							fxControl1.getNode().setDisable(true);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet("1");
+							fxControl2.setData("1");
+							fxControl2.getNode().setDisable(true);
+						}
 					}
 					else {
-						fxControl1.selectAndSet(null);
-						fxControl1.setData(null);
-						fxControl1.getNode().setDisable(false);
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet(null);
+							fxControl1.setData(null);
+							fxControl1.getNode().setDisable(false);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet(null);
+							fxControl2.setData(null);
+							fxControl2.getNode().setDisable(false);
+						}
 					}
 				}
 
