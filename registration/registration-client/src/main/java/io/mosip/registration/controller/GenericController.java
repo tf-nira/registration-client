@@ -235,6 +235,7 @@ public class GenericController extends BaseController {
 		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
 		updateFlowAllowedProcess.add(FlowType.FIRSTID.name());
 		updateFlowAllowedProcess.add(FlowType.ALIENNEW.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENRENEWAL.name());
 	}
 
 	private void fillHierarchicalLevelsByLanguage() {
@@ -566,10 +567,10 @@ public class GenericController extends BaseController {
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
-								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
-								enrolmentControl.selectAndSet("UGA");
-								enrolmentControl.setData("UGA");
-								enrolmentControl.getNode().setDisable(true);
+								FxControl enrolmentCountry = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+								enrolmentCountry.selectAndSet("UGA");
+								enrolmentCountry.setData("UGA");
+								enrolmentCountry.getNode().setDisable(true);
 							}
 							
 							if (flowType.equals(FlowType.UPDATE) && data != null) {

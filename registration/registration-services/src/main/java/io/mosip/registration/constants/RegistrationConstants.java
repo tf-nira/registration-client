@@ -316,6 +316,8 @@ public class RegistrationConstants {
 	public static final String UNABLE_SIGNATURE_ID = "applicantUnabletoSign";
 	public static final String UNABLE_INTRODUCER_SIGNATURE_ID = "introducerUnabletoSign";
 	public static final String ENROLMENT_STATUS = "enrolmentStatus";
+	public static final String ALIENNEW = "ALIENNEW";
+	public static final String ALIENRENEWAL = "ALIENRENEWAL";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
 	public static final String DemoGraphicFieldMessageLabel = "demoGraphicFieldMessageLabel";
