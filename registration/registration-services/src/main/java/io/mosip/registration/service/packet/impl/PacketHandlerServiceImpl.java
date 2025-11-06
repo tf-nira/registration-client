@@ -202,6 +202,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
 		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENREPLACMENT)){
+			registrationDTO.setProcessId("LOST");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
+			registrationDTO.addDemographicField("userServiceType", values);
+		}
+
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
 		
