@@ -329,6 +329,7 @@ public abstract class FxControl  {
 			case FIRSTID:
 			case LOST:
 			case ALIENNEW:
+			case ALIENRENEWAL:
  				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
@@ -379,6 +380,7 @@ public abstract class FxControl  {
 				case RENEWAL:
 				case FIRSTID:
 				case ALIENNEW:
+				case ALIENRENEWAL: 
 					return isVisibleAccordingToSpec;
 			}
 		} catch (Exception exception) {

@@ -167,7 +167,7 @@ public class DOBAgeFxControl extends FxControl {
 		int age = getRegistrationDTo().getAge();
 		FlowType flowType = getRegistrationDTo().getFlowType();
 
-		if (age > 15 && (flowType.equals(FlowType.NEW) || flowType.equals(FlowType.UPDATE) || flowType.equals(FlowType.FIRSTID) || flowType.equals(FlowType.ALIENNEW))) {
+		if (age > 15 && (flowType.equals(FlowType.NEW) || flowType.equals(FlowType.UPDATE) || flowType.equals(FlowType.FIRSTID) || flowType.equals(FlowType.ALIENNEW) || flowType.equals(FlowType.ALIENRENEWAL))) {
 		    FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 		    fxControl.selectAndSet("UGA");
 		    fxControl.setData("UGA");
@@ -178,13 +178,6 @@ public class DOBAgeFxControl extends FxControl {
 			FxControl fxControl = getFxControl(RegistrationConstants.DECLARANT_NATIONALITY);
 			fxControl.selectAndSet("Ugandan");
 		    fxControl.setData("Ugandan");
-		    fxControl.getNode().setDisable(true);
-		}
-		
-		if(age > 15 && flowType.equals(FlowType.ALIENNEW)) {
-			FxControl fxControl = getFxControl(RegistrationConstants.ENROLMENT_STATUS);
-		    fxControl.selectAndSet("UGA");
-		    fxControl.setData("UGA");
 		    fxControl.getNode().setDisable(true);
 		}
 	}

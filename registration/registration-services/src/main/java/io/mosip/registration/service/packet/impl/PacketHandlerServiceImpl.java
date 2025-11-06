@@ -193,9 +193,13 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			return responseDTO;
 		}
 		
-		if(registrationDTO.getProcessId().equalsIgnoreCase("ALIENNEW")) {
+		if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
 			registrationDTO.setProcessId("NEW");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
+	        registrationDTO.addDemographicField("userServiceType", values);
+		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
+			registrationDTO.setProcessId("RENEWAL");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
 		}
 
@@ -480,6 +484,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				case NEW:
 				case FIRSTID:
 				case ALIENNEW: 
+				case ALIENRENEWAL: 
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);
