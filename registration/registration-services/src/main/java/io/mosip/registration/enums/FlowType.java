@@ -12,7 +12,8 @@ public enum FlowType {
     FIRSTID("FirstId", AuditEvent.NAV_UIN_GETFIRSTID, "getFirstIdRoot", "G"),
 	ALIENNEW("AlienNew", AuditEvent.NAV_ALIEN_NEW_REG, "alienNewRoot", "A"),
     ALIENRENEWAL("AlienRenewal", AuditEvent.NAV_ALIEN_RENEW_UIN, "alienRenewalRoot", "I"),
-	ALIENREPLACEMENT("AlienReplacement",AuditEvent.NAV_AlIEN_REPLACEMNT_REG,"alienReplacementRoot","E");
+	ALIENLOST("AlienLost",AuditEvent.NAV_AlIEN_LOST_REG,"alienLostRoot","E"),
+    DEACTIVATE("Deactivate",AuditEvent.NAV_DEACTIVATE,"deactivateRoot","V");
 
     FlowType(String category, AuditEvent auditEvent, String screenId, String registrationTypeCode) {
         this.category = category;
