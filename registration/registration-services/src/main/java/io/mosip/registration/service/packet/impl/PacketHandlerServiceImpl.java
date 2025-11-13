@@ -201,6 +201,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			registrationDTO.setProcessId("RENEWAL");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
+			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
 		}
 		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
 			registrationDTO.setProcessId("LOST");
@@ -764,3 +765,4 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				RegistrationExceptionConstants.REG_ACK_RECEIPT_READ_ERROR.getErrorMessage());
 	}
 }
+
