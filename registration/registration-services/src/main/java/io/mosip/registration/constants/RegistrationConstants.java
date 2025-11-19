@@ -267,6 +267,16 @@ public class RegistrationConstants {
 	public static final String LANG = "eng";
 	public static final String DECLARATION_ID = "declarationCheckBox";
 	public static final String DECLARATION = "Declaration";
+	public static final String FACILITY_TYPE = "facilityType";
+	public static final String FACILITY_TYPE_CATEGORY = "facilityTypeCategory";
+	public static final String FACILITY_SUB_CATEGORY_SUBTYPE = "facilitySubCategory";
+	public static final String FACILITY_TYPE_SUB_CATEGORY = "facilityTypeSubCategory";
+	public static final String ENTRY = "Entry";
+	public static final String STUDENT_PASS = "Student Pass";
+	public static final String DP = "Dependent Pass";
+	public static final String IRP = "Intern/Research Pass";
+	public static final String SP = "Special Pass";
+	public static final String COR = "Certificate of Residence";
 	public static final String UGA = "UGA";
 	public static final String INSIDE_UGANDA = "In Uganda";
 	public static final String OUTSIDE_UGANDA = "Outside Uganda";
