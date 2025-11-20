@@ -228,6 +228,22 @@ public class DropDownFxControl extends FxControl {
 				getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), values);
 				getRegistrationDTo().SELECTED_CODES.put(uiFieldDTO.getId()+"Code", selectedCode);
 				
+				if(uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.FACILITY_TYPE)) {
+					String fcValue = null;
+					Object facilityType = getRegistrationDTo().getDemographics().get(RegistrationConstants.FACILITY_TYPE);
+			        if (facilityType instanceof List<?>) {
+			            List<?> facilityTypeList = (List<?>) facilityType;
+			            if (!facilityTypeList.isEmpty() && facilityTypeList.get(0) instanceof SimpleDto) {
+			                SimpleDto dto = (SimpleDto) facilityTypeList.get(0);
+			                if (dto.getValue() != null) {
+			                	fcValue = dto.getValue().trim().toLowerCase(); // Normalize
+			                }
+			            }
+			        }
+					updateFacilityCategory(fcValue);
+					updateFacilitySubCategory(fcValue);
+				}
+				
 				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.ENROLMENT_STATUS)) {
 					updateEnrollmentDistrictList();
 				}
@@ -262,6 +278,34 @@ public class DropDownFxControl extends FxControl {
 
             List<GenericDto> filteredValues = masterSyncService.getFilteredFieldValues(
                     RegistrationConstants.UGA, RegistrationConstants.DISTRICT, langCode, true, resValue);
+            
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
+	}
+	
+	private void updateFacilityCategory(String facilityType) {
+        if (facilityType != null) {
+            FxControl fxControl = getFxControl(RegistrationConstants.FACILITY_TYPE_CATEGORY);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFacilityTypeCategoryAndSubCategoryValues(
+            		RegistrationConstants.FACILITY_TYPE_CATEGORY, langCode, facilityType);
+            
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
+	}
+	
+	private void updateFacilitySubCategory(String facilityType) {
+        if (facilityType != null) {
+            FxControl fxControl = getFxControl(RegistrationConstants.FACILITY_TYPE_SUB_CATEGORY);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFacilityTypeCategoryAndSubCategoryValues(
+            		RegistrationConstants.FACILITY_SUB_CATEGORY_SUBTYPE, langCode, facilityType);
             
             Map<String, Object> dataList = new LinkedHashMap<>();
             dataList.put(langCode, filteredValues);

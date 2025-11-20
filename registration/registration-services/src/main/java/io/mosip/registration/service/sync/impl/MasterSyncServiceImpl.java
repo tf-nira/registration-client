@@ -311,7 +311,43 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 			return originalList;
 		}
 	}
-
+	
+	public List<GenericDto> getFacilityTypeCategoryAndSubCategoryValues(String fieldName,String langCode, String facilityType) {
+		List<GenericDto> originalList = null;
+		try {
+			originalList = getDynamicField(fieldName, langCode);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (RegistrationConstants.ENTRY.equalsIgnoreCase(facilityType) && facilityType != null) {
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("ENTRY_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.STUDENT_PASS.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("STUDENT_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.DP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("DP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.IRP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("IRP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.SP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("SP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.COR.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("COR_"))
+					.collect(Collectors.toList());
+		} else {
+			return originalList;
+		}
+	}
+	
 	/**
 	 * Error msg.
 	 *
