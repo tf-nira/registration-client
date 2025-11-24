@@ -4,6 +4,7 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -433,8 +434,16 @@ public class DateValidation extends BaseController {
 			String formattedDay = String.format("%02d", Integer.parseInt(dd.getText()));
 			String formattedMonth = String.format("%02d", Integer.parseInt(mm.getText()));
 
-			LocalDate localDate = LocalDate.of(Integer.valueOf(yyyy.getText()),
-					Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+			LocalDate localDate;
+			try {
+				localDate = LocalDate.of(Integer.valueOf(yyyy.getText()),
+						Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+			} catch (DateTimeException ex) {
+			    isValid = false;
+			    resetFieldStyleClass(parentPane, fieldId,
+			            getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT, minDays, maxDays));
+			    return isValid;
+			}
 
 			dob = localDate.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
 			isValid = validator != null && validator.getValidator() != null ? dob.matches(validator.getValidator()) : true;
@@ -460,21 +469,22 @@ public class DateValidation extends BaseController {
                     }
                 }
             }
+            
+            // Parse both dob, current date and dateofbirth strings into LocalDate objects
+			LocalDate dobDate = LocalDate.parse(dob, formatter);
+			LocalDate currentDate = LocalDate.parse(LocalDate.now().format(formatter), formatter);
+			
+			// Calculate the difference between Current Data and Input Date
+			Period period1 = Period.between(currentDate, dobDate);
 
 			if(isValid && !dateofbirth.equalsIgnoreCase("") && !getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.RENEWAL)){
-				// Parse both dob, current date and dateofbirth strings into LocalDate objects
-				LocalDate dobDate = LocalDate.parse(dob, formatter);
 				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);
-				LocalDate currentDate = LocalDate.parse(LocalDate.now().format(formatter), formatter);
-				
+
 				// Calculate the period (difference) between Applicant Date and Input Date
 				Period period = Period.between(dateofbirthDate, dobDate);
 				
-				// Calculate the difference between Current Data and Input Date
-				Period period1 = Period.between(currentDate, dobDate);
-
 				// Check the date if any future date or before Applicant or After applicant
-				if ( (uiFieldDTO.getId().contains(RegistrationConstants.SPOUSE) || uiFieldDTO.getId().contains(RegistrationConstants.REMOVE_SPOUSE) )  && (period1.getDays() > 0) || period1.getMonths() > 0 || period1.getYears() > 0) {
+				if ( (uiFieldDTO.getId().contains(RegistrationConstants.SPOUSE) || uiFieldDTO.getId().contains(RegistrationConstants.REMOVE_SPOUSE) )  && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
 					isValid = false; // If Age is Future date, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 				}
@@ -504,6 +514,19 @@ public class DateValidation extends BaseController {
 				else if(uiFieldDTO.getId().contains(RegistrationConstants.CHILD_FOR_AGE) && period.getDays() <= 0 && period.getMonths() <= 0 && period.getYears() <= 0) {
 					isValid = false; // If Age is Before Applicant DOB, set isValid to false
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.BEFORE_APPLICANT_DOB));
+				} 
+			}
+			
+			if(!uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry") && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
+				isValid = false; // If Age is Future date, set isValid to false
+				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
+			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
+				String dateDOI = getRegistrationDTOFromSession().getDemographic("dateOfIssuance");
+				LocalDate dateOfIssuance = LocalDate.parse(dateDOI, formatter);
+				if(!dobDate.isAfter(dateOfIssuance)) {
+					isValid = false;
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+						minDays, maxDays));
 				}
 			}
 
@@ -513,6 +536,10 @@ public class DateValidation extends BaseController {
 //				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
 //				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
 //			}
+		} else {
+			isValid = false;
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+				minDays, maxDays));
 		}
 		if (checkCardExpire) {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
