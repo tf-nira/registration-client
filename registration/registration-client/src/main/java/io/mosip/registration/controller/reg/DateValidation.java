@@ -517,7 +517,7 @@ public class DateValidation extends BaseController {
 				} 
 			}
 			
-			if(!uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry") && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
+			if(!uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry") && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0) && !getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.RENEWAL)) {
 				isValid = false; // If Age is Future date, set isValid to false
 				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
