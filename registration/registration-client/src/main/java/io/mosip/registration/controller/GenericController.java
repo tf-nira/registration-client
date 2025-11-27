@@ -200,7 +200,9 @@ public class GenericController extends BaseController {
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
 			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN",
-			"secondSecondaryOwner","firstSecondaryOwner","primaryOwnerAIN"
+			"secondSecondaryOwner","firstSecondaryOwner","primaryOwnerAIN","thirdSecondaryOwner",
+            "fourthSecondaryOwner","fifthSecondaryOwner","sixthSecondaryOwner","seventhSecondaryOwner",
+            "eighthSecondaryOwner","ninthSecondaryOwner"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
