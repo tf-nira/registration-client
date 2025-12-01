@@ -12,7 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -118,6 +119,7 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 
 			if (!isNull(registrations) && !isEmpty(registrations)) {
 				deleteRegistrations(registrations);
+				deleteOldZipFiles(registrations);
 			}
 
 			setSuccessResponse(responseDTO, RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_SUCCESS, null);
@@ -385,4 +387,63 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 		regPacketStatusDAO.delete(registration);
 	}
 
+	public void deleteOldZipFiles(List<Registration> registrations) {
+	    if (registrations == null || registrations.isEmpty()) {
+	        LOGGER.warn("Registration list is empty. No files to process.");
+	        return;
+	    }
+	    long cutoffMillis = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
+	    Date cutoffDate = new Date(cutoffMillis); // use java.util.Date
+	    LOGGER.info("Starting cleanup. Files older than {} will be deleted.", cutoffDate);
+
+	    for (Registration registration : registrations) {
+	    	if(!regPacketStatusDAO.existsById(registration)){
+	    		try {
+		            String ackPath = registration.getAckFilename();
+		            if (ackPath == null || ackPath.isEmpty()) {
+		                LOGGER.debug("Skipping registration {} because ackFilename is null or empty.", registration.getId());
+		                continue;
+		            }
+		            // Derive ZIP path and directory
+		            String zipPath = ackPath.replace("_Ack.html", RegistrationConstants.ZIP_FILE_EXTENSION);
+		            File zipFile = new File(zipPath);
+		            File directory = zipFile.getParentFile();
+		            LOGGER.debug("Processing registration ID: {}", registration.getId());
+
+		            if (!directory.exists() || !directory.isDirectory()) {
+		                LOGGER.warn("Directory does not exist or not a directory: {}", directory.getAbsolutePath());
+		                continue;
+		            }
+
+		            File[] files = directory.listFiles();
+		            if (files == null || files.length == 0) {
+		                LOGGER.debug("No files found in directory: {}", directory.getAbsolutePath());
+		                continue;
+		            }
+
+		            for (File file : files) {
+		                if (file.isFile()) {
+		                    try {
+		                        if (!org.apache.commons.io.FileUtils.isFileNewer(file, cutoffDate)) {
+		                            LOGGER.info("Deleting old file: {}", file.getAbsolutePath());
+		                            boolean deleted = file.delete();
+		                            if (deleted) {
+		                                LOGGER.info("Deleted file: {}", file.getAbsolutePath());
+		                            } else {
+		                                LOGGER.warn("Failed to delete file: {}", file.getAbsolutePath());
+		                            }
+		                        }
+		                    } catch (Exception e) {
+		                        LOGGER.error("Error while deleting file: {}", file.getAbsolutePath(), e);
+		                    }
+		                }
+		            }
+		        } catch (Exception e) {
+		            LOGGER.error("Error while processing registration ID: {}", registration.getId(), e);
+		        }
+	    	}
+	    }
+	}
+
 }
+
