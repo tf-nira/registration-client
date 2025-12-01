@@ -262,6 +262,10 @@ public class RegistrationConstants {
 	public static final String RENEWAL = "RENEWAL";
 	public static final String REMOVE_SPOUSE = "removeSpouse";
 	public static final String DECLARANT_NATIONALITY = "declarantNationality";
+	public static final String BY_NATURALIZATION = "By Naturalization";
+	public static final String BY_REGISTRATION = "By Registration";
+	public static final String DUAL_CITIZENSHIP = "Dual Citizenship";
+	public static final String USER_SERVICE_TYPE = "userServiceType";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
 	public static final String DISTRICT = "District";
 	public static final String UGA = "UGA";
