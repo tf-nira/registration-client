@@ -80,4 +80,8 @@ public class RegPacketStatusDAOImpl implements RegPacketStatusDAO {
 		registrationRepository.deleteById(registration.getPacketId());
 	}
 
+	public boolean existsById(Registration registration){
+	    return (registrationRepository.existsById(registration.getPacketId()));
+	}
+
 }
