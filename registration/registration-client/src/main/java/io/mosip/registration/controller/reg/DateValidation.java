@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TimeZone;
 
 import io.mosip.registration.controller.ClientApplication;
@@ -516,8 +517,15 @@ public class DateValidation extends BaseController {
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.BEFORE_APPLICANT_DOB));
 				} 
 			}
+		
+			//no need future validation excludedFields
+			Set<String> excludedFields = Set.of(
+					"dateOfExpiry",
+					"dateOfIssuance",
+					"ninExpiryDate"
+			);
 			
-			if(!uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry") && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0) && !getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.RENEWAL)) {
+			if(!excludedFields.contains(uiFieldDTO.getId()) && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
 				isValid = false; // If Age is Future date, set isValid to false
 				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
@@ -528,6 +536,15 @@ public class DateValidation extends BaseController {
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 						minDays, maxDays));
 				}
+			}  else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
+			    LocalDate dateOfIssuance = dobDate; // current field value
+
+			    //dateOfIssuance must be >= today
+			    if (dateOfIssuance.isBefore(currentDate)) {
+			        isValid = false;
+			        resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+							minDays, maxDays));
+			    }
 			}
 
 
