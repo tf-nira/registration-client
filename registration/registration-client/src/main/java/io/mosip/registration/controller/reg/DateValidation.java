@@ -113,9 +113,7 @@ public class DateValidation extends BaseController {
 			return isValid;
 		}
 		boolean err=true;
-		int enteredYear = Integer.parseInt(yyyy.getText());
-		int currentYear = LocalDate.now().getYear();
-		int yearDifference = currentYear-enteredYear;
+		int yearDifference = getRegistrationDTOFromSession().getAge();
 		int highAgeNew =Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL));
 //		int highAgeFirstId=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL_FIRSTID));
 		int highAgeFirstId = 16;
