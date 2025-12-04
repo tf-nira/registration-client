@@ -519,7 +519,6 @@ public class DateValidation extends BaseController {
 			//no need future validation excludedFields
 			Set<String> excludedFields = Set.of(
 					"dateOfExpiry",
-					"dateOfIssuance",
 					"ninExpiryDate"
 			);
 			
@@ -529,18 +528,17 @@ public class DateValidation extends BaseController {
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
 				String dateDOI = getRegistrationDTOFromSession().getDemographic("dateOfIssuance");
 				LocalDate dateOfIssuance = LocalDate.parse(dateDOI, formatter);
-				if(!dobDate.isAfter(dateOfIssuance)) {
+				if (!(dobDate.isAfter(dateOfIssuance) && dobDate.isAfter(currentDate))) {
 					isValid = false;
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.ONLY_FUTURE_DATE,
 						minDays, maxDays));
 				}
-			}  else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
-			    LocalDate dateOfIssuance = dobDate; // current field value
-
-			    //dateOfIssuance must be >= today
-			    if (dateOfIssuance.isBefore(currentDate)) {
+			} else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
+			    LocalDate dateOfIssuance = dobDate;
+			    LocalDate minValidDate = currentDate.minusDays(90);
+			    if (dateOfIssuance.isAfter(currentDate) || dateOfIssuance.isAfter(minValidDate)) {
 			        isValid = false;
-			        resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+			        resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.NOT_ELIGIBLE_SERVICE,
 							minDays, maxDays));
 			    }
 			}
