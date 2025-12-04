@@ -1984,8 +1984,8 @@ public class GenericController extends BaseController {
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 
 		if ("NEW".equals(registrationDTO.getProcessId())) {
-			List<SimpleDto> userService = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
-			if (age < highAgeNew && ("By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))) {
+			List<SimpleDto> userService = (List<SimpleDto>) registrationDTO.getDemographicSimpleType(RegistrationConstants.USER_SERVICE_TYPE);
+			if (age < highAgeNew && (RegistrationConstants.BY_REGISTRATION.equals(userService.get(0).getValue()) || RegistrationConstants.BY_NATURALIZATION.equals(userService.get(0).getValue()) || RegistrationConstants.DUAL_CITIZENSHIP.equals(userService.get(0).getValue()))) {
 				result.put("isValid", false);
 				result.put("errVal", highAgeNew);
 				return result;
@@ -2112,4 +2112,5 @@ public class GenericController extends BaseController {
 	}
 
 }
+
 
