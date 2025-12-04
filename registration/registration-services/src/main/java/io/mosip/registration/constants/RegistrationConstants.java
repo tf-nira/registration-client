@@ -1894,7 +1894,9 @@ public class RegistrationConstants {
 	public static final String INVALID_DATE = "INVALID_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
+	public static final String NOT_ELIGIBLE_SERVICE= "NOT_ELIGIBLE_SERVICE";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
+	public static final String ONLY_FUTURE_DATE="ONLY_FUTURE_DATE";
 	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
 	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
 	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
