@@ -77,6 +77,9 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 
 	@Value("${mosip.registration.status_sync_batch_size:10}")
 	private int batchCount;
+
+	@Value("${mosip.regproc.packet.cleanup.enable.all-old-zip-file.deletion:false}")
+	private boolean enableAllOldZipFileDeletion;
 	
 	private static final Logger LOGGER = AppConfig.getLogger(RegPacketStatusServiceImpl.class);
 
@@ -117,11 +120,13 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 			List<Registration> registrations = registrationDAO.get(getPacketDeletionLastDate(Timestamp.valueOf(DateUtils.getUTCCurrentDateTime())),
 					RegistrationConstants.PACKET_PROCESSED_STATUS);
 
-			if (!isNull(registrations) && !isEmpty(registrations)) {
+			if(enableAllOldZipFileDeletion){
 				deleteRegistrations(registrations);
 				deleteOldZipFiles(registrations);
+			} else {
+				deleteRegistrations(registrations);
 			}
-
+			}
 			setSuccessResponse(responseDTO, RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_SUCCESS, null);
 
 		} catch (RuntimeException runtimeException) {
@@ -446,4 +451,5 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 	}
 
 }
+
 
