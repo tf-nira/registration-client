@@ -120,12 +120,15 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 			List<Registration> registrations = registrationDAO.get(getPacketDeletionLastDate(Timestamp.valueOf(DateUtils.getUTCCurrentDateTime())),
 					RegistrationConstants.PACKET_PROCESSED_STATUS);
 
-			if(enableAllOldZipFileDeletion){
-				deleteRegistrations(registrations);
-				deleteOldZipFiles(registrations);
-			} else {
-				deleteRegistrations(registrations);
-			}
+			if (!isNull(registrations) && !isEmpty(registrations)) {
+				if(enableAllOldZipFileDeletion){
+					deleteRegistrations(registrations);
+					deleteOldZipFiles(registrations);
+				}
+				else {
+					deleteRegistrations(registrations);
+				}
+
 			}
 			setSuccessResponse(responseDTO, RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_SUCCESS, null);
 
@@ -451,5 +454,6 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 	}
 
 }
+
 
 
