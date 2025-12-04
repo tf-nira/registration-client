@@ -227,7 +227,7 @@ public class DropDownFxControl extends FxControl {
 				}
 				getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), values);
 				getRegistrationDTo().SELECTED_CODES.put(uiFieldDTO.getId()+"Code", selectedCode);
-				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.RESIDENCE_STATUS)) {
+				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.ENROLMENT_STATUS)) {
 					updateEnrollmentDistrictList();
 				}
 				break;
@@ -244,7 +244,7 @@ public class DropDownFxControl extends FxControl {
 	
 	private void updateEnrollmentDistrictList() {
 		String resValue = null;
-		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.RESIDENCE_STATUS);
+		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.ENROLMENT_STATUS);
         if (residenceStatus instanceof List<?>) {
             List<?> residenceStatusList = (List<?>) residenceStatus;
             if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) {
