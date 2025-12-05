@@ -119,7 +119,7 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 					RegistrationConstants.PACKET_PROCESSED_STATUS);
 
 			if (!isNull(registrations) && !isEmpty(registrations)) {
-				if(enableAllOldZipFileDeletion.equalsIgnoreCase("true")){
+				if ("true".equalsIgnoreCase(enableAllOldZipFileDeletion)) {
 					deleteRegistrations(registrations);
 					deleteOldZipFiles(registrations);
 				}
@@ -452,6 +452,7 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 	}
 
 }
+
 
 
 
