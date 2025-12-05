@@ -3,7 +3,7 @@ package io.mosip.registration.test.packetStatusSync;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.doReturn;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -457,4 +457,5 @@ public class RegPacketStatusServiceTest {
 		};
 	}
 }
+
 
