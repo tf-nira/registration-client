@@ -320,7 +320,7 @@ public class RegPacketStatusServiceTest {
 		List<Registration> list = prepareSamplePackets();
 		SuccessResponseDTO successResponseDTO = new SuccessResponseDTO();
 		successResponseDTO.setMessage(RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_SUCCESS);
-		
+		packetStatusService = Mockito.spy(packetStatusService);
 		doReturn("false").when(packetStatusService)
         .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 		when(registrationDAO.get(Mockito.any(), Mockito.any())).thenReturn(list);
@@ -348,6 +348,7 @@ public class RegPacketStatusServiceTest {
 	@Test
 	public void deleteReRegistrationPacketsFailureTest() {
 		when(registrationDAO.get(Mockito.any(), Mockito.any())).thenThrow(RuntimeException.class);
+		packetStatusService = Mockito.spy(packetStatusService);
 		doReturn("false").when(packetStatusService)
         .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 
