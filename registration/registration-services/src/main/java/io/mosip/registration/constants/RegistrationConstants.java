@@ -1287,6 +1287,7 @@ public class RegistrationConstants {
 	public static final String SYNC_TRANSACTION_NO_OF_DAYS_LIMIT = "mosip.registration.sync_transaction_no_of_days_limit";
 	public static final String REG_DELETION_CONFIGURED_DAYS = "mosip.registration.reg_deletion_configured_days";
 	public static final String PRE_REG_DELETION_CONFIGURED_DAYS = "mosip.registration.pre_reg_deletion_configured_days";
+	public static final String REG_PACKET_DELETION_ENABLE = "mosip.regproc.packet.cleanup.enable.all-old-zip-file.deletion";
 
 	// Audit Constants
 	public static final String AUDIT_LOGS_DELETION_SUCESS_MSG = "AUDIT_LOGS_DELETION_SUCESS_MSG";
