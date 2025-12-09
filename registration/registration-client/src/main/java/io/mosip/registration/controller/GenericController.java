@@ -669,8 +669,9 @@ public class GenericController extends BaseController {
 		Label navigationLabel = new Label();
 		navigationLabel.getStyleClass().add(NAV_LABEL_CLASS);
 		navigationLabel.setText(processSpecDto.getLabel().get(ApplicationContext.applicationLanguage()));
-		navigationLabel.prefWidthProperty().bind(navigationAnchorPane.widthProperty());
-		navigationLabel.setWrapText(true);
+		navigationLabel.setStyle("-fx-font-size: 12px;");
+	    navigationLabel.setWrapText(true);
+	    navigationLabel.setPrefWidth(150); 
 
 		navigationAnchorPane.getChildren().add(navigationLabel);
 		AnchorPane.setTopAnchor(navigationLabel, 5.0);
