@@ -200,7 +200,10 @@ public class GenericController extends BaseController {
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
-			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN"
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN",
+			"secondSecondaryOwner","firstSecondaryOwner","primaryOwnerAIN","thirdSecondaryOwner",
+            "fourthSecondaryOwner","fifthSecondaryOwner","sixthSecondaryOwner","seventhSecondaryOwner",
+            "eighthSecondaryOwner","ninthSecondaryOwner"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
@@ -235,6 +238,10 @@ public class GenericController extends BaseController {
 		updateFlowAllowedProcess.add(FlowType.UPDATE.name());
 		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
 		updateFlowAllowedProcess.add(FlowType.FIRSTID.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENNEW.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENRENEWAL.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENLOST.name());
+		updateFlowAllowedProcess.add(FlowType.DEACTIVATE.name());
 	}
 
 	private void fillHierarchicalLevelsByLanguage() {
@@ -663,8 +670,9 @@ public class GenericController extends BaseController {
 		Label navigationLabel = new Label();
 		navigationLabel.getStyleClass().add(NAV_LABEL_CLASS);
 		navigationLabel.setText(processSpecDto.getLabel().get(ApplicationContext.applicationLanguage()));
-		navigationLabel.prefWidthProperty().bind(navigationAnchorPane.widthProperty());
-		navigationLabel.setWrapText(true);
+		navigationLabel.setStyle("-fx-font-size: 12px;");
+	    navigationLabel.setWrapText(true);
+	    navigationLabel.setPrefWidth(150); 
 
 		navigationAnchorPane.getChildren().add(navigationLabel);
 		AnchorPane.setTopAnchor(navigationLabel, 5.0);
@@ -2145,6 +2153,8 @@ public class GenericController extends BaseController {
 	}
 
 }
+
+
 
 
 

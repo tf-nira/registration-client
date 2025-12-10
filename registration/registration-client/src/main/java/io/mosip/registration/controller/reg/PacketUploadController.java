@@ -177,6 +177,19 @@ public class PacketUploadController extends BaseController implements Initializa
 	
 	private List<PacketStatusVO> uploadedPackets = new ArrayList<>();
 
+	private static final Map<String, String> PACKET_STATUS_MAP = Map.of(
+		    "N", "NEW",
+		    "U", "UPDATE",
+		    "R", "RENEWAL",
+		    "G", "FIRSTID",
+		    "L", "LOST/REPLACEMENT",
+		    "C", "BIOMETRIC_CORRECTION",
+		    "A", "ALIEN NEW",
+		    "I", "ALIEN RENEWAL",
+		    "E", "ALIEN LOST",
+		    "V", "ALIEN CANCELLATION"
+		);
+	
 	@FXML
 	private GridPane packetUploadPane;
 	
@@ -606,12 +619,8 @@ public class PacketUploadController extends BaseController implements Initializa
 			packetStatusVO.setPacketClientStatus(packet.getPacketClientStatus());
 			packetStatusVO.setPacketPath(packet.getPacketPath());
 			packetStatusVO.setPacketServerStatus(packet.getPacketServerStatus());
-			if(packet.getPacketStatus().equals("LOST")) {
-				packetStatusVO.setPacketStatus("LOST/REPLACEMENT");
-			}
-			else {
-				packetStatusVO.setPacketStatus(packet.getPacketStatus());
-			}
+			String status = PACKET_STATUS_MAP.getOrDefault(packet.getPacketStatus(), packet.getPacketStatus());
+			packetStatusVO.setPacketStatus(status);
 			packetStatusVO.setStatus(false);
 			packetStatusVO.setUploadStatus(packet.getUploadStatus());
 			packetStatusVO.setSupervisorStatus(packet.getSupervisorStatus());
@@ -785,5 +794,6 @@ public class PacketUploadController extends BaseController implements Initializa
 		}
 
 	}
+
 
 }

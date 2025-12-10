@@ -439,6 +439,10 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case RENEWAL:
 				case UPDATE:
 				case FIRSTID:
+				case ALIENNEW:
+				case ALIENRENEWAL:
+				case ALIENLOST:
+				case DEACTIVATE :
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
@@ -978,3 +982,4 @@ public class PacketHandlerController extends BaseController implements Initializ
 		return ( baseService.getMinLanguagesCount() >= 1 && baseService.getMaxLanguagesCount() > 1 );
 	}
 }
+

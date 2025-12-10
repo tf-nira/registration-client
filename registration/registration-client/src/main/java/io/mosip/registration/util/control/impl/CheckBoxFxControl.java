@@ -159,7 +159,7 @@ public class CheckBoxFxControl extends FxControl {
 				}
 			}
 			FlowType flowType = getRegistrationDTo().getFlowType();
-			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.RENEWAL) || flowType.equals(FlowType.LOST))){
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.RENEWAL) || flowType.equals(FlowType.LOST) || flowType.equals(FlowType.ALIENNEW))){
 				FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 				fxControl.selectAndSet("UGA");
 				fxControl.setData("UGA");
