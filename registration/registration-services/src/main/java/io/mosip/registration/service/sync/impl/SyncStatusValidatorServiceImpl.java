@@ -189,8 +189,7 @@ public class SyncStatusValidatorServiceImpl extends BaseService implements SyncS
 
 				if (map.get(syncControl.getSyncJobId()) != null
 						&& Integer.parseInt(map.get(syncControl.getSyncJobId())) <= getActualDays(lastSyncDate)) {
-					LOGGER.info("Sync failure detected for Job ID: {} | Configured Days: {} | Actual Days: {}",
-							syncControl.getSyncJobId(), map.get(syncControl.getSyncJobId()), getActualDays(lastSyncDate));
+					
 					syncFailureCount++;
 				}
 			}
@@ -516,4 +515,5 @@ public class SyncStatusValidatorServiceImpl extends BaseService implements SyncS
 		}
 	}
 }
+
 
