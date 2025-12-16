@@ -131,7 +131,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_TITLE = "title";
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
 	private ProcessSpecDto process;
-
+	public Node node;
 	/**
 	 * Top most Grid pane in FXML
 	 */
@@ -570,7 +570,15 @@ public class GenericController extends BaseController {
 							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
-
+							
+							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
+								FxControl fxControlValue = getFxControl(field.getId());
+								if (fxControlValue != null && fxControlValue.getNode() != null) {
+									fxControlValue.getNode().setVisible(false);
+									fxControlValue.getNode().setManaged(false); // IMPORTANT
+								}
+							}
+							
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
 								FxControl enrolmentCountry = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 								enrolmentCountry.selectAndSet("UGA");

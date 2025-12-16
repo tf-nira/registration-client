@@ -526,9 +526,7 @@ public class DateValidation extends BaseController {
 				isValid = false; // If Age is Future date, set isValid to false
 				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
-				String dateDOI = getRegistrationDTOFromSession().getDemographic("dateOfIssuance");
-				LocalDate dateOfIssuance = LocalDate.parse(dateDOI, formatter);
-				if (!(dobDate.isAfter(dateOfIssuance) && dobDate.isAfter(currentDate))) {
+				if(!dobDate.isAfter(currentDate)) {
 					isValid = false;
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.ONLY_FUTURE_DATE,
 						minDays, maxDays));
