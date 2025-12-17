@@ -330,6 +330,13 @@ public class RegistrationConstants {
 	public static final String UNABLE_SIGNATURE_ID = "applicantUnabletoSign";
 	public static final String UNABLE_INTRODUCER_SIGNATURE_ID = "introducerUnabletoSign";
 	public static final String ENROLMENT_STATUS = "enrolmentStatus";
+	public static final String BIRTH_STATUS = "applicantBirthPlace";
+	public static final String RESIDENCE_STATUS = "residenceStatus";
+	public static final String ORIGIN_STATUS = "applicantOriginPlace";
+	public static final String BIRTH_DISTRICT = "applicantPlaceOfBirthDistrict";
+	public static final String RESIDENCE_DISTRICT = "applicantPlaceOfResidenceDistrict";
+	public static final String ORIGIN_DISTRICT = "applicantPlaceOfOriginDistrict";
+	public static final String EMPLOYER_DISTRICT = "employerDistrict";
 	public static final String ALIENNEW = "ALIENNEW";
 	public static final String ALIENRENEWAL = "ALIENRENEWAL";
 	public static final String ALIENLOST= "ALIENLOST";
