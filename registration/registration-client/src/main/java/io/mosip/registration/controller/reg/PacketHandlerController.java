@@ -442,7 +442,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case ALIENNEW:
 				case ALIENRENEWAL:
 				case ALIENLOST:
-				case DEACTIVATE :
+				case DEACTIVATED :
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());

@@ -88,6 +88,7 @@ import io.mosip.kernel.biometrics.constant.OtherKey;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+
 /**
  * The implementation class of {@link PacketHandlerService} to handle the
  * registration data to create packet out of it and save the encrypted packet
@@ -209,7 +210,9 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
 		}
-		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATE)){
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
+			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
 		}
 
@@ -497,7 +500,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				case ALIENNEW: 
 				case ALIENRENEWAL:
 				case ALIENLOST :
-				case DEACTIVATE:
+				case DEACTIVATED:
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);

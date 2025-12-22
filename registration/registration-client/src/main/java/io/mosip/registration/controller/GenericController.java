@@ -240,7 +240,7 @@ public class GenericController extends BaseController {
 		updateFlowAllowedProcess.add(FlowType.ALIENNEW.name());
 		updateFlowAllowedProcess.add(FlowType.ALIENRENEWAL.name());
 		updateFlowAllowedProcess.add(FlowType.ALIENLOST.name());
-		updateFlowAllowedProcess.add(FlowType.DEACTIVATE.name());
+		updateFlowAllowedProcess.add(FlowType.DEACTIVATED.name());
 	}
 
 	private void fillHierarchicalLevelsByLanguage() {

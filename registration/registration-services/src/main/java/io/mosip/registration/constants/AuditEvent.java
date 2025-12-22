@@ -35,7 +35,7 @@ public enum AuditEvent {
 	NAV_ALIEN_NEW_REG("REG-EVT-110", USER_EVENT.getCode(), "NAV_ALIEN_NEW_REG", "Click of navigation link: Alien New Registration"),
 	NAV_UIN_UPDATE("REG-EVT-003", USER_EVENT.getCode(), "NAV_UIN_UPDATE", "Navigation link: UIN Update"),
 	NAV_AlIEN_LOST_REG("REG-EVT-011", USER_EVENT.getCode(), "NAV_AlIEN_LOST_REG", "Click of navigation link: Alien Lost Registration"),
-	NAV_DEACTIVATE("REG-EVT-012",USER_EVENT.getCode(),"NAV_DEACTIVATE","Click of navigation link: Alien Deactivate"),
+	NAV_DEACTIVATED("REG-EVT-012",USER_EVENT.getCode(),"NAV_DEACTIVATED","Click of navigation link: Alien Deactivate"),
 	NAV_APPROVE_REG("REG-EVT-004", USER_EVENT.getCode(), "NAV_APPROVE_REG", "Navigation link: Approve Registration"),
 	NAV_UPLOAD_PACKETS("REG-EVT-005", USER_EVENT.getCode(), "NAV_UPLOAD_PACKETS", "Navigation link: Upload Packets"),
 	NAV_RE_REGISTRATION("REG-EVT-006", SYSTEM_EVENT.getCode(), "NAV_RE_REGISTRATION",

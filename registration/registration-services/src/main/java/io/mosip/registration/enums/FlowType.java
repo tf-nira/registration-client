@@ -13,7 +13,7 @@ public enum FlowType {
 	ALIENNEW("AlienNew", AuditEvent.NAV_ALIEN_NEW_REG, "alienNewRoot", "A"),
     ALIENRENEWAL("AlienRenewal", AuditEvent.NAV_ALIEN_RENEW_UIN, "alienRenewalRoot", "I"),
 	ALIENLOST("AlienLost",AuditEvent.NAV_AlIEN_LOST_REG,"alienLostRoot","E"),
-    DEACTIVATE("Deactivate",AuditEvent.NAV_DEACTIVATE,"deactivateRoot","V");
+    DEACTIVATED("Deactivated",AuditEvent.NAV_DEACTIVATED,"deactivatedRoot","V");
 
     FlowType(String category, AuditEvent auditEvent, String screenId, String registrationTypeCode) {
         this.category = category;
