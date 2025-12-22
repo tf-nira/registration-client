@@ -168,6 +168,13 @@ public class CheckBoxFxControl extends FxControl {
 			if (uiFieldDTO.isSetRequired()){
 				resetValue();
 			}
+
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && flowType.equals(FlowType.ALIENNEW)) {
+				DropDownFxControl dropDownFxControl = new DropDownFxControl();
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.ENROLLMENT_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.RESIDENCE_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.EMPLOYER_DISTRICT);
+			}
 			
 			// handling other handlers
 			demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),
