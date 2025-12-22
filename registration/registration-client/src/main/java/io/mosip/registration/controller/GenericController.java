@@ -572,6 +572,14 @@ public class GenericController extends BaseController {
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
+							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
+								FxControl fxControlValue = getFxControl(field.getId());
+								if (fxControlValue != null && fxControlValue.getNode() != null) {
+									fxControlValue.getNode().setVisible(false);
+									fxControlValue.getNode().setManaged(false); // IMPORTANT
+								}
+							}
+
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
 								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 								enrolmentControl.selectAndSet("UGA");
@@ -2153,6 +2161,7 @@ public class GenericController extends BaseController {
 	}
 
 }
+
 
 
 

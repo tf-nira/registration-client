@@ -43,6 +43,13 @@ public class DropDownFxControl extends FxControl {
 	private MasterSyncService masterSyncService;
 	private MasterSyncDao masterSyncDao;
 
+	Map<String, String> statusDistrictMap = Map.of(
+             RegistrationConstants.RESIDENCE_STATUS, RegistrationConstants.RESIDENCE_DISTRICT,
+             RegistrationConstants.BIRTH_STATUS, RegistrationConstants.BIRTH_DISTRICT,
+             RegistrationConstants.ORIGIN_STATUS, RegistrationConstants.ORIGIN_DISTRICT,
+             RegistrationConstants.ENROLMENT_STATUS, RegistrationConstants.ENROLLMENT_DISTRICT
+     );
+
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
 		validation = applicationContext.getBean(Validations.class);
@@ -244,9 +251,10 @@ public class DropDownFxControl extends FxControl {
 					updateFacilitySubCategory(fcValue);
 				}
 				
-				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.ENROLMENT_STATUS)) {
-					updateEnrollmentDistrictList();
-				}
+				String districtField = statusDistrictMap.get(uiFieldDTO.getId());
+	            if (districtField != null) {
+	                handleStatusandDistrictValue(uiFieldDTO.getId(), districtField);
+	            }
 				break;
 			default:
 				Optional<GenericDto> result = getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)).stream()
@@ -259,24 +267,29 @@ public class DropDownFxControl extends FxControl {
 		}
 	}
 	
-	private void updateEnrollmentDistrictList() {
-		String resValue = null;
-		Object residenceStatus = getRegistrationDTo().getDemographics().get(RegistrationConstants.ENROLMENT_STATUS);
-        if (residenceStatus instanceof List<?>) {
-            List<?> residenceStatusList = (List<?>) residenceStatus;
-            if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) {
-                SimpleDto dto = (SimpleDto) residenceStatusList.get(0);
-                if (dto.getValue() != null) {
-                	resValue = dto.getValue().trim().toLowerCase(); // Normalize
-                }
-            }
-        }
-        if (resValue != null) {
-            FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_DISTRICT);
+	private void handleStatusandDistrictValue(String statusField, String districtField) {
+		String resValue = null; 
+		Object residenceStatus = getRegistrationDTo().getDemographics().get(statusField); 
+		if (residenceStatus instanceof List<?>) { 
+			List<?> residenceStatusList = (List<?>) residenceStatus; 
+			if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) { 
+				SimpleDto dto = (SimpleDto) residenceStatusList.get(0); 
+				if (dto.getValue() != null) { 
+					resValue = dto.getValue().trim().toLowerCase(); // Normalize } } }
+				}
+			}
+		}
+	    updateDistrictList(resValue, districtField);
+	}
+
+	public void updateDistrictList(String status, String districtField) {
+		
+        if (status != null) {
+            FxControl fxControl = getFxControl(districtField);
             String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
 
             List<GenericDto> filteredValues = masterSyncService.getFilteredFieldValues(
-                    RegistrationConstants.UGA, RegistrationConstants.DISTRICT, langCode, true, resValue);
+                    RegistrationConstants.UGA, RegistrationConstants.DISTRICT, langCode, true, status);
 
             Map<String, Object> dataList = new LinkedHashMap<>();
             dataList.put(langCode, filteredValues);
