@@ -25,6 +25,7 @@ on:
       - tf_nira_prod
       - tf-nira-dev-jar
       - tf_nira_preprod
+      - preprod_alien_print
 
 
 jobs:
