@@ -335,11 +335,10 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 				registrations = (List<LinkedHashMap<String, String>>) packetStatusResponse
 						.get(RegistrationConstants.RESPONSE);
 
-				//returning true because time sync issue occuring in packet status Reader job
 				if (registrations == null || registrations.isEmpty()) {
 					LOGGER.error("Packet status search failed with response {}", (List<LinkedHashMap<String, String>>) packetStatusResponse
 							.get(RegistrationConstants.ERRORS));
-					return true;
+					return false;
 				}
 				/* update the status of packets after sync with server */
 				try {
@@ -455,3 +454,4 @@ public class RegPacketStatusServiceImpl extends BaseService implements RegPacket
 
 
 }
+
