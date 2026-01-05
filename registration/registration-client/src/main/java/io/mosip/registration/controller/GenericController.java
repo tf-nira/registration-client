@@ -887,6 +887,17 @@ public class GenericController extends BaseController {
 											.setDisable(!refreshScreenVisibility(newScreenName));
 									tabPane.getSelectionModel().select(newValue.intValue());
 									showHideGeneralNotification(null);
+									if (newScreenName.equals("PREVIEW")) {
+										String invalidScreenName = getInvalidScreenName(tabPane);
+										if (invalidScreenName.equals(EMPTY)) {
+											notification.setVisible(false);
+											loadPreviewOrAuthScreen(tabPane, tabPane.getTabs().get(newValue.intValue()));
+											return;
+										} else {
+											tabPane.getSelectionModel().select(oldValue.intValue());
+											return;
+										}
+									}
 								} else {
 									// If "Review Details" is clicked, remain on the current tab
 									ignoreChange[0] = false;
