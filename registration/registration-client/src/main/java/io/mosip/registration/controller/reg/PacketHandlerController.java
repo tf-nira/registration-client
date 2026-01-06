@@ -469,8 +469,11 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 			//slip acknowledgement
 			String slipAckTemplateText = null;
-
-			if (registrationDTO.getProcessId().equals("NEW") || registrationDTO.getProcessId().equals("ALIENNEW")) {
+			if (registrationDTO.getProcessId().equals("ALIENNEW")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -496,7 +499,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				}
 			}
 
-			else if (registrationDTO.getProcessId().equals("RENEWAL") || registrationDTO.getProcessId().equals("FIRSTID") || registrationDTO.getProcessId().equals("ALIENRENEWAL") ){
+			else if (registrationDTO.getProcessId().equals("RENEWAL") || registrationDTO.getProcessId().equals("FIRSTID") ){
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
