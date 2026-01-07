@@ -469,8 +469,11 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 			//slip acknowledgement
 			String slipAckTemplateText = null;
-
-			if (registrationDTO.getProcessId().equals("NEW")) {
+			if (registrationDTO.getProcessId().equals("ALIENNEW")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -523,7 +526,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 
-			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST")) {
+			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST") || registrationDTO.getProcessId().equals("ALIENLOST")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 
@@ -982,4 +985,5 @@ public class PacketHandlerController extends BaseController implements Initializ
 		return ( baseService.getMinLanguagesCount() >= 1 && baseService.getMaxLanguagesCount() > 1 );
 	}
 }
+
 
