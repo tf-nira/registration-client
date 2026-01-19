@@ -41,11 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
-import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.bridj.objc.FoundationLibrary;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
@@ -98,7 +95,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import javax.imageio.ImageIO;
-import io.mosip.registration.controller.BaseController;
 
 /**
  * {@code GenericController} is to capture the demographic/demo/Biometric
@@ -201,8 +197,8 @@ public class GenericController extends BaseController {
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
 			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN",
 			"secondSecondaryOwner","firstSecondaryOwner","primaryOwnerAIN","thirdSecondaryOwner",
-            "fourthSecondaryOwner","fifthSecondaryOwner","sixthSecondaryOwner","seventhSecondaryOwner",
-            "eighthSecondaryOwner","ninthSecondaryOwner"
+			"fourthSecondaryOwner","fifthSecondaryOwner","sixthSecondaryOwner","seventhSecondaryOwner",
+			"eighthSecondaryOwner","ninthSecondaryOwner"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
@@ -329,8 +325,22 @@ public class GenericController extends BaseController {
 						Platform.runLater(() -> {
 							boolean isValid = false;
 							try {
-								isValid = pridValidatorImpl.validateId(textField.getText());
-							} catch (InvalidIDException invalidIDException) {
+								String preId = textField.getText();
+
+								if (preId == null) {
+									isValid = false;
+								} else {
+									String valueToValidate;
+
+									if (preId.length() == 18) {
+										valueToValidate = preId.substring(4);
+									} else {
+										valueToValidate = preId;
+									}
+
+									isValid = pridValidatorImpl.validateId(valueToValidate);
+								}
+							} catch (InvalidIDException e) {
 								isValid = false;
 							}
 
@@ -567,10 +577,10 @@ public class GenericController extends BaseController {
 //kind of supporting data
 							FlowType flowType = getRegistrationDTOFromSession().getFlowType();
 							Object sessionValue = getRegistrationDTOFromSession().getDemographics().get(field.getId());
-							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
-							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
-							              ? sessionValue : demographicsCopy.get(field.getId());
-							
+							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null &&
+									!((SimpleDto) sessionValue).getValue().toString().isEmpty())
+									? sessionValue : demographicsCopy.get(field.getId());
+
 							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
 								FxControl fxControlValue = getFxControl(field.getId());
 								if (fxControlValue != null && fxControlValue.getNode() != null) {
@@ -578,20 +588,20 @@ public class GenericController extends BaseController {
 									fxControlValue.getNode().setManaged(false); // IMPORTANT
 								}
 							}
-							
+
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
 								FxControl enrolmentCountry = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 								enrolmentCountry.selectAndSet("UGA");
 								enrolmentCountry.setData("UGA");
 								enrolmentCountry.getNode().setDisable(true);
 							}
-							
+
 							if (flowType.equals(FlowType.UPDATE) && data != null) {
-							    fxControl.selectAndSet(data);
-							    fxControl.setData(data);
+								fxControl.selectAndSet(data);
+								fxControl.setData(data);
 							} else if(!flowType.equals(FlowType.UPDATE) && !field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT) && !field.getId().equalsIgnoreCase(RegistrationConstants.ENROLLMENT_COUNTRY)){
 								fxControl.selectAndSet(data);
-							    fxControl.setData(data);
+								fxControl.setData(data);
 							}
 							break;
 					}
@@ -678,8 +688,8 @@ public class GenericController extends BaseController {
 		navigationLabel.getStyleClass().add(NAV_LABEL_CLASS);
 		navigationLabel.setText(processSpecDto.getLabel().get(ApplicationContext.applicationLanguage()));
 		navigationLabel.setStyle("-fx-font-size: 12px;");
-	    navigationLabel.setWrapText(true);
-	    navigationLabel.setPrefWidth(150); 
+		navigationLabel.setWrapText(true);
+		navigationLabel.setPrefWidth(150);
 
 		navigationAnchorPane.getChildren().add(navigationLabel);
 		AnchorPane.setTopAnchor(navigationLabel, 5.0);
@@ -887,17 +897,6 @@ public class GenericController extends BaseController {
 											.setDisable(!refreshScreenVisibility(newScreenName));
 									tabPane.getSelectionModel().select(newValue.intValue());
 									showHideGeneralNotification(null);
-									if (newScreenName.equals("PREVIEW")) {
-										String invalidScreenName = getInvalidScreenName(tabPane);
-										if (invalidScreenName.equals(EMPTY)) {
-											notification.setVisible(false);
-											loadPreviewOrAuthScreen(tabPane, tabPane.getTabs().get(newValue.intValue()));
-											return;
-										} else {
-											tabPane.getSelectionModel().select(oldValue.intValue());
-											return;
-										}
-									}
 								} else {
 									// If "Review Details" is clicked, remain on the current tab
 									ignoreChange[0] = false;
@@ -1237,34 +1236,34 @@ public class GenericController extends BaseController {
 					}
 
 					groupFlowPane.add(label, 0, 0, 3, 1);
-					
+
 					if (groupEntry.getKey().equals(RegistrationConstants.DECLARATION)) {
-					    Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
-					    declarationHeading.getStyleClass().add("demoGraphicCustomLabel");
-					    declarationHeading.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
-					    groupFlowPane.add(declarationHeading, 0, 0, 3, 1);
+						Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
+						declarationHeading.getStyleClass().add("demoGraphicCustomLabel");
+						declarationHeading.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
+						groupFlowPane.add(declarationHeading, 0, 0, 3, 1);
 
-					    boolean isDeclarationAdded = false;
-					    for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
-					        if ("declarationCheckBox".equals(fieldDTO.getId()) && !isDeclarationAdded) {
-					            String declarationText = fieldDTO.getLabel().get(RegistrationConstants.LANG);
-					            CheckBox declarationCheckBox = new CheckBox();
-					            Label declarationLabel = new Label(declarationText);
-					            declarationLabel.setWrapText(true);
-					            declarationLabel.setTextAlignment(TextAlignment.JUSTIFY);
-					            declarationLabel.setMaxWidth(800);
+						boolean isDeclarationAdded = false;
+						for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
+							if ("declarationCheckBox".equals(fieldDTO.getId()) && !isDeclarationAdded) {
+								String declarationText = fieldDTO.getLabel().get(RegistrationConstants.LANG);
+								CheckBox declarationCheckBox = new CheckBox();
+								Label declarationLabel = new Label(declarationText);
+								declarationLabel.setWrapText(true);
+								declarationLabel.setTextAlignment(TextAlignment.JUSTIFY);
+								declarationLabel.setMaxWidth(800);
 
-					            // Put checkbox and label in an HBox
-					            HBox checkboxContainer = new HBox(10);
-					            checkboxContainer.setAlignment(Pos.TOP_LEFT);
-					            checkboxContainer.setPrefWidth(Double.MAX_VALUE);
-					            HBox.setHgrow(declarationLabel, Priority.ALWAYS);
+								// Put checkbox and label in an HBox
+								HBox checkboxContainer = new HBox(10);
+								checkboxContainer.setAlignment(Pos.TOP_LEFT);
+								checkboxContainer.setPrefWidth(Double.MAX_VALUE);
+								HBox.setHgrow(declarationLabel, Priority.ALWAYS);
 
-					            checkboxContainer.getChildren().addAll(declarationCheckBox, declarationLabel);
-					            groupFlowPane.add(checkboxContainer, 0, 1, 3, 1);
-					            isDeclarationAdded = true;
-					        }
-					    }
+								checkboxContainer.getChildren().addAll(declarationCheckBox, declarationLabel);
+								groupFlowPane.add(checkboxContainer, 0, 1, 3, 1);
+								isDeclarationAdded = true;
+							}
+						}
 					}
 				}
 				int fieldIndex = 0;
@@ -1442,38 +1441,38 @@ public class GenericController extends BaseController {
 	 * @return
 	 */
 	public PRNVerificationResponse verifyPRN(final String prnText, final String processFlow, final String regId, final String replaceTypeCode) {
-	    PrnMainResponseWrapperDTO<?> responseWrapper = prnService.checkPRNStatus(prnText);
+		PrnMainResponseWrapperDTO<?> responseWrapper = prnService.checkPRNStatus(prnText);
 		paymentCheck=true;
-	    if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
-	        return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
-	    }
+		if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
+			return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
+		}
 
-	    if (responseWrapper == null) {
-	        return new PRNVerificationResponse(false, "Verification failed: Internal Server Error");
-	    }
+		if (responseWrapper == null) {
+			return new PRNVerificationResponse(false, "Verification failed: Internal Server Error");
+		}
 
-	    CheckPRNStatusResponseDTO responseDTO = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNStatusResponseDTO.class);
-
-	   
-	    // Validate process flow
-	    if (!processFlow.equalsIgnoreCase(responseDTO.getProcessFlowPaidFor())) {
-	        return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s use case", processFlow));
-	    }
-
-	    // Validate replaceTypeCode if provided	    
-	    if ("LOST".equals(processFlow) && replaceTypeCode != null &&
-	            (responseDTO.getSubServiceTypePaidFor() == null || 
-	            !replaceTypeCode.equalsIgnoreCase(responseDTO.getSubServiceTypePaidFor()))) {
-	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't for replacement type selected.");
-	    }
-	    
-	    // Validate PRN status
-	    if (!statusCode.equalsIgnoreCase(responseDTO.getStatusCode())) {
-	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't paid");
-	    }
+		CheckPRNStatusResponseDTO responseDTO = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNStatusResponseDTO.class);
 
 
-	    // Check transaction logs for PRN
+		// Validate process flow
+		if (!processFlow.equalsIgnoreCase(responseDTO.getProcessFlowPaidFor())) {
+			return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s use case", processFlow));
+		}
+
+		// Validate replaceTypeCode if provided
+		if ("LOST".equals(processFlow) && replaceTypeCode != null &&
+				(responseDTO.getSubServiceTypePaidFor() == null ||
+						!replaceTypeCode.equalsIgnoreCase(responseDTO.getSubServiceTypePaidFor()))) {
+			return new PRNVerificationResponse(false, "Verification failed: PRN isn't for replacement type selected.");
+		}
+
+		// Validate PRN status
+		if (!statusCode.equalsIgnoreCase(responseDTO.getStatusCode())) {
+			return new PRNVerificationResponse(false, "Verification failed: PRN isn't paid");
+		}
+
+
+		// Check transaction logs for PRN
 	    /*Boolean prnCheck = checkPrnInTranscLogs(prnText, regId).isValid();
 	    if (prnCheck == null) {
 	        return new PRNVerificationResponse(false, "Verification failed: Unable to verify PRN logs.");
@@ -1483,7 +1482,7 @@ public class GenericController extends BaseController {
 	        return new PRNVerificationResponse(false, "Verification failed: PRN already used.");
 	    }*/
 
-	    return new PRNVerificationResponse(true, "PRN validation is Successful. Continue with Application");
+		return new PRNVerificationResponse(true, "PRN validation is Successful. Continue with Application");
 	}
 
 	/**
@@ -1495,28 +1494,28 @@ public class GenericController extends BaseController {
 	 * @return
 	 */
 	private PRNVerificationResponse checkPrnInTranscLogs(final String prnText, final String regId) {
-	    PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO> responseWrapper = prnService.checkPrnInTransLogs(prnText);
+		PrnMainResponseWrapperDTO<CheckPRNInTransLogsResponseDTO> responseWrapper = prnService.checkPrnInTransLogs(prnText);
 
-	    if (responseWrapper == null || (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty())) {
-	    	return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
-	    }
+		if (responseWrapper == null || (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty())) {
+			return new PRNVerificationResponse(false, "Verification failed: " + responseWrapper.getErrors().get(0).getMessage());
+		}
 
-	    //CheckPRNInTransLogsResponseDTO logsResponse = responseWrapper.getResponse();
-	    CheckPRNInTransLogsResponseDTO logsResponse = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNInTransLogsResponseDTO.class);
+		//CheckPRNInTransLogsResponseDTO logsResponse = responseWrapper.getResponse();
+		CheckPRNInTransLogsResponseDTO logsResponse = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNInTransLogsResponseDTO.class);
 
-	    if (logsResponse != null) {
-	        if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
-	            if (regId.equals(logsResponse.getRegIdTagged())) {
-	                return new PRNVerificationResponse(false, "PRN matches the current regId.");
-	            } else {
-	                return new PRNVerificationResponse(false, "PRN already used");
-	            }
-	        }
-	    } else {
-	        return new PRNVerificationResponse(false, "Transaction logs response is empty.");
-	    }
+		if (logsResponse != null) {
+			if (logsResponse.isPresentInLogs() && logsResponse.getRegIdTagged() != null) {
+				if (regId.equals(logsResponse.getRegIdTagged())) {
+					return new PRNVerificationResponse(false, "PRN matches the current regId.");
+				} else {
+					return new PRNVerificationResponse(false, "PRN already used");
+				}
+			}
+		} else {
+			return new PRNVerificationResponse(false, "Transaction logs response is empty.");
+		}
 
-	    return new PRNVerificationResponse(false, "PRN is not consumed.");
+		return new PRNVerificationResponse(false, "PRN is not consumed.");
 	}
 
 
@@ -1589,77 +1588,77 @@ public class GenericController extends BaseController {
 	 * @param parentGridPane
 	 */
 	private void handlePRNVerification(String prnText, Node node, String processSpecFlow, String registrationId, FxControl fxControl, GridPane parentGridPane) {
-	    showLoadingPRNIndicator(node);
+		showLoadingPRNIndicator(node);
 
-	    new Thread(() -> {
-	        try {
-	            Thread.sleep(3000);
+		new Thread(() -> {
+			try {
+				Thread.sleep(3000);
 
-	            // Initialize with a default failure response to avoid NPE
-	            PRNVerificationResponse verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
+				// Initialize with a default failure response to avoid NPE
+				PRNVerificationResponse verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
 
-	            if ("LOST".equals(processSpecFlow)) {
-	                Node rootNode = node.getScene().getRoot();
-	                List<ComboBox<?>> comboBoxes = findAllComboBoxes(rootNode);
-	                
-	                // Retrieve Code of replacement type selected
-	                for (ComboBox<?> comboBox : comboBoxes) {
-	                	if("userServiceTypeReplacement".equals(comboBox.getId())) {
-	                		GenericDto selectedValue = (GenericDto)comboBox.getValue();
-		                    verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, selectedValue.getCode());
-		                    if (verificationResponse == null) {
-		                        verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
-		                    }
-	                	}
-	                }
+				if ("LOST".equals(processSpecFlow)) {
+					Node rootNode = node.getScene().getRoot();
+					List<ComboBox<?>> comboBoxes = findAllComboBoxes(rootNode);
 
-	            } else {
-	                verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, null);
-	                if (verificationResponse == null) {
-	                    verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
-	                }
-	            }
+					// Retrieve Code of replacement type selected
+					for (ComboBox<?> comboBox : comboBoxes) {
+						if("userServiceTypeReplacement".equals(comboBox.getId())) {
+							GenericDto selectedValue = (GenericDto)comboBox.getValue();
+							verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, selectedValue.getCode());
+							if (verificationResponse == null) {
+								verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
+							}
+						}
+					}
 
-	            final PRNVerificationResponse finalVerificationResponse = verificationResponse;
-	            boolean isValid = finalVerificationResponse.isValid();
+				} else {
+					verificationResponse = verifyPRN(prnText, processSpecFlow, registrationId, null);
+					if (verificationResponse == null) {
+						verificationResponse = new PRNVerificationResponse(false, "PRN Verification failed.");
+					}
+				}
+
+				final PRNVerificationResponse finalVerificationResponse = verificationResponse;
+				boolean isValid = finalVerificationResponse.isValid();
 				isPrnValid=isValid;
 
-	            Platform.runLater(() -> {
-	                removeLoadingPRNIndicator(node);
+				Platform.runLater(() -> {
+					removeLoadingPRNIndicator(node);
 
-	                Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
-	 
+					Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
 
-	                if (isValid) {
-	                    PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
-	                    showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
-	                } else {
-	                    showPaymentValidationPopup(parentGridPane, finalVerificationResponse.getMessage(), false);
-	                }
-	            });
 
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-	    }).start();
+					if (isValid) {
+						PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
+						showPaymentValidationPopup(parentGridPane, consumeResponse.getMessage(), true);
+					} else {
+						showPaymentValidationPopup(parentGridPane, finalVerificationResponse.getMessage(), false);
+					}
+				});
+
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
-	
-	public List<ComboBox<?>> findAllComboBoxes(Node node) {
-	    List<ComboBox<?>> comboBoxes = new ArrayList<>();
-	    
-	    // If the node is a container (like Parent), recursively check its children
-	    if (node instanceof Parent) {
-	        for (Node child : ((Parent) node).getChildrenUnmodifiable()) {
-	            comboBoxes.addAll(findAllComboBoxes(child));  // Recursive call to find ComboBoxes in child nodes
-	        }
-	    }
 
-	    // If the node is a ComboBox, add it to the list
-	    if (node instanceof ComboBox) {
-	        comboBoxes.add((ComboBox<?>) node);
-	    }
-	    
-	    return comboBoxes;
+	public List<ComboBox<?>> findAllComboBoxes(Node node) {
+		List<ComboBox<?>> comboBoxes = new ArrayList<>();
+
+		// If the node is a container (like Parent), recursively check its children
+		if (node instanceof Parent) {
+			for (Node child : ((Parent) node).getChildrenUnmodifiable()) {
+				comboBoxes.addAll(findAllComboBoxes(child));  // Recursive call to find ComboBoxes in child nodes
+			}
+		}
+
+		// If the node is a ComboBox, add it to the list
+		if (node instanceof ComboBox) {
+			comboBoxes.add((ComboBox<?>) node);
+		}
+
+		return comboBoxes;
 	}
 
 
@@ -1938,60 +1937,60 @@ public class GenericController extends BaseController {
 								}
 
 								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-								    boolean check1 = fxControl.isFieldDefaultValue(field);
-								    boolean check2 = fxControl.isFieldDefaultValue2(field);
+									boolean check1 = fxControl.isFieldDefaultValue(field);
+									boolean check2 = fxControl.isFieldDefaultValue2(field);
 
-								    Set<String> copCat = Set.of(
-								        "familyInformationCat"
-								    );
+									Set<String> copCat = Set.of(
+											"familyInformationCat"
+									);
 
-								    // Get demographics list
-								    Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
-								 
-								    String dateOfBirthStr = null;
+									// Get demographics list
+									Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
 
-								    Object dobObj = demographics.get("dateOfBirthCop");
+									String dateOfBirthStr = null;
 
-								    if (dobObj instanceof String) {
-								        dateOfBirthStr = (String) dobObj;
-								    } else if (dobObj instanceof List<?>) {
-								        List<?> dobList = (List<?>) dobObj;
-								        if (!dobList.isEmpty() && dobList.get(0) instanceof SimpleDto) {
-								            dateOfBirthStr = ((SimpleDto) dobList.get(0)).getValue();
-								        }
-								    }
+									Object dobObj = demographics.get("dateOfBirthCop");
 
-								    int applicantAgeCop = 0;
-								    if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
-								        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-								        LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr, formatter);
-								        applicantAgeCop = Period.between(dateOfBirth, LocalDate.now()).getYears();
-								    }
-								    
-							        String citizenshipTypeCatValue = demographics.get("citizenshipTypeCat") != null ?
-							                String.valueOf(demographics.get("citizenshipTypeCat")) : "N";
-								    // Check if any copCat field has value "Y"
-							        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
-							        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
-							        
-								    if (check1) {
-								        fxControl.selectAndSet("Y");
-								        fxControl.getNode().setDisable(true);
-								    } else if (check2) {
-								        fxControl.selectAndSet("N");
-								        if (fxControl != null && !anyCopCatFieldHasY) {
-								            if ("Y".equals(citizenshipTypeCatValue) && applicantAgeCop >= 16) {
-								                fxControl.getNode().setDisable(false); // Enable - allow change
-								            } else {
-								                fxControl.getNode().setDisable(true);  // Disable - not allowed to change
-								            }
-								        } else {
-								            fxControl.getNode().setDisable(false);
-								        }
-								    } else {
-								        fxControl.selectAndSet("N");
-								        fxControl.getNode().setDisable(false);
-								    }
+									if (dobObj instanceof String) {
+										dateOfBirthStr = (String) dobObj;
+									} else if (dobObj instanceof List<?>) {
+										List<?> dobList = (List<?>) dobObj;
+										if (!dobList.isEmpty() && dobList.get(0) instanceof SimpleDto) {
+											dateOfBirthStr = ((SimpleDto) dobList.get(0)).getValue();
+										}
+									}
+
+									int applicantAgeCop = 0;
+									if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+										DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+										LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr, formatter);
+										applicantAgeCop = Period.between(dateOfBirth, LocalDate.now()).getYears();
+									}
+
+									String citizenshipTypeCatValue = demographics.get("citizenshipTypeCat") != null ?
+											String.valueOf(demographics.get("citizenshipTypeCat")) : "N";
+									// Check if any copCat field has value "Y"
+									boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+											.anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+
+									if (check1) {
+										fxControl.selectAndSet("Y");
+										fxControl.getNode().setDisable(true);
+									} else if (check2) {
+										fxControl.selectAndSet("N");
+										if (fxControl != null && !anyCopCatFieldHasY) {
+											if ("Y".equals(citizenshipTypeCatValue) && applicantAgeCop >= 16) {
+												fxControl.getNode().setDisable(false); // Enable - allow change
+											} else {
+												fxControl.getNode().setDisable(true);  // Disable - not allowed to change
+											}
+										} else {
+											fxControl.getNode().setDisable(false);
+										}
+									} else {
+										fxControl.selectAndSet("N");
+										fxControl.getNode().setDisable(false);
+									}
 								}
 						}
 					}
@@ -1999,25 +1998,64 @@ public class GenericController extends BaseController {
 			}
 		}
 		else{
-			for (UiScreenDTO screenDTO : orderedScreens.values()) {
-				for (UiFieldDTO field : screenDTO.getFields()) {
-					FxControl fxControl = getFxControl(field.getId());
-					Set<String> excludedFields = Set.of(
-							"inDepthCitizenshipVerification",
-							"enrollmentOfficerComment",
-							"PRNId",
-							"enrolmentStatus",
-							"enrolmentCountry",
-							"applicantPlaceOfEnrolmentDistrict",
-							"applicantPlaceOfEnrolmentCounty",
-							"applicantPlaceOfEnrolmentSubCounty",
-							"applicantPlaceOfEnrolmentParish",
-							"applicantPlaceOfEnrolmentVillage",
-							"sameAsPlaceOfResidenceCheckBoxEnrolment"
-					);
+			// Check if userServiceType is OpenCRVS to enable fields
+			Object userServiceType = getRegistrationDTOFromSession().getDemographics().get("userServiceType");
+			boolean isOpenCRVS = false;
 
-					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
-						fxControl.getNode().setDisable(true);
+			if (userServiceType != null) {
+				@SuppressWarnings("unchecked")
+				List<SimpleDto> userServiceList = (List<SimpleDto>) userServiceType;
+				if (!userServiceList.isEmpty() && "OpenCRVS".equals(userServiceList.get(0).getValue())) {
+					isOpenCRVS = true;
+				}
+			}
+
+			if (isOpenCRVS) {
+				LOGGER.info("Enabling fields for NEW flow after pre-registration fetch completed successfully");
+
+				try {
+					// Enable fields in screens with order 2 (typically demographic details)
+					for (UiScreenDTO screenDTO : orderedScreens.values()) {
+						if (screenDTO.getOrder() == 2) {
+							for (UiFieldDTO field : screenDTO.getFields()) {
+								FxControl fxControl = getFxControl(field.getId());
+								if (fxControl != null && fxControl.getNode() != null && !(fxControl instanceof TitleFxControl)) {
+									// Enable the field only if it's not a system field, is required, and is empty
+									if (field.isRequired() && isFieldEmpty(fxControl)|| !fxControl.canContinue()) {
+										fxControl.getNode().setDisable(false);
+										LOGGER.debug("Enabled empty required field after pre-reg fetch: {}", field.getId());
+									} else {
+										fxControl.getNode().setDisable(true);
+										LOGGER.debug("Kept field disabled (not required or not empty) after pre-reg fetch: {}", field.getId());
+									}
+								}
+							}
+						}
+					}
+				} catch (Exception e) {
+					LOGGER.error("Error enabling fields for NEW flow after pre-registration fetch", e);
+				}
+			} else {
+				for (UiScreenDTO screenDTO : orderedScreens.values()) {
+					for (UiFieldDTO field : screenDTO.getFields()) {
+						FxControl fxControl = getFxControl(field.getId());
+						Set<String> excludedFields = Set.of(
+								"inDepthCitizenshipVerification",
+								"enrollmentOfficerComment",
+								"PRNId",
+								"enrolmentStatus",
+								"enrolmentCountry",
+								"applicantPlaceOfEnrolmentDistrict",
+								"applicantPlaceOfEnrolmentCounty",
+								"applicantPlaceOfEnrolmentSubCounty",
+								"applicantPlaceOfEnrolmentParish",
+								"applicantPlaceOfEnrolmentVillage",
+								"sameAsPlaceOfResidenceCheckBoxEnrolment"
+						);
+
+						if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
+							fxControl.getNode().setDisable(true);
+						}
 					}
 				}
 			}
@@ -2083,51 +2121,51 @@ public class GenericController extends BaseController {
 	}
 
 	public String validateNin(String fieldId, String value) {
-	    if (familyRoles.contains(fieldId)) {
-	        initNinMap();
+		if (familyRoles.contains(fieldId)) {
+			initNinMap();
 
-	        String declarant = null;
-	        if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
-	            Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
-	            if (declarantObj instanceof List<?>) {
-	                List<?> declarantList = (List<?>) declarantObj;
-	                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
-	                    SimpleDto dto = (SimpleDto) declarantList.get(0);
-	                    if (dto.getValue() != null) {
-	                        declarant = dto.getValue().trim().toLowerCase(); // Normalize
-	                    }
-	                }
-	            }
-	        }
+			String declarant = null;
+			if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+				Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
+				if (declarantObj instanceof List<?>) {
+					List<?> declarantList = (List<?>) declarantObj;
+					if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+						SimpleDto dto = (SimpleDto) declarantList.get(0);
+						if (dto.getValue() != null) {
+							declarant = dto.getValue().trim().toLowerCase(); // Normalize
+						}
+					}
+				}
+			}
 
-	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
-	            String key = entry.getKey();
-	            String ninValue = entry.getValue();
+			for (Entry<String, String> entry : ninMap.entrySet()) {
+				String key = entry.getKey();
+				String ninValue = entry.getValue();
 
-	            if (key.equals(fieldId) || ninValue.isEmpty())
-	            	continue;
+				if (key.equals(fieldId) || ninValue.isEmpty())
+					continue;
 
-	            if (value.equals(ninValue)) {
-	                if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || 
-	                    "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
-	                    
-	                    boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
-	                                             ("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+				if (value.equals(ninValue)) {
+					if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) ||
+							"guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
 
-	                    boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) || 
-	                                             ("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+						boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+								("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
 
-	                    boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) || 
-	                                                    ("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
-	                    if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
-	                        continue;
-	                    }
-	                }
-	                return key; // Duplicate NIN found
-	            }
-	        }
-	    }
-	    return null; // No duplicate found
+						boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+								("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+						boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+								("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
+						if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
+							continue;
+						}
+					}
+					return key; // Duplicate NIN found
+				}
+			}
+		}
+		return null; // No duplicate found
 	}
 
 	/*
@@ -2169,6 +2207,52 @@ public class GenericController extends BaseController {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH + getRegistrationDTOFromSession().getRegistrationId());
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
 	}
+
+	/**
+	 * Checks if a field is empty based on its control type
+	 * @param fxControl the FxControl to check
+	 * @return true if the field is empty, false otherwise
+	 */
+	private boolean isFieldEmpty(FxControl fxControl) {
+		try {
+			Object data = fxControl.getData();
+
+			if (data == null) {
+				return true;
+			}
+
+			if (data instanceof String) {
+				return ((String) data).trim().isEmpty();
+			}
+
+			if (data instanceof List<?>) {
+				List<?> dataList = (List<?>) data;
+				if (dataList.isEmpty()) {
+					return true;
+				}
+
+				// Check if all SimpleDto values are empty
+				for (Object item : dataList) {
+					if (item instanceof SimpleDto) {
+						SimpleDto simpleDto = (SimpleDto) item;
+						if (simpleDto.getValue() != null && !simpleDto.getValue().trim().isEmpty()) {
+							return false;
+						}
+					} else if (item != null && !item.toString().trim().isEmpty()) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			return data.toString().trim().isEmpty();
+
+		} catch (Exception e) {
+			LOGGER.debug("Error checking if field is empty for {}: {}", fxControl.getUiSchemaDTO().getId(), e.getMessage());
+			return true; // Assume empty if we can't determine
+		}
+	}
+
 
 }
 
