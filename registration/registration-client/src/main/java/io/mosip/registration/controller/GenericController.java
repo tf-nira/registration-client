@@ -1008,6 +1008,7 @@ public class GenericController extends BaseController {
 		boolean isValid = true;
 		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
 		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
+		boolean isphoneNoFilled = false;
 
 		if (result.isPresent()) {
 
@@ -1029,6 +1030,19 @@ public class GenericController extends BaseController {
 						if( !field.getId().trim().startsWith("isError") && !field.getId().trim().startsWith("changeReason"))
 							isNotificationOfChangeFilled = true;
 					}
+				}
+				
+
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+					String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.LOCAL_COUNTRYCODE);
+				    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
+				    String localPhoneValue = getStringTypeValue(RegistrationConstants.LOCAL_PHONE);
+				    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
+				    if(localPhoneValue != null && localCountryCodeList != null) {
+				    	isphoneNoFilled = true;
+				    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
+				    	isphoneNoFilled = true;
+				    }		
 				}
 
 				// Validate PRN differently
@@ -1061,7 +1075,7 @@ public class GenericController extends BaseController {
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
 			// Only show the general notification if the screen is "Demographic Details"
-			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
+			if (screenName != null && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
 				showHideGeneralNotification("Please Note: Maiden name and any Previous names will not appear on the card");
 
 			}
@@ -1072,7 +1086,30 @@ public class GenericController extends BaseController {
 			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.",null);
 			return false;
 		}
+		
+		if (!isphoneNoFilled && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && RegistrationConstants.ALIENNEW.equals(process.getId()) ) {
+			showHideErrorNotification("Any one of the (Local or non-Local) countrycode and phone pair is required!.",null);
+			return false;
+		}
 		return isValid;
+	}
+
+	private String getStringTypeValue(String fieldId) {
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+	    String fieldValue = (String) demographics.get(fieldId);
+		return fieldValue;
+	}
+
+	private String getSimpleTypeValue(String fieldId) {
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
+		if (fieldDataList != null) {
+			SimpleDto fieldData = fieldDataList.get(0);
+			return fieldData.getValue();
+		}
+		return null;
 	}
 
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
