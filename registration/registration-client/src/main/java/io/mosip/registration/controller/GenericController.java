@@ -330,14 +330,13 @@ public class GenericController extends BaseController {
 							boolean isValid = false;
 							try {
 								String preId = textField.getText();
-
-								if (preId == null) {
+								if (preId == null || preId.isEmpty()) {
 									isValid = false;
 								} else {
 									String valueToValidate;
 
-									if (preId.length() == 18) {
-										valueToValidate = preId.substring(4);
+									if (preId.contains("-")) {
+										valueToValidate = preId.split("-")[1];
 									} else {
 										valueToValidate = preId;
 									}
