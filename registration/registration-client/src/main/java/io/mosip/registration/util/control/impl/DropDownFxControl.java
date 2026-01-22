@@ -49,6 +49,29 @@ public class DropDownFxControl extends FxControl {
              RegistrationConstants.ORIGIN_STATUS, RegistrationConstants.ORIGIN_DISTRICT,
              RegistrationConstants.ENROLMENT_STATUS, RegistrationConstants.ENROLLMENT_DISTRICT
      );
+	 
+	 private static final List<String> SECTION_FIRST_FIELDS = List.of(
+			 RegistrationConstants.EMPLOYER_NAME,
+		     RegistrationConstants.NAME_OF_SCHOOL,
+		     RegistrationConstants.MARITAL_STATUS,
+		     RegistrationConstants.OTHERSPOUSE_ALIEN,
+		     RegistrationConstants.OTHERCHILD
+	);
+	 
+	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
+		    RegistrationConstants.STUDENT_PASS,
+		    Set.of(RegistrationConstants.NAME_OF_SCHOOL),
+		    RegistrationConstants.DP,
+		    Set.of(),
+		    "DEFAULT",
+		     Set.of(
+		        RegistrationConstants.EMPLOYER_NAME,
+		        RegistrationConstants.MARITAL_STATUS,
+		        RegistrationConstants.OTHERSPOUSE_ALIEN,
+		        RegistrationConstants.OTHERCHILD
+		     )
+	);
+
 
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
@@ -243,12 +266,13 @@ public class DropDownFxControl extends FxControl {
 			            if (!facilityTypeList.isEmpty() && facilityTypeList.get(0) instanceof SimpleDto) {
 			                SimpleDto dto = (SimpleDto) facilityTypeList.get(0);
 			                if (dto.getValue() != null) {
-			                	fcValue = dto.getValue().trim().toLowerCase(); // Normalize
+			                	fcValue = dto.getValue().trim(); // Normalize
 			                }
 			            }
 			        }
 					updateFacilityCategory(fcValue);
 					updateFacilitySubCategory(fcValue);
+					handleEmployeeandSchoolSection(fcValue);
 				}
 				
 				String districtField = statusDistrictMap.get(uiFieldDTO.getId());
@@ -266,6 +290,45 @@ public class DropDownFxControl extends FxControl {
 				}
 				break;
 		}
+	}
+
+	private void handleEmployeeandSchoolSection(String fcValue) {
+	    if (fcValue == null) 
+	    	return;
+
+	    Set<String> visibleFields = VISIBILITY_SECTION
+	            .getOrDefault(fcValue, VISIBILITY_SECTION.get("DEFAULT"));
+
+	    for (String fieldId : SECTION_FIRST_FIELDS) {
+	        if (visibleFields.contains(fieldId)) {
+	            showSectionByAnyField(fieldId);
+	        } else {
+	            hideSectionByAnyField(fieldId);
+	        }
+	    }
+	}
+
+
+	private void hideSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(false);
+	            section.setManaged(false);
+	        }
+	    }
+	}
+
+	private void showSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(true);
+	            section.setManaged(true);
+	        }
+	    }
 	}
 
 	private void handleStatusandDistrictValue(String statusField, String districtField) {
