@@ -2049,44 +2049,6 @@ public class GenericController extends BaseController {
 			}
 		}
 		else{
-			// Check if userServiceType is OpenCRVS to enable fields
-			Object userServiceType = getRegistrationDTOFromSession().getDemographics().get("userServiceType");
-			boolean isOpenCRVS = false;
-
-			if (userServiceType != null) {
-				@SuppressWarnings("unchecked")
-				List<SimpleDto> userServiceList = (List<SimpleDto>) userServiceType;
-				if (!userServiceList.isEmpty() && "OpenCRVS".equals(userServiceList.get(0).getValue())) {
-					isOpenCRVS = true;
-				}
-			}
-
-			if (isOpenCRVS) {
-				LOGGER.info("Enabling fields for NEW flow after pre-registration fetch completed successfully");
-
-				try {
-					// Enable fields in screens with order 2 (typically demographic details)
-					for (UiScreenDTO screenDTO : orderedScreens.values()) {
-						if (screenDTO.getOrder() == 2) {
-							for (UiFieldDTO field : screenDTO.getFields()) {
-								FxControl fxControl = getFxControl(field.getId());
-								if (fxControl != null && fxControl.getNode() != null && !(fxControl instanceof TitleFxControl)) {
-									// Enable the field only if it's not a system field, is required, and is empty
-									if (field.isRequired() && isFieldEmpty(fxControl)|| !fxControl.canContinue()) {
-										fxControl.getNode().setDisable(false);
-										LOGGER.debug("Enabled empty required field after pre-reg fetch: {}", field.getId());
-									} else {
-										fxControl.getNode().setDisable(true);
-										LOGGER.debug("Kept field disabled (not required or not empty) after pre-reg fetch: {}", field.getId());
-									}
-								}
-							}
-						}
-					}
-				} catch (Exception e) {
-					LOGGER.error("Error enabling fields for NEW flow after pre-registration fetch", e);
-				}
-			} else {
 				for (UiScreenDTO screenDTO : orderedScreens.values()) {
 					for (UiFieldDTO field : screenDTO.getFields()) {
 						FxControl fxControl = getFxControl(field.getId());
@@ -2107,9 +2069,17 @@ public class GenericController extends BaseController {
 						if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
 							fxControl.getNode().setDisable(true);
 						}
+
+						if (fxControl != null && fxControl.getNode() != null && !(fxControl instanceof TitleFxControl)) {
+							if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
+								fxControl.getNode().setDisable(false);
+							} else {
+								fxControl.getNode().setDisable(true);
+							}
+						}
+
 					}
 				}
-			}
 		}
 	}
 
