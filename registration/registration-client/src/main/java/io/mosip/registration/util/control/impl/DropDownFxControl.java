@@ -55,14 +55,16 @@ public class DropDownFxControl extends FxControl {
 		     RegistrationConstants.NAME_OF_SCHOOL,
 		     RegistrationConstants.MARITAL_STATUS,
 		     RegistrationConstants.OTHERSPOUSE_ALIEN,
-		     RegistrationConstants.OTHERCHILD
+		     RegistrationConstants.OTHERCHILD,
+			 RegistrationConstants.PRINCIPAL_OF_AIN
 	);
 	 
 	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
 		    RegistrationConstants.STUDENT_PASS,
-		    Set.of(RegistrationConstants.NAME_OF_SCHOOL),
+		    Set.of(RegistrationConstants.NAME_OF_SCHOOL,
+			       RegistrationConstants.PRINCIPAL_OF_AIN),
 		    RegistrationConstants.DP,
-		    Set.of(),
+		    Set.of(RegistrationConstants.PRINCIPAL_OF_AIN),
 		    "DEFAULT",
 		     Set.of(
 		        RegistrationConstants.EMPLOYER_NAME,

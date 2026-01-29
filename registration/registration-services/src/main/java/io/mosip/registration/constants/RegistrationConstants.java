@@ -300,6 +300,7 @@ public class RegistrationConstants {
 	public static final String OTHERSPOUSE_ALIEN = "numberOfOtherSpousesAlien";
 	public static final String OTHERCHILD = "numberOfOtherChild";
 	public static final String NAME_OF_SCHOOL = "nameOfSchool";
+	public static final String PRINCIPAL_OF_AIN = "principalOfAIN";
 	public static final String UGA = "UGA";
 	public static final String INSIDE_UGANDA = "In Uganda";
 	public static final String OUTSIDE_UGANDA = "Outside Uganda";
