@@ -330,8 +330,21 @@ public class GenericController extends BaseController {
 						Platform.runLater(() -> {
 							boolean isValid = false;
 							try {
-								isValid = pridValidatorImpl.validateId(textField.getText());
-							} catch (InvalidIDException invalidIDException) {
+								String preId = textField.getText();
+								if (preId == null || preId.isEmpty()) {
+									isValid = false;
+								} else {
+									String valueToValidate;
+
+									if (preId.contains("-")) {
+										valueToValidate = preId.split("-")[1];
+									} else {
+										valueToValidate = preId;
+									}
+
+									isValid = pridValidatorImpl.validateId(valueToValidate);
+								}
+							} catch (InvalidIDException e) {
 								isValid = false;
 							}
 
@@ -2020,8 +2033,17 @@ public class GenericController extends BaseController {
 					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
 						fxControl.getNode().setDisable(true);
 					}
+
+						if (fxControl != null && fxControl.getNode() != null && !(fxControl instanceof TitleFxControl)) {
+							if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
+								fxControl.getNode().setDisable(false);
+							} else {
+								fxControl.getNode().setDisable(true);
+							}
+						}
+
+					}
 				}
-			}
 		}
 	}
 
@@ -2171,12 +2193,49 @@ public class GenericController extends BaseController {
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
 	}
 
+	/**
+	 * Checks if a field is empty based on its control type
+	 * @param fxControl the FxControl to check
+	 * @return true if the field is empty, false otherwise
+	 */
+	private boolean isFieldEmpty(FxControl fxControl) {
+		try {
+			Object data = fxControl.getData();
+
+			if (data == null) {
+				return true;
+			}
+
+			if (data instanceof String) {
+				return ((String) data).trim().isEmpty();
+			}
+
+			if (data instanceof List<?>) {
+				List<?> dataList = (List<?>) data;
+				if (dataList.isEmpty()) {
+					return true;
+				}
+
+				// Check if all SimpleDto values are empty
+				for (Object item : dataList) {
+					if (item instanceof SimpleDto) {
+						SimpleDto simpleDto = (SimpleDto) item;
+						if (simpleDto.getValue() != null && !simpleDto.getValue().trim().isEmpty()) {
+							return false;
+						}
+					} else if (item != null && !item.toString().trim().isEmpty()) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			return data.toString().trim().isEmpty();
+
+		} catch (Exception e) {
+			LOGGER.debug("Error checking if field is empty for {}: {}", fxControl.getUiSchemaDTO().getId(), e.getMessage());
+			return true; // Assume empty if we can't determine
+		}
+	}
+
 }
-
-
-
-
-
-
-
-
