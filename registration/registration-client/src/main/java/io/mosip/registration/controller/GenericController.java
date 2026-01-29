@@ -9,6 +9,7 @@ import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.beans.binding.Bindings;
+import javafx.event.Event;
 import javafx.fxml.Initializable;
 
 import java.awt.Color;
@@ -34,6 +35,8 @@ import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 
@@ -2054,7 +2057,12 @@ public class GenericController extends BaseController {
 					);
 
 					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
-						fxControl.getNode().setDisable(true);
+						Node node = fxControl.getNode();
+
+						node.addEventFilter(MouseEvent.ANY, Event::consume);
+						node.addEventFilter(KeyEvent.ANY, Event::consume);
+
+						node.setOpacity(0.6);
 					}
 				}
 			}
