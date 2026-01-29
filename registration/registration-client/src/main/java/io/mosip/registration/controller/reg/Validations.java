@@ -213,13 +213,11 @@ public class Validations extends BaseController {
 		    Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
 		    String key = "";
 		    if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE)) {
-		        key = RegistrationConstants.PHONE;
+		        key = RegistrationConstants.COUNTRYCODE;
 		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2)) {
-		        key = RegistrationConstants.PHONE2;
+		        key = RegistrationConstants.COUNTRYCODE2;
 		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
 		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
-		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.NONLOCAL_PHONE)) {
-		        key = RegistrationConstants.NONLOCAL_COUNTRYCODE;
 		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.SCHOOL_PHONE)) {
 		        key = RegistrationConstants.SCHOOL_COUNTRYCODE;
 		    }
