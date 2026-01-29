@@ -2081,7 +2081,11 @@ public class GenericController extends BaseController {
 							if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
 								fxControl.getNode().setDisable(false);
 							} else {
-								fxControl.getNode().setDisable(true);
+								Node node = fxControl.getNode();
+
+								node.addEventFilter(MouseEvent.ANY, Event::consume);
+								node.addEventFilter(KeyEvent.ANY, Event::consume);
+								node.setOpacity(0.6);
 							}
 						}
 					}
