@@ -301,6 +301,9 @@ public class RegistrationConstants {
 	public static final String OTHERCHILD = "numberOfOtherChild";
 	public static final String NAME_OF_SCHOOL = "nameOfSchool";
 	public static final String PRINCIPAL_OF_AIN = "principalOfAIN";
+	public static final String AID_OF_PRINCIPAL = "applicationIDofPrincipal";
+	public static final String PRIMARY_NATIONALITY = "primaryNationality";
+	public static final String SECONDARY_NATIONALITY = "secondaryNationality";
 	public static final String UGA = "UGA";
 	public static final String INSIDE_UGANDA = "In Uganda";
 	public static final String OUTSIDE_UGANDA = "Outside Uganda";
@@ -1929,6 +1932,9 @@ public class RegistrationConstants {
 	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
 	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
 	public static final String MINOR_GUARDIAN="MINOR_GUARDIAN";
+	public static final String LOCAL_OR_NONLOCAL_ERROR_MSG="Any one of the (Local or non-Local) countrycode and phone pair is required!.";
+	public static final String AIN_OR_AID_ERROR_MSG="At least one field in the 'Linked Dependant to Principal' section must be filled.";
+	public static final String SAME_NATIONALITY_ERROR_MSG="Primary and Secondary Nationality must not be the same.";
 
 	public static final String ICONS_HBOX = "iconsHBox";
 	public static final String KEYBOARD_PANE = "keyboardPane";
