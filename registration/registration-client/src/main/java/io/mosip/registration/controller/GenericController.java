@@ -2072,7 +2072,7 @@ public class GenericController extends BaseController {
 						if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
 							if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
 								fxControl.getNode().setDisable(false);
-								fxControl.getNode().setOpacity(0.6);
+								fxControl.getNode().setOpacity(1);
 
 							} else {
 								Node node = fxControl.getNode();
