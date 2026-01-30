@@ -2070,16 +2070,10 @@ public class GenericController extends BaseController {
 						);
 
 						if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
-						  Node node = fxControl.getNode();
-
-						  node.addEventFilter(MouseEvent.ANY, Event::consume);
-						  node.addEventFilter(KeyEvent.ANY, Event::consume);
-						  node.setOpacity(0.6);
-						}
-
-						if (fxControl != null && fxControl.getNode() != null && !(fxControl instanceof TitleFxControl)) {
 							if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
 								fxControl.getNode().setDisable(false);
+								fxControl.getNode().setOpacity(1);
+
 							} else {
 								Node node = fxControl.getNode();
 
