@@ -457,7 +457,19 @@ public class DropDownFxControl extends FxControl {
 				if (uiFieldDTO.isSetRequired()){
 					resetValue();
 				}
-				
+
+				if(uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.PRIMARY_NATIONALITY) || uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.SECONDARY_NATIONALITY)) {
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					boolean nationalityCheck = genericController.validateSameNationality();
+					FxControl fxControl = getFxControl(uiFieldDTO.getId());
+					FxControl fxControl1 = getFxControl(RegistrationConstants.PRIMARY_NATIONALITY);
+					if(!nationalityCheck) {
+						fxControl.setMessage(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG);
+					} else {
+						fxControl.setMessage(null);
+					}
+				}
+
 				List<String> fieldHierarchy = List.of(
 						RegistrationConstants.ENROLLMENT_DISTRICT,
 						RegistrationConstants.ENROLLMENT_COUNTY,

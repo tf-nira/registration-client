@@ -1011,6 +1011,8 @@ public class GenericController extends BaseController {
 		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
 		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
 		boolean isphoneNoFilled = false;
+		boolean isLinkedsectionFields = false;
+		boolean nationalityCheck = false;
 
 		if (result.isPresent()) {
 
@@ -1036,15 +1038,9 @@ public class GenericController extends BaseController {
 				
 
 				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
-					String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.LOCAL_COUNTRYCODE);
-				    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
-				    String localPhoneValue = getStringTypeValue(RegistrationConstants.LOCAL_PHONE);
-				    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
-				    if(localPhoneValue != null && localCountryCodeList != null) {
-				    	isphoneNoFilled = true;
-				    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
-				    	isphoneNoFilled = true;
-				    }		
+					isphoneNoFilled = validateEitherLocalOrNonLocal();
+					isLinkedsectionFields = validateEitherAinOrAID();
+					nationalityCheck = validateSameNationality();
 				}
 
 				// Validate PRN differently
@@ -1089,11 +1085,54 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		
-		if (!isphoneNoFilled && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && RegistrationConstants.ALIENNEW.equals(process.getId()) ) {
-			showHideErrorNotification("Any one of the (Local or non-Local) countrycode and phone pair is required!.",null);
-			return false;
+		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && RegistrationConstants.ALIENNEW.equals(process.getId()) ) {
+			if(!isphoneNoFilled) {
+				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
+				return false;
+			} else if(!isLinkedsectionFields) {
+				showHideErrorNotification(RegistrationConstants.AIN_OR_AID_ERROR_MSG,null);
+				return false;
+			} else if(!nationalityCheck) {
+				showHideErrorNotification(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG,null);
+				return false;
+			}
 		}
 		return isValid;
+	}
+
+	public boolean validateSameNationality() {
+	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
+	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
+	    if (primaryNationality != null && secondaryNationality != null) {
+	        return !primaryNationality.equalsIgnoreCase(secondaryNationality);
+	    } else {
+	    	return true;
+	    }
+	}
+
+
+	private boolean validateEitherAinOrAID() {
+		boolean valid = false;
+	    String principalAIN = getStringTypeValue(RegistrationConstants.PRINCIPAL_OF_AIN);
+	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
+	    if(principalAIN != null || principleAID != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean validateEitherLocalOrNonLocal() {
+		boolean valid = false;
+		String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.COUNTRYCODE);
+	    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
+	    String localPhoneValue = getStringTypeValue(RegistrationConstants.PHONE);
+	    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
+	    if(localPhoneValue != null && localCountryCodeList != null) {
+	    	valid = true;
+	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
+	    	valid = true;
+	    }	
+	    return valid;
 	}
 
 	private String getStringTypeValue(String fieldId) {
