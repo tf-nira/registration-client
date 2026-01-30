@@ -1100,6 +1100,7 @@ public class GenericController extends BaseController {
 		return isValid;
 	}
 
+
 	public boolean validateSameNationality() {
 	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
 	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
@@ -1135,14 +1136,15 @@ public class GenericController extends BaseController {
 	    return valid;
 	}
 
-	private String getStringTypeValue(String fieldId) {
+	public String getStringTypeValue(String fieldId) {
+
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
 	    String fieldValue = (String) demographics.get(fieldId);
 		return fieldValue;
 	}
 
-	private String getSimpleTypeValue(String fieldId) {
+	public String getSimpleTypeValue(String fieldId) {
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
 		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
@@ -2114,11 +2116,7 @@ public class GenericController extends BaseController {
 								fxControl.getNode().setOpacity(1);
 
 							} else {
-								Node node = fxControl.getNode();
-
-								node.addEventFilter(MouseEvent.ANY, Event::consume);
-								node.addEventFilter(KeyEvent.ANY, Event::consume);
-								node.setOpacity(0.6);
+								fxControl.getNode().setDisable(true);
 							}
 						}
 					}
