@@ -1038,8 +1038,13 @@ public class GenericController extends BaseController {
 				
 
 				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
+					if(facilityType.equalsIgnoreCase(RegistrationConstants.DP) || facilityType.equalsIgnoreCase(RegistrationConstants.STUDENT_PASS)) {
+						isLinkedsectionFields = validateEitherAinOrAID();
+					} else {
+						isLinkedsectionFields = true;
+					}
 					isphoneNoFilled = validateEitherLocalOrNonLocal();
-					isLinkedsectionFields = validateEitherAinOrAID();
 					nationalityCheck = validateSameNationality();
 				}
 
