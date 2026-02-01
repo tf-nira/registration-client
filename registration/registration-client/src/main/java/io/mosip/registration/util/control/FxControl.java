@@ -205,7 +205,7 @@ public abstract class FxControl  {
 		                }
 		                if (isRequiredField) {
 							String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
-							if (regId.length() != 29 && fieldvalue == null) {
+							if (regId.length() != 29 && (fieldvalue == null || fieldvalue.isEmpty())) {
 								parentNode.setDisable(false);
 							}
 							if (!labelName.endsWith("*")) {
