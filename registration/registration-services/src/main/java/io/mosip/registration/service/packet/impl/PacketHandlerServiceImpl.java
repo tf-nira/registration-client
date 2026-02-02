@@ -207,7 +207,9 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
-		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATE)){
+		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
+			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
 		}
 
@@ -494,7 +496,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				case ALIENNEW: 
 				case ALIENRENEWAL:
 				case ALIENLOST :
-				case DEACTIVATE:
+				case DEACTIVATED:
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);
@@ -762,4 +764,5 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				RegistrationExceptionConstants.REG_ACK_RECEIPT_READ_ERROR.getErrorMessage());
 	}
 }
+
 
