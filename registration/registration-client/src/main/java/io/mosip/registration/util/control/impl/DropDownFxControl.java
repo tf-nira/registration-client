@@ -50,6 +50,30 @@ public class DropDownFxControl extends FxControl {
              RegistrationConstants.ENROLMENT_STATUS, RegistrationConstants.ENROLLMENT_DISTRICT
      );
 
+	private static final List<String> SECTION_FIRST_FIELDS = List.of(
+			 RegistrationConstants.EMPLOYER_NAME,
+		     RegistrationConstants.NAME_OF_SCHOOL,
+		     RegistrationConstants.MARITAL_STATUS,
+		     RegistrationConstants.OTHERSPOUSE_ALIEN,
+		     RegistrationConstants.OTHERCHILD,
+			 RegistrationConstants.PRINCIPAL_OF_AIN
+	);
+	 
+	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
+		    RegistrationConstants.STUDENT_PASS,
+		    Set.of(RegistrationConstants.NAME_OF_SCHOOL,
+			       RegistrationConstants.PRINCIPAL_OF_AIN),
+		    RegistrationConstants.DP,
+		    Set.of(RegistrationConstants.PRINCIPAL_OF_AIN),
+		    "DEFAULT",
+		     Set.of(
+		        RegistrationConstants.EMPLOYER_NAME,
+		        RegistrationConstants.MARITAL_STATUS,
+		        RegistrationConstants.OTHERSPOUSE_ALIEN,
+		        RegistrationConstants.OTHERCHILD
+		     )
+	);
+
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
 		validation = applicationContext.getBean(Validations.class);
@@ -243,7 +267,7 @@ public class DropDownFxControl extends FxControl {
 			            if (!facilityTypeList.isEmpty() && facilityTypeList.get(0) instanceof SimpleDto) {
 			                SimpleDto dto = (SimpleDto) facilityTypeList.get(0);
 			                if (dto.getValue() != null) {
-			                	fcValue = dto.getValue().trim().toLowerCase(); // Normalize
+			                	fcValue = dto.getValue().trim(); // Normalize
 			                }
 			            }
 			        }
@@ -265,6 +289,45 @@ public class DropDownFxControl extends FxControl {
 				}
 				break;
 		}
+	}
+
+	private void handleEmployeeandSchoolSection(String fcValue) {
+	    if (fcValue == null) 
+	    	return;
+
+	    Set<String> visibleFields = VISIBILITY_SECTION
+	            .getOrDefault(fcValue, VISIBILITY_SECTION.get("DEFAULT"));
+
+	    for (String fieldId : SECTION_FIRST_FIELDS) {
+	        if (visibleFields.contains(fieldId)) {
+	            showSectionByAnyField(fieldId);
+	        } else {
+	            hideSectionByAnyField(fieldId);
+	        }
+	    }
+	}
+
+
+	private void hideSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(false);
+	            section.setManaged(false);
+	        }
+	    }
+	}
+
+	private void showSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(true);
+	            section.setManaged(true);
+	        }
+	    }
 	}
 	
 	private void handleStatusandDistrictValue(String statusField, String districtField) {
@@ -390,6 +453,18 @@ public class DropDownFxControl extends FxControl {
 				//reset the value
 				if (uiFieldDTO.isSetRequired()){
 					resetValue();
+				}
+
+				if(uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.PRIMARY_NATIONALITY) || uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.SECONDARY_NATIONALITY)) {
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					boolean nationalityCheck = genericController.validateSameNationality();
+					FxControl fxControl = getFxControl(uiFieldDTO.getId());
+					FxControl fxControl1 = getFxControl(RegistrationConstants.PRIMARY_NATIONALITY);
+					if(!nationalityCheck) {
+						fxControl.setMessage(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG);
+					} else {
+						fxControl.setMessage(null);
+					}
 				}
 				
 				List<String> fieldHierarchy = List.of(
