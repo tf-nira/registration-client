@@ -273,6 +273,7 @@ public class DropDownFxControl extends FxControl {
 			        }
 					updateFacilityCategory(fcValue);
 					updateFacilitySubCategory(fcValue);
+					handleEmployeeandSchoolSection(fcValue);
 				}
 				
 				String districtField = statusDistrictMap.get(uiFieldDTO.getId());
