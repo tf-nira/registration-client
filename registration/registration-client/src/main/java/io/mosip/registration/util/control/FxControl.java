@@ -203,11 +203,11 @@ public abstract class FxControl  {
 						if(labelName == null) {
 		                	break;
 		                }
-		                if (isRequiredField) {
-							String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
-							if (regId.length() != 29 && (fieldvalue == null || fieldvalue.isEmpty())) {
+						String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
+							if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (fieldvalue == null || fieldvalue.isEmpty())) {
 								parentNode.setDisable(false);
 							}
+		                if (isRequiredField) {
 							if (!labelName.endsWith("*")) {
 		                        label.setText(labelName + " *");
 		                    }
