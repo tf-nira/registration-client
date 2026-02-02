@@ -207,21 +207,22 @@ public class Validations extends BaseController {
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 		
 		// Main Validation
-		if (fieldId.equalsIgnoreCase("phone") || fieldId.equalsIgnoreCase("phone2") || fieldId.equalsIgnoreCase("employerPhone")) {
+		if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2) || fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.NONLOCAL_PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.SCHOOL_PHONE)) {
 			GenericController generic = ClientApplication.getApplicationContext().getBean(GenericController.class);
 		    Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
 		    String key = "";
-		    if (fieldId.equalsIgnoreCase("phone")) {
-		        key = "CountryCode";
-		    } else if (fieldId.equalsIgnoreCase("phone2")) {
-		        key = "CountryCode2";
-		    } else if (fieldId.equalsIgnoreCase("employerPhone")) {
-		        key = "employerCountryCode";
+		    if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE)) {
+		        key = RegistrationConstants.COUNTRYCODE;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2)) {
+		        key = RegistrationConstants.COUNTRYCODE2;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
+		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.SCHOOL_PHONE)) {
+		        key = RegistrationConstants.SCHOOL_COUNTRYCODE;
 		    }
 		    List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get(key);
-		    System.out.println(countryCode);
 		    // If Uganda, validate first digit must be 0
-		    if (!countryCode.isEmpty() && countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")) {
+		    if (!countryCode.isEmpty() && countryCode.get(0).getValue().equalsIgnoreCase(RegistrationConstants.UGA_VALUE)) {
 		    	String number=value;
 				if (number.charAt(0) != '0') {
 					errorMessage="Mobile No. is invalid";
@@ -475,4 +476,5 @@ public class Validations extends BaseController {
 		return null;
 	}
 }
+
 
