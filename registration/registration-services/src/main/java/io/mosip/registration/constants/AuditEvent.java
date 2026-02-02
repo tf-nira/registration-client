@@ -54,7 +54,7 @@ public enum AuditEvent {
 	NAV_ALIEN_RENEW_UIN("REG-EVT-111", USER_EVENT.getCode(), "NAV_ALIEN_RENEW_UIN", "Click of navigation link: Alien Renew UIN"),
 	NAV_ALIEN_NEW_REG("REG-EVT-110", USER_EVENT.getCode(), "NAV_ALIEN_NEW_REG", "Click of navigation link: Alien New Registration"),
 	NAV_AlIEN_LOST_REG("REG-EVT-011", USER_EVENT.getCode(), "NAV_AlIEN_LOST_REG", "Click of navigation link: Alien Lost Registration"),
-	NAV_DEACTIVATE("REG-EVT-012",USER_EVENT.getCode(),"NAV_DEACTIVATE","Click of navigation link: Alien Deactivate"),
+	NAV_DEACTIVATED("REG-EVT-012",USER_EVENT.getCode(),"NAV_DEACTIVATED","Click of navigation link: Alien Deactivate"),
 
 	// Registration : Demographics Details
 	REG_DEMO_CAPTURE("REG-EVT-007", USER_EVENT.getCode(), "REG_DEMO_NEXT", "Started capturing demographic details"),
@@ -369,4 +369,5 @@ public enum AuditEvent {
 	}
 
 }
+
 
