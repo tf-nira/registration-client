@@ -2112,9 +2112,11 @@ public class GenericController extends BaseController {
 					);
 
 					if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
-						if (field.isRequired() && isFieldEmpty(fxControl) || !fxControl.canContinue()) {
+						String regId = String.valueOf(getRegistrationDTOFromSession().getPreRegistrationId());
+						if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (isFieldEmpty(fxControl) || !fxControl.canContinue())) {
 							fxControl.getNode().setDisable(false);
-						} else {
+						}
+						else{
 							fxControl.getNode().setDisable(true);
 						}
 					}

@@ -181,33 +181,44 @@ public abstract class FxControl  {
 					break;
 			}
 		}
-		
+
 		if (!uiFieldDTO.isRequired()) {
 			boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
-		    Node parentNode = this.node; // Store the node reference
-		        for (Node child : ((Pane) parentNode).getChildren()) {
-		        	if(child instanceof VBox) {
-		        		child = ((VBox) child).getChildren().get(0);
-		        	}
-		            if (child instanceof Label) {
-		                Label label = (Label) child;
-		                String labelName = label.getText();
-						if(labelName == null) {
-		                	break;
-		                }
-		                if (isRequiredField) {
-		                    if (!labelName.endsWith("*")) {
-		                        label.setText(labelName + " *");
-		                    }
-		                }
-		                else {
-		                    if (labelName.endsWith("*")) {
-		                        label.setText(labelName.substring(0, labelName.length() - 2));
-		                    }
-		                }
-		            }
-		            break;
-		        }
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			String fieldvalue = null;
+			if(uiFieldDTO.getType().equalsIgnoreCase("string")){
+				fieldvalue = genericController.getStringTypeValue(uiFieldDTO.getId());
+			} else if (uiFieldDTO.getType().equalsIgnoreCase("simpleType")) {
+				fieldvalue = genericController.getSimpleTypeValue(uiFieldDTO.getId());
+			}
+			Node parentNode = this.node; // Store the node reference
+			for (Node child : ((Pane) parentNode).getChildren()) {
+				if(child instanceof VBox) {
+					child = ((VBox) child).getChildren().get(0);
+				}
+				if (child instanceof Label) {
+					Label label = (Label) child;
+					String labelName = label.getText();
+					if(labelName == null) {
+						break;
+					}
+					String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
+					if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (fieldvalue == null || fieldvalue.isEmpty())) {
+						parentNode.setDisable(false);
+					}
+					if (isRequiredField) {
+						if (!labelName.endsWith("*")) {
+							label.setText(labelName + " *");
+						}
+					}
+					else {
+						if (labelName.endsWith("*")) {
+							label.setText(labelName.substring(0, labelName.length() - 2));
+						}
+					}
+				}
+				break;
+			}
 		}
 		visible(this.node, isFieldVisible(uiFieldDTO));
 	}
