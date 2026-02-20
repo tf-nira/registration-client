@@ -1037,7 +1037,7 @@ public class GenericController extends BaseController {
 				}
 				
 
-				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)) {
 					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
 					if(facilityType.equalsIgnoreCase(RegistrationConstants.DP) || facilityType.equalsIgnoreCase(RegistrationConstants.STUDENT_PASS)) {
 						isLinkedsectionFields = validateEitherAinOrAID();
@@ -1090,7 +1090,7 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		
-		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && RegistrationConstants.ALIENNEW.equals(process.getId()) ) {
+		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && (RegistrationConstants.ALIENNEW.equals(process.getId()) || RegistrationConstants.ALIENRENEWAL.equals(process.getId())) ) {
 			if(!isphoneNoFilled) {
 				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
 				return false;
