@@ -198,17 +198,23 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			registrationDTO.setProcessId("NEW");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
 	        registrationDTO.addDemographicField("userServiceType", values);
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
 			registrationDTO.setProcessId("RENEWAL");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		}
 		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
 			registrationDTO.setProcessId("LOST");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		}
 		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
@@ -327,7 +333,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 			LOGGER.info("Saving registration info in DB and on disk.");
 			registrationDAO.save(baseLocation + SLASH + packetManagerAccount + SLASH + registrationDTO.getPacketId(), registrationDTO);
-			LOGGER.info("After saving registrationDTO ===> " + registrationDTO.toString());
+			LOGGER.info("After saving registrationDTO");
 			globalParamService.update(RegistrationConstants.AUDIT_TIMESTAMP, DateUtils.getUTCCurrentDateTime().toString());
 
 			auditFactory.audit(AuditEvent.PACKET_CREATION_SUCCESS, Components.PACKET_HANDLER,
