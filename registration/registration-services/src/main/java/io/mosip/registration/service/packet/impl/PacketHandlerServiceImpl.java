@@ -329,7 +329,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 			LOGGER.info("Saving registration info in DB and on disk.");
 			registrationDAO.save(baseLocation + SLASH + packetManagerAccount + SLASH + registrationDTO.getPacketId(), registrationDTO);
-			LOGGER.info("After saving registrationDTO ===> " + registrationDTO.toString());
+			LOGGER.info("After saving registrationDTO.");
 			globalParamService.update(RegistrationConstants.AUDIT_TIMESTAMP, DateUtils.getUTCCurrentDateTime().toString());
 
 			auditFactory.audit(AuditEvent.PACKET_CREATION_SUCCESS, Components.PACKET_HANDLER,
@@ -770,6 +770,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				RegistrationExceptionConstants.REG_ACK_RECEIPT_READ_ERROR.getErrorMessage());
 	}
 }
+
 
 
 
