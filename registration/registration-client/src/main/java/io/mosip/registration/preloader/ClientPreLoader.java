@@ -112,7 +112,7 @@ public class ClientPreLoader extends Preloader {
             textArea.appendText("Started to validate the build setup...\n");
             try {
                 progressBar.setProgress(0.1);
-                ClientSetupValidator clientSetupValidator = new ClientSetupValidator();
+                ClientSetupValidator clientSetupValidator = new ClientSetupValidator(message -> textArea.appendText(message + "\n"));
                 clientSetupValidator.validateBuildSetup();
                 if(clientSetupValidator.isPatch_downloaded()) {
                     restartRequired = true;
