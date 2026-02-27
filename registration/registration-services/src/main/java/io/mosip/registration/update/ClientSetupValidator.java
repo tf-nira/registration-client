@@ -4,6 +4,8 @@ import io.mosip.registration.exception.RegBaseCheckedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -40,7 +42,6 @@ public class ClientSetupValidator {
     private static boolean unknown_jars_found = false;
     private static boolean bioSDK_updated = false;
     private static Stack<String> messages = new Stack<>();
-
 
     public ClientSetupValidator() throws RegBaseCheckedException {
         try (InputStream keyStream = ClientSetupValidator.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
@@ -180,12 +181,19 @@ public class ClientSetupValidator {
         }
     }
     
-    private void renameExistingDirectory(String destDir) {
-    	File dir = new File(destDir);
+    private void renameExistingDirectory(String destDir) throws IOException {
+        logger.info("Renaming Existing directory : {}", destDir);
+        File dir = new File(destDir);
         if (dir.exists()) {
             String timestamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
             File newDir = new File(destDir + "_" + timestamp);
-            dir.renameTo(newDir);
+
+            try {
+                Files.move(dir.toPath(), newDir.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                logger.info("Existing SDK folder renamed to: {}", newDir.getAbsolutePath());
+            } catch (Exception e) {
+                logger.error("Failed to rename existing SDK folder", e);
+            }
         }
     }
     
