@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import javafx.scene.control.TextArea;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +50,6 @@ public class ClientSetupValidatorTest {
 	private static final String CONNECTION_TIMEOUT = "mosip.registration.sw.file.download.connection.timeout";
 	private static final String READ_TIMEOUT = "mosip.registration.sw.file.download.read.timeout";
 	private static final String manifestFile = "MANIFEST.MF";
-	private TextArea textArea = new TextArea();
 
 	@Rule
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -86,7 +84,7 @@ public class ClientSetupValidatorTest {
 
 	@Test
 	public void clientSetupValidatorTest() throws RegBaseCheckedException {
-		ClientSetupValidator clntSetupValidator = new ClientSetupValidator(message -> textArea.appendText(message + "\n"));
+		ClientSetupValidator clntSetupValidator = new ClientSetupValidator();
 	}
 
 	@Test
@@ -104,14 +102,14 @@ public class ClientSetupValidatorTest {
 
 	@Test
 	public void validateBuildSetupEnvironmentTest() throws RegBaseCheckedException {
-		ClientSetupValidator clntSetUpValidator = new ClientSetupValidator(message -> textArea.appendText(message + "\n"));
+		ClientSetupValidator clntSetUpValidator = new ClientSetupValidator();
 		ReflectionTestUtils.setField(clntSetUpValidator, "environment", "LOCAL");
 		clntSetUpValidator.validateBuildSetup();
 	}
 
 	@Test
 	public void validateBuildSetupsetServerManifestTest() throws RegBaseCheckedException {
-		ClientSetupValidator clntSetUpValidator = new ClientSetupValidator(message -> textArea.appendText(message + "\n"));
+		ClientSetupValidator clntSetUpValidator = new ClientSetupValidator();
 		ReflectionTestUtils.setField(clntSetUpValidator, "serverRegClientURL",
 				"https://dev.mosip.net/registration-client");
 		ReflectionTestUtils.setField(clntSetUpValidator, "latestVersion", "");

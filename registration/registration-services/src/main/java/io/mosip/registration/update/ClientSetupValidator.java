@@ -42,11 +42,9 @@ public class ClientSetupValidator {
     private static boolean unknown_jars_found = false;
     private static boolean bioSDK_updated = false;
     private static Stack<String> messages = new Stack<>();
-    private java.util.function.Consumer<String> messageCallback;
 
 
-    public ClientSetupValidator(java.util.function.Consumer<String> callback) throws RegBaseCheckedException {
-    	this.messageCallback = callback;
+    public ClientSetupValidator() throws RegBaseCheckedException {
         try (InputStream keyStream = ClientSetupValidator.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             Properties properties = new Properties();
             properties.load(keyStream);
@@ -159,10 +157,10 @@ public class ClientSetupValidator {
     	String serverVersion = serverSDKManifest == null ? null : serverSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
         String localVersion = localSDKManifest == null ? null : localSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
         
-        if(serverVersion != null && localVersion != null && !localVersion.equals(serverVersion)) {
+//        if(serverVersion != null && localVersion != null && !localVersion.equals(serverVersion)) {
         	bioSDK_updated = true;
         	downloadLatestSDKZip();
-        }
+//        }
     }
     
     private void downloadLatestSDKZip() {
@@ -173,11 +171,10 @@ public class ClientSetupValidator {
              FileOutputStream out = new FileOutputStream(zipFilePath)) {
             byte[] buffer = new byte[1024];
             int bytesRead;
-            messageCallback.accept("Downloading latest Bio SDK...");
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-            
+//            while ((bytesRead = in.read(buffer)) != -1) {
+//                out.write(buffer, 0, bytesRead);
+//            }
+
             renameExistingDirectory(sdkZipExtractionPath);
             unzip(zipFilePath, sdkZipExtractionPath);
         } catch (IOException | RegBaseCheckedException e) {
