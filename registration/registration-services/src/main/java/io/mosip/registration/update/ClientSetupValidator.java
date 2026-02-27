@@ -4,6 +4,8 @@ import io.mosip.registration.exception.RegBaseCheckedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -40,9 +42,10 @@ public class ClientSetupValidator {
     private static boolean unknown_jars_found = false;
     private static boolean bioSDK_updated = false;
     private static Stack<String> messages = new Stack<>();
+	private java.util.function.Consumer<String> messageCallback;
 
-
-    public ClientSetupValidator() throws RegBaseCheckedException {
+    public ClientSetupValidator(java.util.function.Consumer<String> callback) throws RegBaseCheckedException {
+    	this.messageCallback = callback;
         try (InputStream keyStream = ClientSetupValidator.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             Properties properties = new Properties();
             properties.load(keyStream);
@@ -169,6 +172,7 @@ public class ClientSetupValidator {
              FileOutputStream out = new FileOutputStream(zipFilePath)) {
             byte[] buffer = new byte[1024];
             int bytesRead;
+			messageCallback.accept("Downloading latest Bio SDK...");
             while ((bytesRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
             }
@@ -180,12 +184,19 @@ public class ClientSetupValidator {
         }
     }
     
-    private void renameExistingDirectory(String destDir) {
-    	File dir = new File(destDir);
+    private void renameExistingDirectory(String destDir) throws IOException {
+        logger.info("Renaming Existing directory : {}", destDir);
+        File dir = new File(destDir);
         if (dir.exists()) {
             String timestamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
             File newDir = new File(destDir + "_" + timestamp);
-            dir.renameTo(newDir);
+
+            try {
+                Files.move(dir.toPath(), newDir.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                logger.info("Existing SDK folder renamed to: {}", newDir.getAbsolutePath());
+            } catch (Exception e) {
+                logger.error("Failed to rename existing SDK folder", e);
+            }
         }
     }
     
