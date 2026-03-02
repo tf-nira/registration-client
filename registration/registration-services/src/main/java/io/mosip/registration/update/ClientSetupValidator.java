@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -174,25 +176,37 @@ public class ClientSetupValidator {
                 out.write(buffer, 0, bytesRead);
             }
             
-            renameExistingDirectory(sdkZipExtractionPath);
+            backupExistingDirectory(sdkZipExtractionPath);
             unzip(zipFilePath, sdkZipExtractionPath);
         } catch (IOException | RegBaseCheckedException e) {
             logger.error("Failed to download or extract the zip file", e);
         }
     }
     
-    private void renameExistingDirectory(String destDir) throws IOException {
-        logger.info("Renaming Existing directory : {}", destDir);
-        File dir = new File(destDir);
+    private void backupExistingDirectory(String destDir) {
+    	logger.info("Renaming Existing directory : {}", destDir);
+    	File dir = new File(destDir);
         if (dir.exists()) {
             String timestamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
-            File newDir = new File(destDir + "_" + timestamp);
-
+            Path source = dir.toPath();
+            Path backup = Paths.get(destDir + "_backup_" + timestamp);
+            
             try {
-                Files.move(dir.toPath(), newDir.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                logger.info("Existing SDK folder renamed to: {}", newDir.getAbsolutePath());
+                Files.walk(source).forEach(path -> {
+                    try {
+                        Path targetPath = backup.resolve(source.relativize(path));
+                        if (Files.isDirectory(path)) {
+                            Files.createDirectories(targetPath);
+                        } else {
+                            Files.copy(path, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                logger.info("Backup created at {}", backup);
             } catch (Exception e) {
-                logger.error("Failed to rename existing SDK folder", e);
+                logger.error("Backup failed", e);
             }
         }
     }
