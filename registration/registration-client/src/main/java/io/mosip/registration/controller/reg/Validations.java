@@ -208,7 +208,7 @@ public class Validations extends BaseController {
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 
 		// Main Validation
-		if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2) || fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.NONLOCAL_PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.SCHOOL_PHONE)) {
+		if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2) || fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
 			GenericController generic = ClientApplication.getApplicationContext().getBean(GenericController.class);
 		    Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
 		    String key = "";
@@ -218,8 +218,6 @@ public class Validations extends BaseController {
 		        key = RegistrationConstants.COUNTRYCODE2;
 		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
 		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
-		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.SCHOOL_PHONE)) {
-		        key = RegistrationConstants.SCHOOL_COUNTRYCODE;
 		    }
 		    List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get(key);
 		    System.out.println(countryCode);
