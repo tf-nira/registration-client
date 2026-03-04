@@ -27,8 +27,8 @@ echo "mosip.client.upgrade.server.url=${client_upgrade_server}" >> "${work_dir}"
 echo "mosip.hostname=${host_name}"  >> "${work_dir}"/mosip-application.properties
 echo "mosip.bio.sdk.url=https://github.com/tf-nira/registration-client/releases/download/1.2.0" >> "${work_dir}"/mosip-application.properties
 echo "mosip.bio.sdk.zip.url=https://github.com/tf-nira/registration-client/releases/download/1.2.0/Tech5.zip" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.zip.extraction.path=C:/Bio_SDK/Tech5" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.manifest.path=C:/Bio_SDK/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.zip.extraction.path=C:/Tech5" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.manifest.path=C:/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
 
 echo "jar signing keystore_secret"
 echo ${keystore_secret}
