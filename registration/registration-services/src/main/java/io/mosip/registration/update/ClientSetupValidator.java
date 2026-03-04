@@ -158,7 +158,7 @@ public class ClientSetupValidator {
     	String serverVersion = serverSDKManifest == null ? null : serverSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
         String localVersion = localSDKManifest == null ? null : localSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
         
-        if(serverVersion != null && localVersion != null && !localVersion.equals(serverVersion)) {
+         if(serverVersion != null && (localVersion == null || !localVersion.equals(serverVersion))) {
         	bioSDK_updated = true;
         	downloadLatestSDKZip();
         }
