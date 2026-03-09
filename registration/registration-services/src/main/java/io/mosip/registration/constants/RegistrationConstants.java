@@ -366,6 +366,7 @@ public class RegistrationConstants {
 	public static final String RESIDENCE_DISTRICT = "applicantPlaceOfResidenceDistrict";
 	public static final String ORIGIN_DISTRICT = "applicantPlaceOfOriginDistrict";
 	public static final String EMPLOYER_DISTRICT = "employerDistrict";
+	public static final String SCHOOL_DISTRICT = "schoolDistrict";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
 	public static final String DemoGraphicFieldMessageLabel = "demoGraphicFieldMessageLabel";
