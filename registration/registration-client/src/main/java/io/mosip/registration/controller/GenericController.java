@@ -1036,7 +1036,7 @@ public class GenericController extends BaseController {
 
 				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
 					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
-					if(facilityType.equalsIgnoreCase(RegistrationConstants.DP) || facilityType.equalsIgnoreCase(RegistrationConstants.STUDENT_PASS)) {
+					if(facilityType != null && facilityType.equalsIgnoreCase(RegistrationConstants.DP)) {
 						isLinkedsectionFields = validateEitherAinOrAID();
 					} else {
 						isLinkedsectionFields = true;
@@ -2317,4 +2317,5 @@ public class GenericController extends BaseController {
 	}
 
 }
+
 
