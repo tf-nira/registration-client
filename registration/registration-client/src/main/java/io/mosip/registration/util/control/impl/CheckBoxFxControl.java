@@ -174,6 +174,7 @@ public class CheckBoxFxControl extends FxControl {
 				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.ENROLLMENT_DISTRICT);
 				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.RESIDENCE_DISTRICT);
 				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.EMPLOYER_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.SCHOOL_DISTRICT);
 			}
 			
 			// handling other handlers
