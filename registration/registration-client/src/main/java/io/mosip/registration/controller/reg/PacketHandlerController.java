@@ -439,6 +439,10 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case RENEWAL:
 				case UPDATE:
 				case FIRSTID:
+				case ALIENNEW:
+				case ALIENRENEWAL:
+				case ALIENLOST:
+				case DEACTIVATED :
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
@@ -465,8 +469,12 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 			//slip acknowledgement
 			String slipAckTemplateText = null;
-
-			if (registrationDTO.getProcessId().equals("NEW")) {
+			
+			if (registrationDTO.getProcessId().equals("ALIENNEW")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -519,7 +527,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 
-			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST")) {
+			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST") || registrationDTO.getProcessId().equals("ALIENLOST")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 

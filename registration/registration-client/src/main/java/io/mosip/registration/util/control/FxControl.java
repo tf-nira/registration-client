@@ -245,35 +245,48 @@ public abstract class FxControl  {
 	public  void clearValue() {}
 
 	public void setMessage(String message) {
-	    Node controlNode = this.node;
-	    Parent parent = controlNode.getParent();
+		Node controlNode = this.node;
+		Parent parent = controlNode.getParent();
 
-	    if (parent instanceof GridPane) {
-	        GridPane gridPane = (GridPane) parent;
+		VBox wrapper;
 
-	        Integer rowIndex = GridPane.getRowIndex(controlNode);
-	        Integer columnIndex = GridPane.getColumnIndex(controlNode);
-	        if (rowIndex == null) rowIndex = 0;
-	        if (columnIndex == null) columnIndex = 0;
+		if (parent instanceof VBox) {
+			wrapper = (VBox) parent;
+		}
+		else if (parent instanceof GridPane) {
+			GridPane gridPane = (GridPane) parent;
 
-	        if (messageLabel == null) {
-	            messageLabel = new Label();
-	            messageLabel.setStyle("-fx-text-fill: #e22d2d; -fx-font-size: 11px;"); // dark red
-	            gridPane.add(messageLabel, columnIndex, rowIndex + 1);
-	        }
+			Integer rowIndex = GridPane.getRowIndex(controlNode);
+			Integer columnIndex = GridPane.getColumnIndex(controlNode);
+			if (rowIndex == null) rowIndex = 0;
+			if (columnIndex == null) columnIndex = 0;
 
-	        if (message == null || message.trim().isEmpty()) {
-	            messageLabel.setVisible(false);
-	            messageLabel.setManaged(false);
-	            messageLabel.setText(""); // Optional
-	        } else {
-	            messageLabel.setText(message);
-	            messageLabel.setVisible(true);
-	            messageLabel.setManaged(true);
-	        }
-	    }
+			wrapper = new VBox(2);
+			gridPane.getChildren().remove(controlNode);
+			gridPane.add(wrapper, columnIndex, rowIndex);
+			wrapper.getChildren().add(controlNode);
+		} else {
+			return;
+		}
+
+		if (messageLabel == null) {
+			messageLabel = new Label();
+			messageLabel.setStyle("-fx-text-fill: #e22d2d; -fx-font-size: 11px;");
+			messageLabel.setVisible(false);
+			messageLabel.setManaged(false);
+			wrapper.getChildren().add(messageLabel);
+		}
+
+		if (message == null || message.trim().isEmpty()) {
+			messageLabel.setText("");
+			messageLabel.setVisible(false);
+			messageLabel.setManaged(false);
+		} else {
+			messageLabel.setText(message);
+			messageLabel.setVisible(true);
+			messageLabel.setManaged(true);
+		}
 	}
-
 
 	/**
 	 *
@@ -328,6 +341,10 @@ public abstract class FxControl  {
 			case RENEWAL:
 			case FIRSTID:
 			case LOST:
+			case ALIENNEW:
+			case ALIENRENEWAL:
+			case ALIENLOST:
+			case DEACTIVATED :
  				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
@@ -377,6 +394,10 @@ public abstract class FxControl  {
 				case LOST:
 				case RENEWAL:
 				case FIRSTID:
+				case ALIENNEW:
+				case ALIENRENEWAL:
+				case ALIENLOST:
+				case DEACTIVATED :
 					return isVisibleAccordingToSpec;
 			}
 		} catch (Exception exception) {

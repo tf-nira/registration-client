@@ -203,34 +203,32 @@ public class Validations extends BaseController {
 				addInvalidInputStyleClass(parentPane, node, false);
 			}
 			return false;
-		}GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-		if(fieldId.equalsIgnoreCase("phone")){
-			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
-			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
-			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode");
-            System.out.println(countryCode);
-			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
-				String number=value;
+		}
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+
+		// Main Validation
+		if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2) || fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
+			GenericController generic = ClientApplication.getApplicationContext().getBean(GenericController.class);
+		    Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
+		    String key = "";
+		    if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE)) {
+		        key = RegistrationConstants.COUNTRYCODE;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2)) {
+		        key = RegistrationConstants.COUNTRYCODE2;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
+		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
+		    }
+		    List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get(key);
+		    System.out.println(countryCode);
+		    // If Uganda, validate first digit must be 0
+		    if (!countryCode.isEmpty() && countryCode.get(0).getValue().equalsIgnoreCase(RegistrationConstants.UGA_VALUE)) {
+		    	String number=value;
 				if (number.charAt(0) != '0') {
 					errorMessage="Mobile No. is invalid";
 					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
 					return false;
 				}
-			}
-        }
-		if(fieldId.equalsIgnoreCase("phone2")){
-			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
-			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
-			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode2");
-			System.out.println(countryCode);
-			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
-				String number=value;
-				if (number.charAt(0) != '0') {
-					errorMessage="Mobile No. is invalid";
-					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
-					return false;
-				}
-			}
+		    }
 		}
 
 		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
