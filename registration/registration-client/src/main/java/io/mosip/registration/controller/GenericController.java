@@ -232,6 +232,10 @@ public class GenericController extends BaseController {
 		updateFlowAllowedProcess.add(FlowType.UPDATE.name());
 		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
 		updateFlowAllowedProcess.add(FlowType.FIRSTID.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENNEW.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENRENEWAL.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENLOST.name());
+		updateFlowAllowedProcess.add(FlowType.DEACTIVATED.name());
 	}
 
 	private void fillHierarchicalLevelsByLanguage() {
@@ -561,6 +565,14 @@ public class GenericController extends BaseController {
 							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
 							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
 							              ? sessionValue : demographicsCopy.get(field.getId());
+							
+							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
+								FxControl fxControlValue = getFxControl(field.getId());
+								if (fxControlValue != null && fxControlValue.getNode() != null) {
+									fxControlValue.getNode().setVisible(false);
+									fxControlValue.getNode().setManaged(false);
+								}
+							}
 
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
 								FxControl enrolmentControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
@@ -660,8 +672,9 @@ public class GenericController extends BaseController {
 		Label navigationLabel = new Label();
 		navigationLabel.getStyleClass().add(NAV_LABEL_CLASS);
 		navigationLabel.setText(processSpecDto.getLabel().get(ApplicationContext.applicationLanguage()));
-		navigationLabel.prefWidthProperty().bind(navigationAnchorPane.widthProperty());
-		navigationLabel.setWrapText(true);
+		navigationLabel.setStyle("-fx-font-size: 12px;");
+	    navigationLabel.setWrapText(true);
+	    navigationLabel.setPrefWidth(150); 
 
 		navigationAnchorPane.getChildren().add(navigationLabel);
 		AnchorPane.setTopAnchor(navigationLabel, 5.0);
@@ -869,6 +882,17 @@ public class GenericController extends BaseController {
 											.setDisable(!refreshScreenVisibility(newScreenName));
 									tabPane.getSelectionModel().select(newValue.intValue());
 									showHideGeneralNotification(null);
+									if (newScreenName.equals("PREVIEW")) {
+										String invalidScreenName = getInvalidScreenName(tabPane);
+										if (invalidScreenName.equals(EMPTY)) {
+											notification.setVisible(false);
+											loadPreviewOrAuthScreen(tabPane, tabPane.getTabs().get(newValue.intValue()));
+											return;
+										} else {
+											tabPane.getSelectionModel().select(oldValue.intValue());
+											return;
+										}
+									}
 								} else {
 									// If "Review Details" is clicked, remain on the current tab
 									ignoreChange[0] = false;
@@ -965,6 +989,9 @@ public class GenericController extends BaseController {
 		boolean isValid = true;
 		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
 		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
+		boolean isphoneNoFilled = false;
+		boolean isLinkedsectionFields = false;
+		boolean nationalityCheck = false;
 
 		if (result.isPresent()) {
 
@@ -986,6 +1013,17 @@ public class GenericController extends BaseController {
 						if( !field.getId().trim().startsWith("isError") && !field.getId().trim().startsWith("changeReason"))
 							isNotificationOfChangeFilled = true;
 					}
+				}
+				
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
+					if(facilityType != null && facilityType.equalsIgnoreCase(RegistrationConstants.DP)) {
+						isLinkedsectionFields = validateEitherAinOrAID();
+					} else {
+						isLinkedsectionFields = true;
+					}
+					isphoneNoFilled = validateEitherLocalOrNonLocal();
+					nationalityCheck = validateSameNationality();
 				}
 
 				// Validate PRN differently
@@ -1018,7 +1056,7 @@ public class GenericController extends BaseController {
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
 			// Only show the general notification if the screen is "Demographic Details"
-			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
+			if (screenName != null && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
 				showHideGeneralNotification("Please Note: Maiden name and any Previous names will not appear on the card");
 
 			}
@@ -1029,7 +1067,73 @@ public class GenericController extends BaseController {
 			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.",null);
 			return false;
 		}
+		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && RegistrationConstants.ALIENNEW.equals(process.getId()) ) {
+			if(!isphoneNoFilled) {
+				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
+				return false;
+			} else if(!isLinkedsectionFields) {
+				showHideErrorNotification(RegistrationConstants.AIN_OR_AID_ERROR_MSG,null);
+				return false;
+			} else if(!nationalityCheck) {
+				showHideErrorNotification(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG,null);
+				return false;
+			}
+		}
 		return isValid;
+	}
+	
+	public boolean validateSameNationality() {
+	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
+	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
+	    if (primaryNationality != null && secondaryNationality != null) {
+	        return !primaryNationality.equalsIgnoreCase(secondaryNationality);
+	    } else {
+	    	return true;
+	    }
+	}
+
+
+	private boolean validateEitherAinOrAID() {
+		boolean valid = false;
+	    String principalAIN = getStringTypeValue(RegistrationConstants.PRINCIPAL_OF_AIN);
+	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
+	    if(principalAIN != null || principleAID != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean validateEitherLocalOrNonLocal() {
+		boolean valid = false;
+		String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.COUNTRYCODE);
+	    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
+	    String localPhoneValue = getStringTypeValue(RegistrationConstants.PHONE);
+	    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
+	    if(localPhoneValue != null && localCountryCodeList != null) {
+	    	valid = true;
+	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	public String getStringTypeValue(String fieldId) {
+
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+	    String fieldValue = (String) demographics.get(fieldId);
+		return fieldValue;
+	}
+
+	public String getSimpleTypeValue(String fieldId) {
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
+		if (fieldDataList != null) {
+			SimpleDto fieldData = fieldDataList.get(0);
+			return fieldData.getValue();
+		}
+		return null;
 	}
 
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
