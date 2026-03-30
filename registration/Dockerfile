@@ -14,6 +14,8 @@ ARG client_version
 
 ARG healthcheck_url
 
+ARG downloadbiosdk_url
+
 ARG client_upgrade_server
 
 ARG cert_server_URL
@@ -23,6 +25,8 @@ ARG keystore_secret
 ENV client_version_env=${client_version}
 
 ENV healthcheck_url_env=${healthcheck_url}
+
+ENV downloadbiosdk_url_env=${downloadbiosdk_url}
 
 ENV client_upgrade_server_env=${client_upgrade_server}
 
