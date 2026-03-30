@@ -31,6 +31,7 @@ echo "mosip.bio.sdk.zip.extraction.path=C:/Tech5" >> "${work_dir}"/mosip-applica
 echo "mosip.bio.sdk.manifest.path=C:/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
 echo "mosip.download.bio.sdk.url=${downloadbiosdk_url_env}" >> "${work_dir}"/mosip-application.properties
 
+
 echo "jar signing keystore_secret"
 echo ${keystore_secret}
 
