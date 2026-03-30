@@ -31,6 +31,8 @@ public class ClientSetupValidator {
     private static String serverSDKZipUrl = null;
     private static String sdkZipExtractionPath = null;
     private static String localSDKManifestPath = null;
+    private static String downloadBioSDKURL = null;
+    private static String mosipHostname = null;
     private static String latestVersion = null;
     private static Manifest localManifest = null;
     private static Manifest serverManifest = null;
@@ -44,7 +46,13 @@ public class ClientSetupValidator {
     private static boolean unknown_jars_found = false;
     private static boolean bioSDK_updated = false;
     private static Stack<String> messages = new Stack<>();
+    public static final String MOSIP_HOSTNAME_PLACEHOLDER = "${mosip.hostname}";
 
+    public String prepareURLByHostName(String url) {
+        String mosipHostNameVal = mosipHostname;
+        return (url != null) ? url.replace(MOSIP_HOSTNAME_PLACEHOLDER, mosipHostNameVal)
+                : url;
+    }
 
     public ClientSetupValidator() throws RegBaseCheckedException {
         try (InputStream keyStream = ClientSetupValidator.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
@@ -59,6 +67,8 @@ public class ClientSetupValidator {
             localSDKManifestPath = properties.getProperty("mosip.bio.sdk.manifest.path");
             latestVersion = properties.getProperty("mosip.reg.version");
             environment = properties.getProperty("environment");
+            downloadBioSDKURL = properties.getProperty("mosip.download.bio.sdk.url");
+            mosipHostname = properties.getProperty("mosip.hostname");
             setLocalManifest();
             setLocalSDKManifest();
 
@@ -164,12 +174,13 @@ public class ClientSetupValidator {
         	downloadLatestSDKZip();
         }
     }
-    
-    private void downloadLatestSDKZip() {
-    	String url = serverSDKZipUrl;
-    	String zipFilePath = "Bio_SDK.zip";
 
-        try (InputStream in = SoftwareUpdateUtil.download(url);
+    private void downloadLatestSDKZip() {
+        String apiUrl = downloadBioSDKURL;
+        String url = prepareURLByHostName(apiUrl);
+        String zipFilePath = "Bio_SDK.zip";
+
+        try (InputStream in = SoftwareUpdateUtil.downloadZipfile(url);
              FileOutputStream out = new FileOutputStream(zipFilePath)) {
             byte[] buffer = new byte[1024];
             int bytesRead;

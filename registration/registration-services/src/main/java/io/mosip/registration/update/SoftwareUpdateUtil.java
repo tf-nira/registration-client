@@ -6,6 +6,9 @@ import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.exception.RegBaseCheckedException;
 import org.apache.commons.io.FileUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,6 +108,19 @@ public class SoftwareUpdateUtil {
             LOGGER.error("Failed to download {}", url, e);
         }
         throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
+    }
+
+    protected static InputStream downloadZipfile(String url) throws RegBaseCheckedException {
+        LOGGER.info("DownloadZipfile invoking url : {}", url);
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Resource> response = restTemplate.getForEntity(url, Resource.class);
+            InputStream inputStream = response.getBody().getInputStream();
+            return inputStream;
+        } catch (IOException e) {
+            LOGGER.error("Failed to download {}", url, e);
+            throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
+        }
     }
 
     protected static boolean deleteFile(String filePath) {
