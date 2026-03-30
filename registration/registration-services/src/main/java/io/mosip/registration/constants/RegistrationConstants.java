@@ -2036,6 +2036,7 @@ public class RegistrationConstants {
 	public static final String MOSIP_HOSTNAME = "mosip.hostname";
 	public static final String MOSIP_UPGRADE_SERVER_URL = "mosip.client.upgrade.server.url";
 	public static final String HEALTH_CHECK_URL = "mosip.reg.healthcheck.url";
+	public static final String DOWNLOAD_BIO_SDK_URL = "mosip.download.bio.sdk.url";
 
 	/** Moved To Here from UiConstants file */
 	public static final String REGEX_TYPE = "REGEX";
