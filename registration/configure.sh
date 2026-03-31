@@ -29,7 +29,7 @@ echo "mosip.bio.sdk.url=https://github.com/tf-nira/registration-client/releases/
 echo "mosip.bio.sdk.zip.url=https://github.com/tf-nira/registration-client/releases/download/1.2.0/Tech5.zip" >> "${work_dir}"/mosip-application.properties
 echo "mosip.bio.sdk.zip.extraction.path=C:/Tech5" >> "${work_dir}"/mosip-application.properties
 echo "mosip.bio.sdk.manifest.path=C:/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
-echo "mosip.download.bio.sdk.url=${downloadbiosdk_url_env}" >> "${work_dir}"/mosip-application.properties
+echo "mosip.download.bio.sdk.url=https://${host_name}/v1/masterdata/download/bio-sdk" >> "${work_dir}"/mosip-application.properties
 
 
 echo "jar signing keystore_secret"
