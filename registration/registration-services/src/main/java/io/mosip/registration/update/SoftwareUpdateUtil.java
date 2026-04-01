@@ -114,7 +114,9 @@ public class SoftwareUpdateUtil {
         LOGGER.info("DownloadZipfile invoking url : {}", url);
         try {
             RestTemplate restTemplate = new RestTemplate();
+            LOGGER.info("RestTemplate loaded Successfully...");
             ResponseEntity<Resource> response = restTemplate.getForEntity(url, Resource.class);
+            LOGGER.info("Response Recieved from masterData service api...");
             InputStream inputStream = response.getBody().getInputStream();
             return inputStream;
         } catch (IOException e) {
