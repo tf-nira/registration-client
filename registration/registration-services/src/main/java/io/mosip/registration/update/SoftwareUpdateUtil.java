@@ -6,6 +6,8 @@ import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.exception.RegBaseCheckedException;
 import org.apache.commons.io.FileUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -113,13 +115,16 @@ public class SoftwareUpdateUtil {
     protected static InputStream downloadZipfile(String url) throws RegBaseCheckedException {
         LOGGER.info("DownloadZipfile invoking url : {}", url);
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(600000);
+
+            RestTemplate restTemplate = new RestTemplate(factory);
             LOGGER.info("RestTemplate loaded Successfully...");
-            ResponseEntity<Resource> response = restTemplate.getForEntity(url, Resource.class);
-            LOGGER.info("Response Recieved from masterData service api...");
-            InputStream inputStream = response.getBody().getInputStream();
-            return inputStream;
-        } catch (IOException e) {
+            return restTemplate.execute(url, HttpMethod.GET, null, response -> {
+                return response.getBody();
+            });
+
+        } catch (Exception e) {
             LOGGER.error("Failed to download {}", url, e);
             throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
         }
