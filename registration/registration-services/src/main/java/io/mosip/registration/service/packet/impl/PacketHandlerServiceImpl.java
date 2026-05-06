@@ -217,11 +217,12 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		}
 		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
-			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
+			String ain = registrationDTO.getDemographic("AIN");
+			String serviceType = ain.toLowerCase().contains("an")? "Alien Deactivated" : "Deactivated";
+			List<SimpleDto> values = Collections.singletonList( new SimpleDto("eng", serviceType));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
 		}
-
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
 		
