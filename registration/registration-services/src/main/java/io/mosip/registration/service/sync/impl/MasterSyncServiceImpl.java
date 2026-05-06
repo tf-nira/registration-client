@@ -305,7 +305,14 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 					.collect(Collectors.toList());
 		} else if(RegistrationConstants.OUTSIDE_UGANDA.equalsIgnoreCase(enrolmentStatus) && enrolmentStatus != null){
 			return originalList.stream()
-					.filter(dto -> dto.getCode() != null && dto.getCode().matches("[A-Za-z]+"))
+					.filter(dto -> dto.getCode() != null && dto.getCode().matches("[A-Za-z\\- ]+"))
+					.collect(Collectors.toMap(
+							dto -> dto.getName(),
+							dto -> dto,
+							(existing, duplicate) -> existing
+					))
+					.values()
+					.stream()
 					.collect(Collectors.toList());
 		} else {
 			return originalList;
