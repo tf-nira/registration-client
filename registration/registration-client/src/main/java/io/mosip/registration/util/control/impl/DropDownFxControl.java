@@ -58,8 +58,8 @@ public class DropDownFxControl extends FxControl {
 	);
 	 
 	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
-		    RegistrationConstants.STUDENT_PASS, Set.of(RegistrationConstants.NAME_OF_SCHOOL),
-		    RegistrationConstants.DP, Set.of(RegistrationConstants.PRINCIPAL_OF_AIN),
+		    RegistrationConstants.STUDENT_PASS, Set.of(RegistrationConstants.NAME_OF_SCHOOL,RegistrationConstants.OTHERCHILD),
+		    RegistrationConstants.DP, Set.of(RegistrationConstants.PRINCIPAL_OF_AIN,RegistrationConstants.OTHERCHILD),
 		    "DEFAULT",
 			 Set.of(RegistrationConstants.EMPLOYER_NAME,
 					 RegistrationConstants.OTHERCHILD)
