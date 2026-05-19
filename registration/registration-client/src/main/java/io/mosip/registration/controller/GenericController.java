@@ -118,6 +118,15 @@ public class GenericController extends BaseController {
 	protected static final Logger LOGGER = AppConfig.getLogger(GenericController.class);
 
 	private static final String TAB_LABEL_ERROR_CLASS = "tabErrorLabel";
+	private static final Set<String> COP_NAME_CHANGE_SERVICE_FIELDS = new HashSet<>(Arrays.asList(
+			"addingName",
+			"changeOrderOfNames",
+			"completeChangeofName",
+			"otherNameCorrections",
+			"addingNamesFromPreviousCertorDoc"));
+	private static final List<String> COP_NOTIFICATION_NAME_FIELDS = Arrays.asList("surname", "givenName", "otherNames");
+	private static final String COP_NAME_CHANGE_NAME_REQUIRED_MSG =
+			"Enter at least one name detail (Surname, Given Name, or Other Names) in Notification of Change.";
 	private static final String LABEL_CLASS = "additionaInfoReqIdLabel";
 	private static final String NAV_LABEL_CLASS = "navigationLabel";
 	private static final String TEXTFIELD_CLASS = "preregFetchBtnStyle";
@@ -1071,6 +1080,11 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
+		if (isValid && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && isCopNameChangeServiceSelected()
+				&& !isAnyCopNotificationNameFieldProvided()) {
+			showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+			return false;
+		}
 
 		if (isValid) {
 			showHideErrorNotification(null,null);
@@ -1139,6 +1153,58 @@ public class GenericController extends BaseController {
 	    	valid = true;
 	    }	
 	    return valid;
+	}
+
+	private boolean isCopNameChangeServiceSelected() {
+		return COP_NAME_CHANGE_SERVICE_FIELDS.stream().anyMatch(this::isDemographicFieldYes);
+	}
+
+	private boolean isAnyCopNotificationNameFieldProvided() {
+		return COP_NOTIFICATION_NAME_FIELDS.stream().anyMatch(this::isDemographicFieldProvided);
+	}
+
+	private boolean isDemographicFieldYes(String fieldId) {
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return "Y".equalsIgnoreCase(((String) value).trim());
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& "Y".equalsIgnoreCase(((SimpleDto) item).getValue().trim())) {
+					return true;
+				}
+				if (item != null && "Y".equalsIgnoreCase(item.toString().trim())) {
+					return true;
+				}
+			}
+		}
+		return value != null && "Y".equalsIgnoreCase(value.toString().trim());
+	}
+
+	private boolean isDemographicFieldProvided(String fieldId) {
+		FxControl control = getFxControl(fieldId);
+		if (control != null) {
+			return !isFieldEmpty(control);
+		}
+
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return !((String) value).trim().isEmpty();
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& !((SimpleDto) item).getValue().trim().isEmpty()) {
+					return true;
+				}
+				if (item != null && !item.toString().trim().isEmpty()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return value != null && !value.toString().trim().isEmpty();
 	}
 
 	public String getStringTypeValue(String fieldId) {
@@ -1234,7 +1300,16 @@ public class GenericController extends BaseController {
 
 			Optional<Tab> result = tabPane.getTabs().stream()
 					.filter(t -> t.getId().equalsIgnoreCase(screen.getName() + "_tab")).findFirst();
-			if (anyInvalidField && result.isPresent()) {
+			if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screen.getName() + "_tab")
+					&& isCopNameChangeServiceSelected() && !isAnyCopNotificationNameFieldProvided()
+					&& result.isPresent()) {
+				LOGGER.error("Screen validation failed {}, COP name change requires at least one name field",
+						screen.getName());
+				showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+				errorScreen = screen.getName();
+				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
+				break;
+			} else if (anyInvalidField && result.isPresent()) {
 				LOGGER.error("Screen validation failed {}", screen.getName());
 				errorScreen = screen.getName();
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
