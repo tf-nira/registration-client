@@ -1037,7 +1037,7 @@ public class GenericController extends BaseController {
 				}
 				
 
-				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)) {
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)) {
 					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
 					if(facilityType != null && facilityType.equalsIgnoreCase(RegistrationConstants.DP)) {
 						isLinkedsectionFields = validateEitherAinOrAID();
@@ -1090,7 +1090,7 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		
-		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && (RegistrationConstants.ALIENNEW.equals(process.getId()) || RegistrationConstants.ALIENRENEWAL.equals(process.getId())) ) {
+		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && (RegistrationConstants.ALIENNEW.equals(process.getId()) || RegistrationConstants.ALIENRENEWAL.equals(process.getId())  || RegistrationConstants.ALIENLOST.equals(process.getId())) ) {
 			if(!isphoneNoFilled) {
 				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
 				return false;
