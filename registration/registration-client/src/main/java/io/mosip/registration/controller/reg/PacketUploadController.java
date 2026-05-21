@@ -186,7 +186,7 @@ public class PacketUploadController extends BaseController implements Initializa
 		    "C", "BIOMETRIC_CORRECTION",
 		    "A", "ALIEN NEW",
 		    "I", "ALIEN RENEWAL",
-		    "E", "ALIEN LOST",
+			"E", "ALIEN LOST/REPLACEMENT",
 		    "V", "ALIEN CANCELLATION"
 		);
 
