@@ -69,8 +69,10 @@ public class ClientSetupValidator {
             environment = properties.getProperty("environment");
             downloadBioSDKURL = properties.getProperty("mosip.download.bio.sdk.url");
             mosipHostname = properties.getProperty("mosip.hostname");
-            setLocalManifest();
-            setLocalSDKManifest();
+            String upgradeServerURL = properties.getProperty("mosip.client.upgrade.server.url");
+            if (serverRegClientURL != null && serverRegClientURL.contains("%s")) {
+                serverRegClientURL = String.format(serverRegClientURL, upgradeServerURL);
+            }
 
             Objects.requireNonNull(serverRegClientURL, "'mosip.reg.client.url' IS NOT SET");
             Objects.requireNonNull(latestVersion, "'mosip.reg.version' IS NOT SET");
@@ -80,8 +82,25 @@ public class ClientSetupValidator {
                 return;
             }
 
+            // If MANIFEST.MF doesn't exist locally, download it from server first
+            File localManifestFile = new File(manifestFile);
+            if (!localManifestFile.exists()) {
+                logger.info("MANIFEST.MF not found locally, downloading from server...");
+                String url = serverRegClientURL + latestVersion + SLASH + manifestFile;
+                try (InputStream in = SoftwareUpdateUtil.download(url);
+                     FileOutputStream out = new FileOutputStream(manifestFile)) {
+                    in.transferTo(out);
+                    logger.info("Successfully downloaded MANIFEST.MF from server");
+                } catch (Exception e) {
+                    logger.error("Failed to download MANIFEST.MF from server", e);
+                    throw new RegBaseCheckedException("REG-BUILD-003", "Could not find or download MANIFEST.MF");
+                }
+            }
+
+            setLocalManifest();
+            setLocalSDKManifest();
+
             Objects.requireNonNull(localManifest, manifestFile + " - Not found");
-            //SoftwareUpdateUtil.deleteUnknownJars(localManifest);
 
         } catch (RegBaseCheckedException e) {
             throw e;
@@ -159,39 +178,89 @@ public class ClientSetupValidator {
 
 
     public void validateBioSDK() {
-    	if("LOCAL".equals(environment)) {
+        if ("LOCAL".equals(environment)) {
             logger.warn("NOTE :: IGNORING LOCAL REGISTRATION CLIENT SETUP VALIDATION AS ITS LOCAL ENVIRONMENT");
             return;
         }
-    	
-    	setServerSDKManifest();
-    	
-    	String serverVersion = serverSDKManifest == null ? null : serverSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
-        String localVersion = localSDKManifest == null ? null : localSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION);
-        
-        if(serverVersion != null && (localVersion == null || !localVersion.equals(serverVersion))) {
-        	bioSDK_updated = true;
-        	downloadLatestSDKZip();
+
+        File localSDKManifestFile = new File(localSDKManifestPath + SLASH + manifestFile);
+        logger.info("Checking local SDK manifest at: {}", localSDKManifestFile.getAbsolutePath());
+
+        // No local manifest at all → fresh install
+        if (!localSDKManifestFile.exists()) {
+            logger.info("No local SDK manifest found, downloading fresh SDK...");
+            downloadLatestSDKZip();
+            return;
+        }
+
+        // Local manifest exists → fetch server manifest and compare
+        setServerSDKManifest();
+
+        if (serverSDKManifest == null) {
+            logger.warn("Server SDK manifest unreachable, skipping SDK version check");
+            return;
+        }
+
+        String localSDKVersion = null;
+        if (localSDKManifest != null) {
+            localSDKVersion = localSDKManifest.getMainAttributes()
+                    .getValue(Attributes.Name.MANIFEST_VERSION);
+        }
+
+        String serverSDKVersion = serverSDKManifest.getMainAttributes()
+                .getValue(Attributes.Name.MANIFEST_VERSION);
+
+        logger.info("Local SDK manifest version : [{}]", localSDKVersion);
+        logger.info("Server SDK manifest version: [{}]", serverSDKVersion);
+
+        if (serverSDKVersion == null) {
+            logger.warn("Server SDK manifest has no version, skipping update");
+            return;
+        }
+
+        if (!serverSDKVersion.equals(localSDKVersion)) {
+            logger.info("SDK version mismatch detected! local=[{}] server=[{}]",
+                    localSDKVersion, serverSDKVersion);
+            logger.info("Backing up existing SDK and downloading latest from server...");
+            downloadLatestSDKZip();
+        } else {
+            logger.info("BioSDK is up to date [{}], skipping download", localSDKVersion);
         }
     }
 
     private void downloadLatestSDKZip() {
-        String apiUrl = downloadBioSDKURL;
-        String url = prepareURLByHostName(apiUrl);
+        String url = prepareURLByHostName(downloadBioSDKURL);
         String zipFilePath = "Bio_SDK.zip";
+        bioSDK_updated = false;
 
-        try (InputStream in = SoftwareUpdateUtil.downloadZipfile(url);
-             FileOutputStream out = new FileOutputStream(zipFilePath)) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+        try {
+            logger.info("Downloading Bio SDK zip from: {}", url);
+            SoftwareUpdateUtil.downloadZipfile(url, new File(zipFilePath));
+            logger.info("Bio_SDK.zip downloaded successfully");
+
+            // Backup existing SDK directory with timestamp before overwriting
+            backupExistingDirectory(sdkZipExtractionPath);
+
+            // Extract fresh SDK
+            unzip(zipFilePath, sdkZipExtractionPath);
+            logger.info("Bio SDK extracted to: {}", sdkZipExtractionPath);
+
+            // Cleanup downloaded zip
+            if (new File(zipFilePath).delete()) {
+                logger.info("Cleaned up Bio_SDK.zip");
             }
 
-            backupExistingDirectory(sdkZipExtractionPath);
-            unzip(zipFilePath, sdkZipExtractionPath);
-        } catch (IOException | RegBaseCheckedException e) {
-            logger.error("Failed to download or extract the zip file", e);
+            // Reload local SDK manifest from freshly extracted files
+            setLocalSDKManifest();
+
+            bioSDK_updated = true;
+            logger.info("Bio-SDK successfully updated. New version: {}",
+                    localSDKManifest != null ?
+                            localSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION) : "unknown");
+
+        } catch (Exception e) {
+            logger.error("SDK update aborted due to error: {}", e.getMessage(), e);
+            bioSDK_updated = false;
         }
     }
 
@@ -296,6 +365,7 @@ public class ClientSetupValidator {
             File localManifestFile = new File(manifestFile);
             if (localManifestFile.exists()) {
                 localManifest = new Manifest(new FileInputStream(localManifestFile));
+                logger.info("Loaded local MANIFEST.MF from: {}", localManifestFile.getAbsolutePath());
             }
         } catch (IOException e) {
             logger.error("Failed to load local manifest file", e);
@@ -323,13 +393,18 @@ public class ClientSetupValidator {
             logger.error("Failed to load server manifest file", e);
         }
     }
-    
+
     private void setServerSDKManifest() {
-		String url = serverSDKManifestUrl + SLASH + manifestFile;
-		try(InputStream in = SoftwareUpdateUtil.download(url)) {
-			serverSDKManifest = new Manifest(in);
-		} catch (IOException | RegBaseCheckedException e) {
-			logger.error("Failed to load server manifest file for SDK", e);
-		}
-	}
+        // mosip.bio.sdk.url = https://github.com/.../releases/download/1.2.0
+        String url = serverSDKManifestUrl + SLASH + manifestFile;
+        logger.info("Fetching server SDK manifest from: {}", url);
+        try (InputStream in = SoftwareUpdateUtil.download(url)) {
+            serverSDKManifest = new Manifest(in);
+            logger.info("Server SDK manifest loaded successfully, version: [{}]",
+                    serverSDKManifest.getMainAttributes().getValue(Attributes.Name.MANIFEST_VERSION));
+        } catch (IOException | RegBaseCheckedException e) {
+            logger.warn("Could not fetch server SDK manifest from {}: {}", url, e.getMessage());
+            serverSDKManifest = null;
+        }
+    }
 }
