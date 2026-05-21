@@ -30,6 +30,8 @@ public class SoftwareUpdateUtil {
     private static final Logger LOGGER = AppConfig.getLogger(SoftwareUpdateUtil.class);
     private static final String CONNECTION_TIMEOUT = "mosip.registration.sw.file.download.connection.timeout";
     private static final String READ_TIMEOUT = "mosip.registration.sw.file.download.read.timeout";
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 600000;
+    private static final int DEFAULT_READ_TIMEOUT = 0;
     private static final String libFolder = "lib/";
     private static final String UNKNOWN_JARS = ".UNKNOWN_JARS";
     private static final String TEMP_DIRECTORY = ".TEMP";
@@ -112,22 +114,29 @@ public class SoftwareUpdateUtil {
         throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
     }
 
-    protected static InputStream downloadZipfile(String url) throws RegBaseCheckedException {
-        LOGGER.info("DownloadZipfile invoking url : {}", url);
+    protected static void downloadZipfile(String url, File destinationFile) throws RegBaseCheckedException {
         try {
-            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-            factory.setConnectTimeout(600000);
+            int connectionTimeout = getConnectionTimeout();
+            int readTimeout = getReadTimeout();
 
-            RestTemplate restTemplate = new RestTemplate(factory);
-            LOGGER.info("RestTemplate loaded Successfully...");
-            return restTemplate.execute(url, HttpMethod.GET, null, response -> {
-                return response.getBody();
-            });
+            URL fileUrl = new URL(url);
+            FileUtils.copyURLToFile(fileUrl, destinationFile, connectionTimeout, readTimeout);
+            LOGGER.info("Successfully downloaded zip file from {}", url);
 
         } catch (Exception e) {
             LOGGER.error("Failed to download {}", url, e);
             throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
         }
+    }
+
+    private static int getConnectionTimeout() {
+        Integer connectionTimeout = ApplicationContext.getIntValueFromApplicationMap(CONNECTION_TIMEOUT);
+        return connectionTimeout == null ? DEFAULT_CONNECTION_TIMEOUT : connectionTimeout;
+    }
+
+    private static int getReadTimeout() {
+        Integer readTimeout = ApplicationContext.getIntValueFromApplicationMap(READ_TIMEOUT);
+        return readTimeout == null ? DEFAULT_READ_TIMEOUT : readTimeout;
     }
 
     protected static boolean deleteFile(String filePath) {

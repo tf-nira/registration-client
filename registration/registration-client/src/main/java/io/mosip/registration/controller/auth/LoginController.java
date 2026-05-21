@@ -51,6 +51,7 @@ import io.mosip.registration.scheduler.SchedulerUtil;
 import io.mosip.registration.service.bio.BioService;
 import io.mosip.registration.service.login.LoginService;
 import io.mosip.registration.service.operator.UserMachineMappingService;
+import io.mosip.registration.update.ClientSetupValidator;
 import io.mosip.registration.update.SoftwareUpdateHandler;
 import io.mosip.registration.util.common.OTPManager;
 import io.mosip.registration.util.common.PageFlow;
@@ -942,6 +943,13 @@ public class LoginController extends BaseController implements Initializable {
 				} else if (taskService.getValue().contains(RegistrationConstants.SUCCESS)) {
 					if (isInitialSetUp) {
 						// update initial set up flag
+						ClientSetupValidator bioValidator = null;
+						try {
+							bioValidator = new ClientSetupValidator();
+						} catch (RegBaseCheckedException e) {
+							throw new RuntimeException(e);
+						}
+						bioValidator.validateBioSDK();
 						globalParamService.update(RegistrationConstants.INITIAL_SETUP, RegistrationConstants.DISABLE);
 						restartApplication();
 					} else {
