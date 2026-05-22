@@ -176,22 +176,28 @@ public class ClientSetupValidator {
     }
 
     private void downloadLatestSDKZip() {
-        String apiUrl = downloadBioSDKURL;
-        String url = prepareURLByHostName(apiUrl);
+        String url = serverSDKZipUrl;
         String zipFilePath = "Bio_SDK.zip";
+        bioSDK_updated = false;
 
-        try (InputStream in = SoftwareUpdateUtil.downloadZipfile(url);
-             FileOutputStream out = new FileOutputStream(zipFilePath)) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
+        try {
+            logger.info("Downloading Bio SDK zip from: {}", url);
+            SoftwareUpdateUtil.downloadZipfile(url, new File(zipFilePath));
+            logger.info("Bio_SDK.zip downloaded successfully");
 
             backupExistingDirectory(sdkZipExtractionPath);
             unzip(zipFilePath, sdkZipExtractionPath);
-        } catch (IOException | RegBaseCheckedException e) {
-            logger.error("Failed to download or extract the zip file", e);
+            logger.info("Bio SDK extracted to: {}", sdkZipExtractionPath);
+
+            new File(zipFilePath).delete();
+
+            setLocalSDKManifest();
+            bioSDK_updated = true;
+            logger.info("Bio-SDK successfully updated.");
+
+        } catch (Exception e) {
+            logger.error("SDK update aborted: {}", e.getMessage(), e);
+            bioSDK_updated = false;
         }
     }
 
