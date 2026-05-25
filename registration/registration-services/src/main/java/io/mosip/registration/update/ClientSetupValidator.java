@@ -176,7 +176,8 @@ public class ClientSetupValidator {
     }
 
     private void downloadLatestSDKZip() {
-        String url = serverSDKZipUrl;
+        String apiUrl = downloadBioSDKURL;
+        String url = prepareURLByHostName(apiUrl);
         String zipFilePath = "Bio_SDK.zip";
         bioSDK_updated = false;
 
