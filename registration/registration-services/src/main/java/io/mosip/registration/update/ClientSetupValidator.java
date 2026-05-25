@@ -188,13 +188,6 @@ public class ClientSetupValidator {
             backupExistingDirectory(sdkZipExtractionPath);
             unzip(zipFilePath, sdkZipExtractionPath);
             logger.info("Bio SDK extracted to: {}", sdkZipExtractionPath);
-
-            new File(zipFilePath).delete();
-
-            setLocalSDKManifest();
-            bioSDK_updated = true;
-            logger.info("Bio-SDK successfully updated.");
-
         } catch (Exception e) {
             logger.error("SDK update aborted: {}", e.getMessage(), e);
             bioSDK_updated = false;
