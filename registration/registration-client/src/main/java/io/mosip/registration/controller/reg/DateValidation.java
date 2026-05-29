@@ -519,7 +519,8 @@ public class DateValidation extends BaseController {
 			//no need future validation excludedFields
 			Set<String> excludedFields = Set.of(
 					"dateOfExpiry",
-					"ninExpiryDate"
+					"ninExpiryDate",
+					"dateOfIssuance"
 			);
 			
 			if(!excludedFields.contains(uiFieldDTO.getId()) && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
@@ -528,17 +529,55 @@ public class DateValidation extends BaseController {
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
 				if(!dobDate.isAfter(currentDate)) {
 					isValid = false;
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.ONLY_FUTURE_DATE,
-						minDays, maxDays));
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+							RegistrationConstants.ONLY_FUTURE_DATE, minDays, maxDays));
 				}
+
+				if (isValid) {
+					TextField issuanceDD   = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.DD   + RegistrationConstants.TEXT_FIELD);
+					TextField issuanceMM   = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.MM   + RegistrationConstants.TEXT_FIELD);
+					TextField issuanceYYYY = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
+
+					boolean issuanceFieldsPresent = issuanceDD   != null && issuanceMM   != null && issuanceYYYY != null
+							&& !issuanceDD.getText().isBlank()
+							&& !issuanceMM.getText().isBlank()
+							&& !issuanceYYYY.getText().isBlank();
+
+					if (issuanceFieldsPresent) {
+						try {
+							String formattedIssuanceDay   = String.format("%02d", Integer.parseInt(issuanceDD.getText()));
+							String formattedIssuanceMonth = String.format("%02d", Integer.parseInt(issuanceMM.getText()));
+							LocalDate issuanceDate = LocalDate.of(
+									Integer.parseInt(issuanceYYYY.getText()),
+									Integer.parseInt(formattedIssuanceMonth),
+									Integer.parseInt(formattedIssuanceDay)
+							);
+							long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(issuanceDate, dobDate);
+							LOGGER.info(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME,
+									RegistrationConstants.APPLICATION_ID,
+									"dateOfExpiry diff check: issuance=" + issuanceDate
+											+ ", expiry=" + dobDate + ", days=" + daysBetween);
+							if (daysBetween <= 90) {
+								isValid = false;
+								resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+										RegistrationConstants.INVALID_EXPIRY_ISSUANCE_DIFF, minDays, maxDays));
+							}
+						} catch (Exception ex) {
+							LOGGER.error(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME,
+									RegistrationConstants.APPLICATION_ID, ExceptionUtils.getStackTrace(ex));
+						}
+					}
+				}
+
 			} else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
-			    LocalDate dateOfIssuance = dobDate;
-			    LocalDate minValidDate = currentDate.minusDays(90);
-			    if (dateOfIssuance.isAfter(currentDate) || dateOfIssuance.isAfter(minValidDate)) {
-			        isValid = false;
-			        resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.NOT_ELIGIBLE_SERVICE,
-							minDays, maxDays));
-			    }
+				if (dobDate.isAfter(currentDate)) {
+					isValid = false;
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+							RegistrationConstants.AGE_NON_FUTURE));
+				}
 			}
 
 
