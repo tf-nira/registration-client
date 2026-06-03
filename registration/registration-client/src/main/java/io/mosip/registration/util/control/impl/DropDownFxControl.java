@@ -500,7 +500,14 @@ public class DropDownFxControl extends FxControl {
 				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
 					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-					SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("gender")).get(0);
+					SimpleDto genderData = null;
+					if (demographics.get("gender") != null
+							&& !((ArrayList<?>) demographics.get("gender")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("gender")).get(0);
+					} else if (demographics.get("genderCop") != null
+							&& !((ArrayList<?>) demographics.get("genderCop")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("genderCop")).get(0);
+					}
 					SimpleDto maritalStatusData = (SimpleDto) ((ArrayList) demographics.get("maritalStatus")).get(0);
 					FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
 					FxControl fxControl2 =  getFxControl("numberOfOtherSpousesAlien");
