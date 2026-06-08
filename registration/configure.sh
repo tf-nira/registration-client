@@ -14,6 +14,7 @@ keystore_secret="$keystore_secret_env"
 reg_client_custom_impls_url="$reg_client_custom_impls_url_env"
 host_name="$host_name_env"
 reg_client_docscan_impl_url="$reg_client_docscan_impl_url_env"
+admin_client_secret="$admin_client_secret_env"
 
 echo "initialized variables"
 
@@ -30,7 +31,7 @@ echo "mosip.bio.sdk.zip.url=https://github.com/tf-nira/registration-client/relea
 echo "mosip.bio.sdk.zip.extraction.path=C:/Tech5" >> "${work_dir}"/mosip-application.properties
 echo "mosip.bio.sdk.manifest.path=C:/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
 echo "mosip.download.bio.sdk.url=https://${host_name}/v1/masterdata/download/bio-sdk" >> "${work_dir}"/mosip-application.properties
-
+echo "mosip.bio.sdk.auth.secretKey=${admin_client_secret}"  >> "${work_dir}"/mosip-application.properties
 
 echo "jar signing keystore_secret"
 echo ${keystore_secret}

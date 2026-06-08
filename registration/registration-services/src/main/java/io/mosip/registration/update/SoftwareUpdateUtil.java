@@ -112,11 +112,23 @@ public class SoftwareUpdateUtil {
         throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
     }
 
-    protected static void downloadZipfile(String url, File destinationFile) throws RegBaseCheckedException {
+    protected static void downloadZipfile(String url, File destinationFile, String cookie)
+            throws RegBaseCheckedException {
         try {
             int connectionTimeout = getConnectionTimeout();
             int readTimeout = getReadTimeout();
-            FileUtils.copyURLToFile(new URL(url), destinationFile, connectionTimeout, readTimeout);
+
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
+                    new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(connectionTimeout);
+            conn.setReadTimeout(readTimeout);
+            if (cookie != null) {
+                conn.setRequestProperty("Cookie", cookie);
+            }
+
+            try (InputStream in = conn.getInputStream()) {
+                FileUtils.copyInputStreamToFile(in, destinationFile);
+            }
             LOGGER.info("Successfully downloaded zip file from {}", url);
         } catch (Exception e) {
             LOGGER.error("Failed to download {}", url, e);
