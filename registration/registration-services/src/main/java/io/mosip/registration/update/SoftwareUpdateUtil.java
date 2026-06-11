@@ -112,22 +112,38 @@ public class SoftwareUpdateUtil {
         throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
     }
 
-    protected static InputStream downloadZipfile(String url) throws RegBaseCheckedException {
-        LOGGER.info("DownloadZipfile invoking url : {}", url);
+    protected static void downloadZipfile(String url, File destinationFile, String cookie)
+            throws RegBaseCheckedException {
         try {
-            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-            factory.setConnectTimeout(600000);
+            int connectionTimeout = getConnectionTimeout();
+            int readTimeout = getReadTimeout();
 
-            RestTemplate restTemplate = new RestTemplate(factory);
-            LOGGER.info("RestTemplate loaded Successfully...");
-            return restTemplate.execute(url, HttpMethod.GET, null, response -> {
-                return response.getBody();
-            });
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
+                    new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(connectionTimeout);
+            conn.setReadTimeout(readTimeout);
+            if (cookie != null) {
+                conn.setRequestProperty("Cookie", cookie);
+            }
 
+            try (InputStream in = conn.getInputStream()) {
+                FileUtils.copyInputStreamToFile(in, destinationFile);
+            }
+            LOGGER.info("Successfully downloaded zip file from {}", url);
         } catch (Exception e) {
             LOGGER.error("Failed to download {}", url, e);
             throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
         }
+    }
+
+    private static int getConnectionTimeout() {
+        Integer t = ApplicationContext.getIntValueFromApplicationMap(CONNECTION_TIMEOUT);
+        return t == null ? 600000 : t;
+    }
+
+    private static int getReadTimeout() {
+        Integer t = ApplicationContext.getIntValueFromApplicationMap(READ_TIMEOUT);
+        return t == null ? 0 : t;
     }
 
     protected static boolean deleteFile(String filePath) {
