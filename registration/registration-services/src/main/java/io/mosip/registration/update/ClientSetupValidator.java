@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +48,10 @@ public class ClientSetupValidator {
     private static boolean bioSDK_updated = false;
     private static Stack<String> messages = new Stack<>();
     public static final String MOSIP_HOSTNAME_PLACEHOLDER = "${mosip.hostname}";
+    private static String bioSdkAuthUrl = null;
+    private static String bioSdkAuthAppId = null;
+    private static String bioSdkAuthClientId = null;
+    private static String bioSdkAuthSecretKey = null;
 
     public String prepareURLByHostName(String url) {
         String mosipHostNameVal = mosipHostname;
@@ -69,6 +74,10 @@ public class ClientSetupValidator {
             environment = properties.getProperty("environment");
             downloadBioSDKURL = properties.getProperty("mosip.download.bio.sdk.url");
             mosipHostname = properties.getProperty("mosip.hostname");
+            bioSdkAuthUrl = properties.getProperty("mosip.bio.sdk.auth.url");
+            bioSdkAuthAppId = properties.getProperty("mosip.bio.sdk.auth.appId");
+            bioSdkAuthClientId = properties.getProperty("mosip.bio.sdk.auth.clientId");
+            bioSdkAuthSecretKey = properties.getProperty("mosip.bio.sdk.auth.secretKey");
             setLocalManifest();
             setLocalSDKManifest();
 
@@ -179,20 +188,41 @@ public class ClientSetupValidator {
         String apiUrl = downloadBioSDKURL;
         String url = prepareURLByHostName(apiUrl);
         String zipFilePath = "Bio_SDK.zip";
+        bioSDK_updated = false;
 
-        try (InputStream in = SoftwareUpdateUtil.downloadZipfile(url);
-             FileOutputStream out = new FileOutputStream(zipFilePath)) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
+        try {
+            logger.info("Downloading Bio SDK zip from: {}", url);
+            String token = getAuthToken();
+            SoftwareUpdateUtil.downloadZipfile(url, new File(zipFilePath), token);
+            logger.info("Bio_SDK.zip downloaded successfully");
 
             backupExistingDirectory(sdkZipExtractionPath);
             unzip(zipFilePath, sdkZipExtractionPath);
-        } catch (IOException | RegBaseCheckedException e) {
-            logger.error("Failed to download or extract the zip file", e);
+            bioSDK_updated = true;
+            logger.info("Bio SDK extracted to: {}", sdkZipExtractionPath);
+        } catch (Exception e) {
+            logger.error("SDK update aborted: {}", e.getMessage(), e);
+            bioSDK_updated = false;
         }
+    }
+
+    private String getAuthToken() throws Exception {
+        String authUrl = prepareURLByHostName(bioSdkAuthUrl);
+        String body = String.format(
+                "{\"id\":\"string\",\"metadata\":{},\"requesttime\":\"2018-12-10T06:12:52.994Z\",\"version\":\"string\"," +
+                        "\"request\":{\"appId\":\"%s\",\"clientId\":\"%s\",\"secretKey\":\"%s\"}}",
+                bioSdkAuthAppId, bioSdkAuthClientId, bioSdkAuthSecretKey
+        );
+        java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
+                new java.net.URL(authUrl).openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
+        String cookie = conn.getHeaderField("Set-Cookie");
+        if (cookie == null) throw new Exception("Auth failed, no token in response");
+        logger.info("Auth token obtained successfully");
+        return cookie;
     }
 
     private void backupExistingDirectory(String destDir) {
