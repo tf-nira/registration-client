@@ -532,6 +532,9 @@ public class PacketHandlerController extends BaseController implements Initializ
 				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 
+			LOGGER.info("Process Id : {}", registrationDTO.getProcessId());
+			LOGGER.info("Slip Template Null : {}", slipAckTemplateText == null);
+
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
 
 				ResponseDTO templateResponse = templateGenerator.generateTemplate(slipAckTemplateText, registrationDTO,

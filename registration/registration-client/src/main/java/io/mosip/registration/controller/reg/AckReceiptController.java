@@ -153,7 +153,20 @@ public class AckReceiptController extends BaseController implements Initializabl
 				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Thermal Receipt");
 		
 		try {
-			Document doc = Jsoup.parse(slipStringWriter.toString());
+			LOGGER.info("About to parse slipStringWriter");
+
+			if (slipStringWriter == null) {
+				LOGGER.error("slipStringWriter is NULL");
+				return;
+			}
+
+			String slipContent = slipStringWriter.toString();
+
+			LOGGER.info("Slip content length : {}", slipContent.length());
+
+			Document doc = Jsoup.parse(slipContent);
+
+			LOGGER.info("Document parsed successfully");
 	        Element qrImg = doc.selectFirst("img.qrimage");
 	        
 	        String path = "C:/Thermal_images/";
