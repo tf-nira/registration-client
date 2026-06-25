@@ -195,7 +195,12 @@ public class BioServiceImpl extends BaseService implements BioService {
 					BiometricsDto biometricsDto = registrationDTO.getBiometric(fieldDto.getId(), attribute);
 					//its null, then check exception list
 					if(biometricsDto == null) {
-						capturedContext.put(attribute, registrationDTO.isBiometricExceptionAvailable(fieldDto.getId(), attribute));
+						boolean isException = registrationDTO.isBiometricExceptionAvailable(fieldDto.getId(), attribute);
+						if (RegistrationConstants.INTRODUCER_BIOMETRICS.equalsIgnoreCase(fieldDto.getId())) {
+							capturedContext.put(attribute, false);
+						} else {
+							capturedContext.put(attribute, isException);
+						}
 						continue;
 					}
 					//its force captured, not required to validate threshold
