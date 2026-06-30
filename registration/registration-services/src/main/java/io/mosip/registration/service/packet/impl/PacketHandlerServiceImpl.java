@@ -292,7 +292,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		}
 		
 		// Add the "isCardRequired" field for Renewal flow type
-	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL) || registrationDTO.getFlowType().equals(FlowType.ALIENRENEWAL) || registrationDTO.getFlowType().equals(FlowType.ALIENLOST)) {
+	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL) || registrationDTO.getFlowType().equals(FlowType.ALIENRENEWAL)) {
 	        LOGGER.info("Setting isCardRequired field to Yes for Renewal flow type");
 	        registrationDTO.addDemographicField("isCardRequired", "Yes");
 	    }
