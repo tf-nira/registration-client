@@ -222,6 +222,17 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			List<SimpleDto> values = Collections.singletonList( new SimpleDto("eng", serviceType));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+			if(registrationDTO.getDemographicSimpleType("reasonforCancellation") != null){
+				List<SimpleDto> reasonDtos = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("reasonforCancellation");
+				if(reasonDtos != null && !reasonDtos.isEmpty()){
+					String reasonValue = reasonDtos.get(0).getValue();
+					if("Others".equalsIgnoreCase(reasonValue)){
+						registrationDTO.addDemographicField("remark", (List<SimpleDto>) registrationDTO.getDemographicSimpleType("otherReasonForCancellation"));
+					} else {
+						registrationDTO.addDemographicField("remark", reasonValue);
+					}
+				}
+			}
 		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
