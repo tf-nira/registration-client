@@ -142,9 +142,10 @@ public abstract class FxControl  {
 		if(!isFieldVisible) {
 			switch (uiFieldDTO.getType()) {
 				case "documentType":
-					getRegistrationDTo().removeDocument(uiFieldDTO.getId());
+					clearValue();
 					break;
 				case "biometricsType":
+					selectAndSet(null);
 					List<String> requiredAttributes = requiredFieldValidator.getRequiredBioAttributes(uiFieldDTO, getRegistrationDTo());
 					for(String bioAttribute : uiFieldDTO.getBioAttributes()) {
 						if(!requiredAttributes.contains(bioAttribute))
@@ -152,7 +153,10 @@ public abstract class FxControl  {
 					}
 					break;
 				default:
-					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					if (!uiFieldDTO.getId().equalsIgnoreCase("enrolmentCountry")) {
+						selectAndSet(null);
+						getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					}
 					break;
 			}
 		}
