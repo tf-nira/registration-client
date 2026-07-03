@@ -26,7 +26,6 @@ on:
       - tf-nira-dev-jar
       - tf_nira_preprod
       - tf_nira_preprod_new1
-      - tf_nira_preprod_new1_hiddenSet
 
 
 jobs:
