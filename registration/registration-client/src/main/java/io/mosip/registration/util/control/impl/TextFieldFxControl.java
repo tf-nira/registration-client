@@ -137,6 +137,13 @@ public class TextFieldFxControl extends FxControl {
 		TextField textField = (TextField) node;
 
 		textField.textProperty().addListener((observable, oldValue, newValue) -> {
+			// handle empty case
+			if (newValue == null || newValue.trim().isEmpty()) {
+				getRegistrationDTo().getDemographics().remove(this.uiFieldDTO.getId());
+				LOGGER.info("Field cleared → removed from DTO {}", uiFieldDTO.getId());
+				return;
+			}
+			
 			if (uiFieldDTO.isTransliterate()) {
 				transliterate(textField, textField.getId().substring(textField.getId().length() - RegistrationConstants.LANGCODE_LENGTH, textField.getId().length()));
 			}
