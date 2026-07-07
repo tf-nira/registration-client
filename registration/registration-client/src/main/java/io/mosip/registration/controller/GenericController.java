@@ -9,6 +9,7 @@ import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.beans.binding.Bindings;
+import javafx.event.Event;
 import javafx.fxml.Initializable;
 
 import java.awt.Color;
@@ -17,6 +18,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
@@ -31,7 +35,11 @@ import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.text.TextAlignment;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -110,6 +118,15 @@ public class GenericController extends BaseController {
 	protected static final Logger LOGGER = AppConfig.getLogger(GenericController.class);
 
 	private static final String TAB_LABEL_ERROR_CLASS = "tabErrorLabel";
+	private static final Set<String> COP_NAME_CHANGE_SERVICE_FIELDS = new HashSet<>(Arrays.asList(
+			"addingName",
+			"changeOrderOfNames",
+			"completeChangeofName",
+			"otherNameCorrections",
+			"addingNamesFromPreviousCertorDoc"));
+	private static final List<String> COP_NOTIFICATION_NAME_FIELDS = Arrays.asList("surname", "givenName", "otherNames");
+	private static final String COP_NAME_CHANGE_NAME_REQUIRED_MSG =
+			"Enter at least one name detail (Surname, Given Name, or Other Names) in Notification of Change.";
 	private static final String LABEL_CLASS = "additionaInfoReqIdLabel";
 	private static final String NAV_LABEL_CLASS = "navigationLabel";
 	private static final String TEXTFIELD_CLASS = "preregFetchBtnStyle";
@@ -126,7 +143,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_TITLE = "title";
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
 	private ProcessSpecDto process;
-
+	public Node node;
 	/**
 	 * Top most Grid pane in FXML
 	 */
@@ -194,7 +211,10 @@ public class GenericController extends BaseController {
 	private static final List<String> familyRoles = Arrays.asList(
 			"NIN", "spouseNIN", "spouseTwoNIN", "spouseThreeNIN", "spouseFourNIN",
 			"fatherNIN", "motherNIN", "guardianNIN_AIN", "childNIN",
-			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN"
+			"childTwoNIN", "childThreeNIN", "childFourNIN", "childFiveNIN", "childSixNIN","introducerNIN",
+			"secondSecondaryOwner","firstSecondaryOwner","primaryOwnerAIN","thirdSecondaryOwner",
+            "fourthSecondaryOwner","fifthSecondaryOwner","sixthSecondaryOwner","seventhSecondaryOwner",
+            "eighthSecondaryOwner","ninthSecondaryOwner"
 	);
 
 	public static Map<String, FxControl> getFxControlMap() {
@@ -229,6 +249,10 @@ public class GenericController extends BaseController {
 		updateFlowAllowedProcess.add(FlowType.UPDATE.name());
 		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
 		updateFlowAllowedProcess.add(FlowType.FIRSTID.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENNEW.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENRENEWAL.name());
+		updateFlowAllowedProcess.add(FlowType.ALIENLOST.name());
+		updateFlowAllowedProcess.add(FlowType.DEACTIVATED.name());
 	}
 
 	private void fillHierarchicalLevelsByLanguage() {
@@ -317,8 +341,21 @@ public class GenericController extends BaseController {
 						Platform.runLater(() -> {
 							boolean isValid = false;
 							try {
-								isValid = pridValidatorImpl.validateId(textField.getText());
-							} catch (InvalidIDException invalidIDException) {
+								String preId = textField.getText();
+								if (preId == null || preId.isEmpty()) {
+									isValid = false;
+								} else {
+									String valueToValidate;
+
+									if (preId.contains("-")) {
+										valueToValidate = preId.split("-")[1];
+									} else {
+										valueToValidate = preId;
+									}
+
+									isValid = pridValidatorImpl.validateId(valueToValidate);
+								}
+							} catch (InvalidIDException e) {
 								isValid = false;
 							}
 
@@ -553,13 +590,32 @@ public class GenericController extends BaseController {
 							var demographicsCopy = (Map<String, Object>) SessionContext.map().get(RegistrationConstants.REGISTRATION_DATA_DEMO);
 //it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
 //kind of supporting data
+							FlowType flowType = getRegistrationDTOFromSession().getFlowType();
 							Object sessionValue = getRegistrationDTOFromSession().getDemographics().get(field.getId());
-							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null && 
-							               !((SimpleDto) sessionValue).getValue().toString().isEmpty()) 
+							Object data = (sessionValue instanceof SimpleDto && ((SimpleDto) sessionValue).getValue() != null &&
+							               !((SimpleDto) sessionValue).getValue().toString().isEmpty())
 							              ? sessionValue : demographicsCopy.get(field.getId());
 
-							if (data != null) {
+							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
+								FxControl fxControlValue = getFxControl(field.getId());
+								if (fxControlValue != null && fxControlValue.getNode() != null) {
+									fxControlValue.getNode().setVisible(false);
+									fxControlValue.getNode().setManaged(false); // IMPORTANT
+								}
+							}
+
+							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
+								FxControl enrolmentCountry = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+								enrolmentCountry.selectAndSet("UGA");
+								enrolmentCountry.setData("UGA");
+								enrolmentCountry.getNode().setDisable(true);
+							}
+
+							if (flowType.equals(FlowType.UPDATE) && data != null) {
 							    fxControl.selectAndSet(data);
+							    fxControl.setData(data);
+							} else if(!flowType.equals(FlowType.UPDATE) && !field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT) && !field.getId().equalsIgnoreCase(RegistrationConstants.ENROLLMENT_COUNTRY)){
+								fxControl.selectAndSet(data);
 							    fxControl.setData(data);
 							}
 							break;
@@ -646,8 +702,9 @@ public class GenericController extends BaseController {
 		Label navigationLabel = new Label();
 		navigationLabel.getStyleClass().add(NAV_LABEL_CLASS);
 		navigationLabel.setText(processSpecDto.getLabel().get(ApplicationContext.applicationLanguage()));
-		navigationLabel.prefWidthProperty().bind(navigationAnchorPane.widthProperty());
-		navigationLabel.setWrapText(true);
+		navigationLabel.setStyle("-fx-font-size: 12px;");
+	    navigationLabel.setWrapText(true);
+	    navigationLabel.setPrefWidth(150);
 
 		navigationAnchorPane.getChildren().add(navigationLabel);
 		AnchorPane.setTopAnchor(navigationLabel, 5.0);
@@ -855,6 +912,17 @@ public class GenericController extends BaseController {
 											.setDisable(!refreshScreenVisibility(newScreenName));
 									tabPane.getSelectionModel().select(newValue.intValue());
 									showHideGeneralNotification(null);
+									if (newScreenName.equals("PREVIEW")) {
+										String invalidScreenName = getInvalidScreenName(tabPane);
+										if (invalidScreenName.equals(EMPTY)) {
+											notification.setVisible(false);
+											loadPreviewOrAuthScreen(tabPane, tabPane.getTabs().get(newValue.intValue()));
+											return;
+										} else {
+											tabPane.getSelectionModel().select(oldValue.intValue());
+											return;
+										}
+									}
 								} else {
 									// If "Review Details" is clicked, remain on the current tab
 									ignoreChange[0] = false;
@@ -951,6 +1019,9 @@ public class GenericController extends BaseController {
 		boolean isValid = true;
 		boolean isNotificationOfChangeFilled = false; // New flag for "Notification of Change" validation
 		boolean isNotificationOfChangePresent = false; // Check if fields from this group exist on the screen
+		boolean isphoneNoFilled = false;
+		boolean isLinkedsectionFields = false;
+		boolean nationalityCheck = false;
 
 		if (result.isPresent()) {
 
@@ -972,6 +1043,18 @@ public class GenericController extends BaseController {
 						if( !field.getId().trim().startsWith("isError") && !field.getId().trim().startsWith("changeReason"))
 							isNotificationOfChangeFilled = true;
 					}
+				}
+				
+
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)) {
+					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
+					if(facilityType != null && facilityType.equalsIgnoreCase(RegistrationConstants.DP)) {
+						isLinkedsectionFields = validateEitherAinOrAID();
+					} else {
+						isLinkedsectionFields = true;
+					}
+					isphoneNoFilled = validateEitherLocalOrNonLocal();
+					nationalityCheck = validateSameNationality();
 				}
 
 				// Validate PRN differently
@@ -997,6 +1080,11 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
+		if (isValid && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && isCopNameChangeServiceSelected()
+				&& !isAnyCopNotificationNameFieldProvided()) {
+			showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+			return false;
+		}
 
 		if (isValid) {
 			showHideErrorNotification(null,null);
@@ -1004,7 +1092,7 @@ public class GenericController extends BaseController {
 					SessionContext.userContext().getUserId(), AuditReferenceIdTypes.USER_ID.getReferenceTypeId());
 
 			// Only show the general notification if the screen is "Demographic Details"
-			if (screenName != null && "DemographicDetails_tab".equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
+			if (screenName != null && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && "NEW".equals(process.getId())) {
 				showHideGeneralNotification("Please Note: Maiden name and any Previous names will not appear on the card");
 
 			}
@@ -1015,7 +1103,127 @@ public class GenericController extends BaseController {
 			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.",null);
 			return false;
 		}
+		
+		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && (RegistrationConstants.ALIENNEW.equals(process.getId()) || RegistrationConstants.ALIENRENEWAL.equals(process.getId()) || RegistrationConstants.ALIENLOST.equals(process.getId())) ) {
+			if(!isphoneNoFilled) {
+				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
+				return false;
+			} else if(!isLinkedsectionFields) {
+				showHideErrorNotification(RegistrationConstants.AIN_OR_AID_ERROR_MSG,null);
+				return false;
+			} else if(!nationalityCheck) {
+				showHideErrorNotification(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG,null);
+				return false;
+			}
+		}
 		return isValid;
+	}
+
+
+	public boolean validateSameNationality() {
+	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
+	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
+	    if (primaryNationality != null && secondaryNationality != null) {
+	        return !primaryNationality.equalsIgnoreCase(secondaryNationality);
+	    } else {
+	    	return true;
+	    }
+	}
+
+
+	private boolean validateEitherAinOrAID() {
+		boolean valid = false;
+	    String principalAIN = getStringTypeValue(RegistrationConstants.PRINCIPAL_OF_AIN);
+	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
+	    if(principalAIN != null || principleAID != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean validateEitherLocalOrNonLocal() {
+		boolean valid = false;
+		String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.COUNTRYCODE);
+	    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
+	    String localPhoneValue = getStringTypeValue(RegistrationConstants.PHONE);
+	    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
+	    if(localPhoneValue != null && localCountryCodeList != null) {
+	    	valid = true;
+	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean isCopNameChangeServiceSelected() {
+		return COP_NAME_CHANGE_SERVICE_FIELDS.stream().anyMatch(this::isDemographicFieldYes);
+	}
+
+	private boolean isAnyCopNotificationNameFieldProvided() {
+		return COP_NOTIFICATION_NAME_FIELDS.stream().anyMatch(this::isDemographicFieldProvided);
+	}
+
+	private boolean isDemographicFieldYes(String fieldId) {
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return "Y".equalsIgnoreCase(((String) value).trim());
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& "Y".equalsIgnoreCase(((SimpleDto) item).getValue().trim())) {
+					return true;
+				}
+				if (item != null && "Y".equalsIgnoreCase(item.toString().trim())) {
+					return true;
+				}
+			}
+		}
+		return value != null && "Y".equalsIgnoreCase(value.toString().trim());
+	}
+
+	private boolean isDemographicFieldProvided(String fieldId) {
+		FxControl control = getFxControl(fieldId);
+		if (control != null) {
+			return !isFieldEmpty(control);
+		}
+
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return !((String) value).trim().isEmpty();
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& !((SimpleDto) item).getValue().trim().isEmpty()) {
+					return true;
+				}
+				if (item != null && !item.toString().trim().isEmpty()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return value != null && !value.toString().trim().isEmpty();
+	}
+
+	public String getStringTypeValue(String fieldId) {
+
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+	    String fieldValue = (String) demographics.get(fieldId);
+		return fieldValue;
+	}
+
+	public String getSimpleTypeValue(String fieldId) {
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
+		if (fieldDataList != null) {
+			SimpleDto fieldData = fieldDataList.get(0);
+			return fieldData.getValue();
+		}
+		return null;
 	}
 
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
@@ -1055,7 +1263,14 @@ public class GenericController extends BaseController {
 		// Only show the custom message if the fieldName matches the condition
 		if ("Please accept the terms and conditions to proceed with the application.".equals(fieldName)) {
 			notification.setText(fieldName); // Show the message if condition is met
-		} else {
+		}
+		else if("Applicant Biometrics".equals(fieldName) ){
+			notification.setText("Please complete biometric capture to proceed with the application");
+		}
+		else if("Introducer Biometrics".equals(fieldName)){
+			notification.setText("Please complete Introducer biometric capture to proceed with the application.");
+		}
+		else {
 			notification.setText(
 					(fieldName == null) ? EMPTY
 							: ApplicationContext
@@ -1085,7 +1300,16 @@ public class GenericController extends BaseController {
 
 			Optional<Tab> result = tabPane.getTabs().stream()
 					.filter(t -> t.getId().equalsIgnoreCase(screen.getName() + "_tab")).findFirst();
-			if (anyInvalidField && result.isPresent()) {
+			if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screen.getName() + "_tab")
+					&& isCopNameChangeServiceSelected() && !isAnyCopNotificationNameFieldProvided()
+					&& result.isPresent()) {
+				LOGGER.error("Screen validation failed {}, COP name change requires at least one name field",
+						screen.getName());
+				showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+				errorScreen = screen.getName();
+				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
+				break;
+			} else if (anyInvalidField && result.isPresent()) {
 				LOGGER.error("Screen validation failed {}", screen.getName());
 				errorScreen = screen.getName();
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
@@ -1180,12 +1404,42 @@ public class GenericController extends BaseController {
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
-
+					label.setWrapText(true);
+					label.setMaxWidth(900);
 					if (groupEntry.getKey().equals("COP Categories and Services")) {
 						label.setPadding(new Insets(0, 0, 10, 0));
 					}
 
-					groupFlowPane.add(label, 0, 0, 2, 1);
+					groupFlowPane.add(label, 0, 0, 3, 1);
+
+					if (groupEntry.getKey().equals(RegistrationConstants.DECLARATION)) {
+					    Label declarationHeading = new Label(RegistrationConstants.DECLARATION);
+					    declarationHeading.getStyleClass().add("demoGraphicCustomLabel");
+					    declarationHeading.setStyle("-fx-font-weight: 700; -fx-font-size: 15px;");
+					    groupFlowPane.add(declarationHeading, 0, 0, 3, 1);
+
+					    boolean isDeclarationAdded = false;
+					    for (UiFieldDTO fieldDTO : groupEntry.getValue()) {
+					        if ("declarationCheckBox".equals(fieldDTO.getId()) && !isDeclarationAdded) {
+					            String declarationText = fieldDTO.getLabel().get(RegistrationConstants.LANG);
+					            CheckBox declarationCheckBox = new CheckBox();
+					            Label declarationLabel = new Label(declarationText);
+					            declarationLabel.setWrapText(true);
+					            declarationLabel.setTextAlignment(TextAlignment.JUSTIFY);
+					            declarationLabel.setMaxWidth(800);
+
+					            // Put checkbox and label in an HBox
+					            HBox checkboxContainer = new HBox(10);
+					            checkboxContainer.setAlignment(Pos.TOP_LEFT);
+					            checkboxContainer.setPrefWidth(Double.MAX_VALUE);
+					            HBox.setHgrow(declarationLabel, Priority.ALWAYS);
+
+					            checkboxContainer.getChildren().addAll(declarationCheckBox, declarationLabel);
+					            groupFlowPane.add(checkboxContainer, 0, 1, 3, 1);
+					            isDeclarationAdded = true;
+					        }
+					    }
+					}
 				}
 				int fieldIndex = 0;
 				int gRowIndex = 0;
@@ -1374,19 +1628,19 @@ public class GenericController extends BaseController {
 
 	    CheckPRNStatusResponseDTO responseDTO = objectMapper.convertValue(responseWrapper.getResponse(), CheckPRNStatusResponseDTO.class);
 
-	   
+
 	    // Validate process flow
 	    if (!processFlow.equalsIgnoreCase(responseDTO.getProcessFlowPaidFor())) {
 	        return new PRNVerificationResponse(false, String.format("Verification failed: PRN isn't for %s use case", processFlow));
 	    }
 
-	    // Validate replaceTypeCode if provided	    
+	    // Validate replaceTypeCode if provided
 	    if ("LOST".equals(processFlow) && replaceTypeCode != null &&
-	            (responseDTO.getSubServiceTypePaidFor() == null || 
+	            (responseDTO.getSubServiceTypePaidFor() == null ||
 	            !replaceTypeCode.equalsIgnoreCase(responseDTO.getSubServiceTypePaidFor()))) {
 	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't for replacement type selected.");
 	    }
-	    
+
 	    // Validate PRN status
 	    if (!statusCode.equalsIgnoreCase(responseDTO.getStatusCode())) {
 	        return new PRNVerificationResponse(false, "Verification failed: PRN isn't paid");
@@ -1521,7 +1775,7 @@ public class GenericController extends BaseController {
 	            if ("LOST".equals(processSpecFlow)) {
 	                Node rootNode = node.getScene().getRoot();
 	                List<ComboBox<?>> comboBoxes = findAllComboBoxes(rootNode);
-	                
+
 	                // Retrieve Code of replacement type selected
 	                for (ComboBox<?> comboBox : comboBoxes) {
 	                	if("userServiceTypeReplacement".equals(comboBox.getId())) {
@@ -1548,7 +1802,7 @@ public class GenericController extends BaseController {
 	                removeLoadingPRNIndicator(node);
 
 	                Label validationLabel = (Label) parentGridPane.lookup("#PRNengMessage");
-	 
+
 
 	                if (isValid) {
 	                    PRNVerificationResponse consumeResponse = consumePrnAsUsed(prnText, registrationId);
@@ -1563,10 +1817,10 @@ public class GenericController extends BaseController {
 	        }
 	    }).start();
 	}
-	
+
 	public List<ComboBox<?>> findAllComboBoxes(Node node) {
 	    List<ComboBox<?>> comboBoxes = new ArrayList<>();
-	    
+
 	    // If the node is a container (like Parent), recursively check its children
 	    if (node instanceof Parent) {
 	        for (Node child : ((Parent) node).getChildrenUnmodifiable()) {
@@ -1578,7 +1832,7 @@ public class GenericController extends BaseController {
 	    if (node instanceof ComboBox) {
 	        comboBoxes.add((ComboBox<?>) node);
 	    }
-	    
+
 	    return comboBoxes;
 	}
 
@@ -1851,7 +2105,7 @@ public class GenericController extends BaseController {
 								fxControl.clearValue();
 								break;
 							default:
-								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId()))){
+								if(!field.isSetRequired() && screenDTO.getOrder() == 2 && process!=null && !("UPDATE".equals(process.getId())) && !(field.getId().equalsIgnoreCase("enrolmentCountry"))){
 									fxControl.selectAndSet(null);
 									fxControl.setData(null);
 									fxControl.clearToolTipText();
@@ -1861,15 +2115,54 @@ public class GenericController extends BaseController {
 									boolean check1 = fxControl.isFieldDefaultValue(field);
 									boolean check2 = fxControl.isFieldDefaultValue2(field);
 
-									if(check1) {
+									Set<String> copCat = Set.of(
+											"familyInformationCat"
+									);
+
+									// Get demographics list
+									Map<String, Object> demographics = (Map<String, Object>) getRegistrationDTOFromSession().getDemographics();
+
+									String dateOfBirthStr = null;
+
+									Object dobObj = demographics.get("dateOfBirthCop");
+
+									if (dobObj instanceof String) {
+										dateOfBirthStr = (String) dobObj;
+									} else if (dobObj instanceof List<?>) {
+										List<?> dobList = (List<?>) dobObj;
+										if (!dobList.isEmpty() && dobList.get(0) instanceof SimpleDto) {
+											dateOfBirthStr = ((SimpleDto) dobList.get(0)).getValue();
+										}
+									}
+
+									int applicantAgeCop = 0;
+									if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+										DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+										LocalDate dateOfBirth = LocalDate.parse(dateOfBirthStr, formatter);
+										applicantAgeCop = Period.between(dateOfBirth, LocalDate.now()).getYears();
+									}
+
+									String citizenshipTypeCatValue = demographics.get("citizenshipTypeCat") != null ?
+											String.valueOf(demographics.get("citizenshipTypeCat")) : "N";
+									// Check if any copCat field has value "Y"
+									boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+											.anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+
+									if (check1) {
 										fxControl.selectAndSet("Y");
 										fxControl.getNode().setDisable(true);
-									}
-									else if(check2) {
+									} else if (check2) {
 										fxControl.selectAndSet("N");
-										fxControl.getNode().setDisable(true);
-									}
-									else {
+										if (fxControl != null && !anyCopCatFieldHasY) {
+											if ("Y".equals(citizenshipTypeCatValue) && applicantAgeCop >= 16) {
+												fxControl.getNode().setDisable(false); // Enable - allow change
+											} else {
+												fxControl.getNode().setDisable(true);  // Disable - not allowed to change
+											}
+										} else {
+											fxControl.getNode().setDisable(false);
+										}
+									} else {
 										fxControl.selectAndSet("N");
 										fxControl.getNode().setDisable(false);
 									}
@@ -1880,30 +2173,34 @@ public class GenericController extends BaseController {
 			}
 		}
 		else{
-			for (UiScreenDTO screenDTO : orderedScreens.values()) {
-				for (UiFieldDTO field : screenDTO.getFields()) {
-					FxControl fxControl = getFxControl(field.getId());
-					if (fxControl != null) {
-						if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
-							boolean check1 = fxControl.isFieldDefaultValue(field);
-							boolean check2 = fxControl.isFieldDefaultValue2(field);
+				for (UiScreenDTO screenDTO : orderedScreens.values()) {
+					for (UiFieldDTO field : screenDTO.getFields()) {
+						FxControl fxControl = getFxControl(field.getId());
+						Set<String> excludedFields = Set.of(
+								"inDepthCitizenshipVerification",
+								"enrollmentOfficerComment",
+								"PRNId",
+								"enrolmentStatus",
+								"enrolmentCountry",
+								"applicantPlaceOfEnrolmentDistrict",
+								"applicantPlaceOfEnrolmentCounty",
+								"applicantPlaceOfEnrolmentSubCounty",
+								"applicantPlaceOfEnrolmentParish",
+								"applicantPlaceOfEnrolmentVillage",
+								"sameAsPlaceOfResidenceCheckBoxEnrolment"
+						);
 
-							if(check1) {
-								fxControl.selectAndSet("Y");
-								fxControl.getNode().setDisable(true);
-							}
-							else if(check2) {
-								fxControl.selectAndSet("N");
-								fxControl.getNode().setDisable(true);
-							}
-							else {
-								fxControl.selectAndSet("N");
+						if (fxControl != null && !excludedFields.contains(field.getId()) && screenDTO.getOrder()==2 && !(fxControl instanceof TitleFxControl)) {
+							String regId = String.valueOf(getRegistrationDTOFromSession().getPreRegistrationId());
+							if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (isFieldEmpty(fxControl) || !fxControl.canContinue())) {
 								fxControl.getNode().setDisable(false);
+							}
+							else{
+								fxControl.getNode().setDisable(true);
 							}
 						}
 					}
 				}
-			}
 		}
 	}
 
@@ -1926,8 +2223,8 @@ public class GenericController extends BaseController {
 		RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 
 		if ("NEW".equals(registrationDTO.getProcessId())) {
-			List<SimpleDto> userService = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("userServiceType");
-			if (age < highAgeNew && ("By Registration".equals(userService.get(0).getValue()) || "By Naturalization".equals(userService.get(0).getValue()))) {
+			List<SimpleDto> userService = (List<SimpleDto>) registrationDTO.getDemographicSimpleType(RegistrationConstants.USER_SERVICE_TYPE);
+			if (age < highAgeNew && (RegistrationConstants.BY_REGISTRATION.equals(userService.get(0).getValue()) || RegistrationConstants.BY_NATURALIZATION.equals(userService.get(0).getValue()) || RegistrationConstants.DUAL_CITIZENSHIP.equals(userService.get(0).getValue()))) {
 				result.put("isValid", false);
 				result.put("errVal", highAgeNew);
 				return result;
@@ -1965,28 +2262,54 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	public String validateNin(String fieldId, String value ){
-		if(familyRoles.contains(fieldId)){
-			initNinMap();
-			for (Map.Entry<String, String> entry : ninMap.entrySet()) {
-				if (!entry.getKey().equals(fieldId) && entry.getValue().equals(value)) {
-					if ((entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN"))) {
-						if (entry.getKey().equalsIgnoreCase("fatherNIN") || entry.getKey().equalsIgnoreCase("motherNIN")) {
-							return entry.getKey().equals("fatherNIN") ? "Father's NIN" : "Mother's NIN";
+	public String validateNin(String fieldId, String value) {
+	    if (familyRoles.contains(fieldId)) {
+	        initNinMap();
 
-						} else{
-							String label = getFxControl(entry.getKey()).getUiSchemaDTO().getLabel()
-									.getOrDefault(ApplicationContext.applicationLanguage(), entry.getKey());
-							return label;
-						}
-					}
-				}
-			}
-		}
+	        String declarant = null;
+	        if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) || "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+	            Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("declarant");
+	            if (declarantObj instanceof List<?>) {
+	                List<?> declarantList = (List<?>) declarantObj;
+	                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+	                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+	                    if (dto.getValue() != null) {
+	                        declarant = dto.getValue().trim().toLowerCase(); // Normalize
+	                    }
+	                }
+	            }
+	        }
 
-		return null;
+	        for (Map.Entry<String, String> entry : ninMap.entrySet()) {
+	            String key = entry.getKey();
+	            String ninValue = entry.getValue();
 
+	            if (key.equals(fieldId) || ninValue.isEmpty())
+	            	continue;
+
+	            if (value.equals(ninValue)) {
+	                if ("introducerNIN".equals(fieldId) || "fatherNIN".equals(fieldId) ||
+	                    "guardianNIN_AIN".equals(fieldId) || "motherNIN".equals(fieldId)) {
+
+	                    boolean isFatherMatch = "father".equals(declarant) && (("fatherNIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+	                                             ("fatherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isMotherMatch = "mother".equals(declarant) && (("motherNIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+	                                             ("motherNIN".equals(fieldId) && "introducerNIN".equals(key)));
+
+	                    boolean isBloodRelativeMatch = "blood relative".equals(declarant) && (("guardianNIN_AIN".equals(key) && "introducerNIN".equals(fieldId)) ||
+	                                                    ("guardianNIN_AIN".equals(fieldId) && "introducerNIN".equals(key)));
+	                    if (isFatherMatch || isMotherMatch || isBloodRelativeMatch) {
+	                        continue;
+	                    }
+	                }
+	                return key; // Duplicate NIN found
+	            }
+	        }
+	    }
+	    return null; // No duplicate found
 	}
+
 	/*
 	 * public List<UiFieldDTO> getProofOfExceptionFields() { return
 	 * fields.stream().filter(field ->
@@ -2027,4 +2350,50 @@ public class GenericController extends BaseController {
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
 	}
 
+	/**
+	 * Checks if a field is empty based on its control type
+	 * @param fxControl the FxControl to check
+	 * @return true if the field is empty, false otherwise
+	 */
+	private boolean isFieldEmpty(FxControl fxControl) {
+		try {
+			Object data = fxControl.getData();
+
+			if (data == null) {
+				return true;
+			}
+
+			if (data instanceof String) {
+				return ((String) data).trim().isEmpty();
+			}
+
+			if (data instanceof List<?>) {
+				List<?> dataList = (List<?>) data;
+				if (dataList.isEmpty()) {
+					return true;
+				}
+
+				// Check if all SimpleDto values are empty
+				for (Object item : dataList) {
+					if (item instanceof SimpleDto) {
+						SimpleDto simpleDto = (SimpleDto) item;
+						if (simpleDto.getValue() != null && !simpleDto.getValue().trim().isEmpty()) {
+							return false;
+						}
+					} else if (item != null && !item.toString().trim().isEmpty()) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			return data.toString().trim().isEmpty();
+
+		} catch (Exception e) {
+			LOGGER.debug("Error checking if field is empty for {}: {}", fxControl.getUiSchemaDTO().getId(), e.getMessage());
+			return true; // Assume empty if we can't determine
+		}
+	}
+
 }
+

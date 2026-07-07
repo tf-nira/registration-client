@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -217,8 +216,9 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 					"Response Decode and leaving the method.... " + System.currentTimeMillis());
 
 			List<RCaptureResponseBiometricsDTO> captureResponseBiometricsDTOs = captureResponse.getBiometrics();
+			LOGGER.info("captureResponseBiometricsDTOs Size : {}", captureResponseBiometricsDTOs.size());
 			LOGGER.info("captureResponseBiometricsDTOs: {}", captureResponseBiometricsDTOs);
-
+			
 			List<BiometricsDto> biometricDTOs = new LinkedList<>();
 
 			for (RCaptureResponseBiometricsDTO rCaptureResponseBiometricsDTO : captureResponseBiometricsDTOs) {

@@ -19,6 +19,7 @@ import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.Initialization;
 import io.mosip.registration.dto.schema.UiFieldDTO;
+import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.FxControl;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
@@ -63,10 +64,16 @@ public class CheckBoxFxControl extends FxControl {
 		double prefWidth = simpleTypeVBox.getPrefWidth();
 
 		/** CheckBox */
-		CheckBox checkBox = getCheckBox(fieldName,
-				String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
-				RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
-
+		CheckBox checkBox = null;
+		if(fieldName.equalsIgnoreCase(RegistrationConstants.DECLARATION_ID)) {
+			checkBox = getCheckBox(fieldName,
+		            "", RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		} else {
+			checkBox = getCheckBox(fieldName,
+					String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
+					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		}
+		
 		setListener(checkBox);
 		simpleTypeVBox.getChildren().add(checkBox);
 		simpleTypeVBox.getChildren().add(getLabel(uiFieldDTO.getId() + RegistrationConstants.ERROR_MSG, null,
@@ -151,9 +158,22 @@ public class CheckBoxFxControl extends FxControl {
 					fxControl.clearValue();
 				}
 			}
-
+			FlowType flowType = getRegistrationDTo().getFlowType();
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.RENEWAL) || flowType.equals(FlowType.LOST) || flowType.equals(FlowType.ALIENNEW) || flowType.equals(FlowType.ALIENRENEWAL) || flowType.equals(FlowType.ALIENLOST))){
+				FxControl fxControl = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
+				fxControl.selectAndSet("UGA");
+				fxControl.setData("UGA");
+				fxControl.getNode().setDisable(true);
+			}
 			if (uiFieldDTO.isSetRequired()){
 				resetValue();
+			}
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.ALIENNEW) || flowType.equals(FlowType.ALIENRENEWAL)  || flowType.equals(FlowType.ALIENLOST))) {
+				DropDownFxControl dropDownFxControl = new DropDownFxControl();
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.ENROLLMENT_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.RESIDENCE_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.EMPLOYER_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.SCHOOL_DISTRICT);
 			}
 			
 			// handling other handlers

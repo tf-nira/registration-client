@@ -375,7 +375,7 @@ public class BaseService {
 		statusDTO.setPacketServerStatus(registration.getServerStatusCode());
 		statusDTO.setPacketPath(registration.getAckFilename());
 		statusDTO.setUploadStatus(registration.getFileUploadStatus());
-		statusDTO.setPacketStatus(registration.getStatusCode());
+		statusDTO.setPacketStatus(registration.getRegType());
 		statusDTO.setSupervisorStatus(registration.getClientStatusCode());
 		statusDTO.setSupervisorComments(registration.getClientStatusComments());
 		statusDTO.setCreatedTime(regDateTimeConversion(registration.getCrDtime().toString()));

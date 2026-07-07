@@ -33,7 +33,6 @@ public class OpenCvScannerImpl implements DocScannerService {
 	private static final String SERVICE_NAME = "OpenCV";
 	private static final String DELIMITER = ":";
 
-
 	public OpenCvScannerImpl() {
 		OpenCV.loadShared();
 	}
@@ -102,24 +101,21 @@ public class OpenCvScannerImpl implements DocScannerService {
 		InputStream inputStream = new ByteArrayInputStream(bytes.toArray());
 		return ImageIO.read(inputStream);
 	}
-
+	
 	private List<Integer> returnCameraIndexes() {
 		var cameraIndexes = new ArrayList<Integer>();
-		var iterator = 0;
-		var end = 5;
-		while (end > 0) {
-			var cap = new VideoCapture(iterator);
-			LOGGER.info("contrast of device*****index" + iterator + "******" + cap.get(Videoio.CAP_PROP_CONTRAST));
-			if ((cap.get(Videoio.CAP_PROP_CONTRAST) > 30.0 && cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0)
-					&& cap.isOpened()) {
-				cameraIndexes.add(iterator);
-				cap.release();
-				break;
-			}
-			iterator++;
-			end--;
-		}
-
-		return cameraIndexes;
+		var cap = new VideoCapture(0, Videoio.CAP_MSMF);
+		var cap1 = new VideoCapture(1, Videoio.CAP_MSMF);
+		LOGGER.info("Contrast of device at index is 0 : {}",  cap.get(Videoio.CAP_PROP_CONTRAST));
+		LOGGER.info("Contrast of device at index is 1 : {}",  cap1.get(Videoio.CAP_PROP_CONTRAST));
+		
+		if (cap1.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap1.isOpened()) {
+			cameraIndexes.add(1);
+			cap1.release();
+	    	} else if(cap.get(Videoio.CAP_PROP_CONTRAST) < 100.0 && cap.isOpened()) {
+		    	cameraIndexes.add(0);
+			cap.release();
+	    	}
+	    	return cameraIndexes;
 	}
 }
