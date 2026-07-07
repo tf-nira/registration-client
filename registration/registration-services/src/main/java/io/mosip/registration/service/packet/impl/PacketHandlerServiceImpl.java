@@ -229,7 +229,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 					if("Others".equalsIgnoreCase(reasonValue)){
 						registrationDTO.addDemographicField("remark", (List<SimpleDto>) registrationDTO.getDemographicSimpleType("otherReasonForCancellation"));
 					} else {
-						registrationDTO.addDemographicField("remark", reasonValue);
+						registrationDTO.addDemographicField("remark", reasonDtos);
 					}
 				}
 			}
