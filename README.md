@@ -13,4 +13,3 @@ To know more about setting up Registration Client, see [Registration Client User
 
 ### License
 This project is licensed under the terms of [Mozilla Public License 2.0](https://github.com/mosip/mosip-platform/blob/master/LICENSE)
-
