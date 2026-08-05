@@ -533,7 +533,6 @@ public class DropDownFxControl extends FxControl {
 						}
 					}
 				}
-				
 
 
 				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",

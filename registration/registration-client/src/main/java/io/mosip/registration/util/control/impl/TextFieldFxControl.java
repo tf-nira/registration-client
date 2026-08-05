@@ -143,7 +143,6 @@ public class TextFieldFxControl extends FxControl {
 				LOGGER.info("Field cleared → removed from DTO {}", uiFieldDTO.getId());
 				return;
 			}
-			
 			if (uiFieldDTO.isTransliterate()) {
 				transliterate(textField, textField.getId().substring(textField.getId().length() - RegistrationConstants.LANGCODE_LENGTH, textField.getId().length()));
 			}
