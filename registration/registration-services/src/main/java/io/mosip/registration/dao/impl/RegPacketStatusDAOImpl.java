@@ -83,10 +83,5 @@ public class RegPacketStatusDAOImpl implements RegPacketStatusDAO {
 	public boolean existsById(Registration registration){
 	    return (registrationRepository.existsById(registration.getPacketId()));
 	}
-	 
-
-	public boolean existsById(Registration registration){
-	    return (registrationRepository.existsById(registration.getPacketId()));
-	}
 	
 }
