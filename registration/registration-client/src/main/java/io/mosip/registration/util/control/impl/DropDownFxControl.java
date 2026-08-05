@@ -494,36 +494,43 @@ public class DropDownFxControl extends FxControl {
 						}
 					}
 
-					if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
-						GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-						Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-						SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("gender")).get(0);
-						SimpleDto maritalStatusData = (SimpleDto) ((ArrayList) demographics.get("maritalStatus")).get(0);
-						FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
-						FxControl fxControl2 =  getFxControl("numberOfOtherSpousesAlien");
-						if (genderData.getValue().equalsIgnoreCase("Female") && !(maritalStatusData.getValue().equalsIgnoreCase("Single"))) {
-							if(fxControl1 != null) {
-								fxControl1.selectAndSet("1");
-								fxControl1.setData("1");
-								fxControl1.getNode().setDisable(true);
-							} else if(fxControl2 != null) {
-								fxControl2.selectAndSet("1");
-								fxControl2.setData("1");
-								fxControl2.getNode().setDisable(true);
-							}
-						}
-						else {
-							if(fxControl1 != null) {
-								fxControl1.selectAndSet(null);
-								fxControl1.setData(null);
-								fxControl1.getNode().setDisable(false);
-							} else if(fxControl2 != null) {
-								fxControl2.selectAndSet(null);
-								fxControl2.setData(null);
-								fxControl2.getNode().setDisable(false);
-							}
+				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+					SimpleDto genderData = null;
+					if (demographics.get("gender") != null
+							&& !((ArrayList<?>) demographics.get("gender")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("gender")).get(0);
+					} else if (demographics.get("genderCop") != null
+							&& !((ArrayList<?>) demographics.get("genderCop")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("genderCop")).get(0);
+					}
+					SimpleDto maritalStatusData = (SimpleDto) ((ArrayList) demographics.get("maritalStatus")).get(0);
+					FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
+					FxControl fxControl2 =  getFxControl("numberOfOtherSpousesAlien");
+					if (genderData.getValue().equalsIgnoreCase("Female") && !(maritalStatusData.getValue().equalsIgnoreCase("Single"))) {
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet("1");
+							fxControl1.setData("1");
+							fxControl1.getNode().setDisable(true);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet("1");
+							fxControl2.setData("1");
+							fxControl2.getNode().setDisable(true);
 						}
 					}
+					else {
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet(null);
+							fxControl1.setData(null);
+							fxControl1.getNode().setDisable(false);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet(null);
+							fxControl2.setData(null);
+							fxControl2.getNode().setDisable(false);
+						}
+					}
+				}
 
 
 				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",

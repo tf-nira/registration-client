@@ -474,7 +474,9 @@ public class PacketHandlerController extends BaseController implements Initializ
 				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
-			} else if (registrationDTO.getProcessId().equals("NEW")) {
+			} else if(registrationDTO.getProcessId().equals("DEACTIVATED")){
+				slipAckTemplateText = templateService.getHtmlTemplate(REG_DEACTIVE_SLIP_TEMPLATE, platformLanguageCode);
+			}else if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
