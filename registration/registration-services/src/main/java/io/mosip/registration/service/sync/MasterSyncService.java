@@ -155,9 +155,4 @@ public interface MasterSyncService {
 
 	List<GenericDto> getFacilityTypeCategoryAndSubCategoryValues(String fieldName, String langCode, String facilityType);
 
-	List<GenericDto> getFilteredFieldValues(String fieldName, String hierarchyLevelName, String langCode,
-									boolean isHierarchical, String resValue);
-
-	List<GenericDto> getFacilityTypeCategoryAndSubCategoryValues(String fieldName, String langCode, String facilityType);
-
 }
