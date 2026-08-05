@@ -1180,42 +1180,6 @@ public class GenericController extends BaseController {
 		return null;
 	}
 
-
-	public boolean validateSameNationality() {
-	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
-	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
-	    if (primaryNationality != null && secondaryNationality != null) {
-	        return !primaryNationality.equalsIgnoreCase(secondaryNationality);
-	    } else {
-	    	return true;
-	    }
-	}
-
-
-	private boolean validateEitherAinOrAID() {
-		boolean valid = false;
-	    String principalAIN = getStringTypeValue(RegistrationConstants.PRINCIPAL_OF_AIN);
-	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
-	    if(principalAIN != null || principleAID != null) {
-	    	valid = true;
-	    }	
-	    return valid;
-	}
-
-	private boolean validateEitherLocalOrNonLocal() {
-		boolean valid = false;
-		String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.COUNTRYCODE);
-	    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
-	    String localPhoneValue = getStringTypeValue(RegistrationConstants.PHONE);
-	    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
-	    if(localPhoneValue != null && localCountryCodeList != null) {
-	    	valid = true;
-	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
-	    	valid = true;
-	    }	
-	    return valid;
-	}
-
 	private boolean isCopNameChangeServiceSelected() {
 		return COP_NAME_CHANGE_SERVICE_FIELDS.stream().anyMatch(this::isDemographicFieldYes);
 	}
@@ -1266,25 +1230,6 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		return value != null && !value.toString().trim().isEmpty();
-	}
-
-	public String getStringTypeValue(String fieldId) {
-
-		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-	    String fieldValue = (String) demographics.get(fieldId);
-		return fieldValue;
-	}
-
-	public String getSimpleTypeValue(String fieldId) {
-		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
-		if (fieldDataList != null) {
-			SimpleDto fieldData = fieldDataList.get(0);
-			return fieldData.getValue();
-		}
-		return null;
 	}
 
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
@@ -2411,51 +2356,6 @@ public class GenericController extends BaseController {
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
 	}
 	
-	/**
-	 * Checks if a field is empty based on its control type
-	 * @param fxControl the FxControl to check
-	 * @return true if the field is empty, false otherwise
-	 */
-	private boolean isFieldEmpty(FxControl fxControl) {
-		try {
-			Object data = fxControl.getData();
-
-			if (data == null) {
-				return true;
-			}
-
-			if (data instanceof String) {
-				return ((String) data).trim().isEmpty();
-			}
-
-			if (data instanceof List<?>) {
-				List<?> dataList = (List<?>) data;
-				if (dataList.isEmpty()) {
-					return true;
-				}
-
-				// Check if all SimpleDto values are empty
-				for (Object item : dataList) {
-					if (item instanceof SimpleDto) {
-						SimpleDto simpleDto = (SimpleDto) item;
-						if (simpleDto.getValue() != null && !simpleDto.getValue().trim().isEmpty()) {
-							return false;
-						}
-					} else if (item != null && !item.toString().trim().isEmpty()) {
-						return false;
-					}
-				}
-				return true;
-			}
-
-			return data.toString().trim().isEmpty();
-
-		} catch (Exception e) {
-			LOGGER.debug("Error checking if field is empty for {}: {}", fxControl.getUiSchemaDTO().getId(), e.getMessage());
-			return true; // Assume empty if we can't determine
-		}
-	}
-
 	/**
 	 * Checks if a field is empty based on its control type
 	 * @param fxControl the FxControl to check
