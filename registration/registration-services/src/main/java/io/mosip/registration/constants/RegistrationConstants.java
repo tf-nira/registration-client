@@ -197,6 +197,10 @@ public class RegistrationConstants {
 	public static final String PWORD = "PWD";
 	public static final String OTP = "OTP";
 	public static final String FACE = "FACE";
+	public static final String RAW = "RAW";
+	public static final String FACE_RAW = "faceRaw";
+	public static final String INDIVIDUAL_BIOMETRICS_RAW = "individualBiometricsRaw";
+	public static final String ORIGINAL_IMAGE = "originalImage";
 	public static final String FACE_FULLFACE = "FACE_FULL FACE";
 	public static final String IRIS = "IRIS";
 
@@ -264,17 +268,14 @@ public class RegistrationConstants {
 	public static final String USER_SERVICE_TYPE = "userServiceType";
 	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
 	public static final String DISTRICT = "District";
-	public static final String UGA = "UGA";
-	public static final String INSIDE_UGANDA = "In Uganda";
-	public static final String OUTSIDE_UGANDA = "Outside Uganda";
 	public static final String LANG = "eng";
 	public static final String DECLARATION_ID = "declarationCheckBox";
-	public static final String DEMO_TAB = "DemographicDetails_tab";
 	public static final String DECLARATION = "Declaration";
 	public static final String FACILITY_TYPE = "facilityType";
 	public static final String FACILITY_TYPE_CATEGORY = "facilityTypeCategory";
 	public static final String FACILITY_SUB_CATEGORY_SUBTYPE = "facilitySubCategory";
 	public static final String FACILITY_TYPE_SUB_CATEGORY = "facilityTypeSubCategory";
+	public static final String DEMO_TAB = "DemographicDetails_tab";
 	public static final String ENTRY = "Entry";
 	public static final String STUDENT_PASS = "Student Pass";
 	public static final String DP = "Dependent Pass";
@@ -309,6 +310,9 @@ public class RegistrationConstants {
 	public static final String AID_OF_PRINCIPAL = "applicationIDofPrincipal";
 	public static final String PRIMARY_NATIONALITY = "primaryNationality";
 	public static final String SECONDARY_NATIONALITY = "secondaryNationality";
+	public static final String UGA = "UGA";
+	public static final String INSIDE_UGANDA = "In Uganda";
+	public static final String OUTSIDE_UGANDA = "Outside Uganda";
 	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
 	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
 	public static final String ENROLLMENT_SUB_COUNTY = "applicantPlaceOfEnrolmentSubCounty";
@@ -357,6 +361,16 @@ public class RegistrationConstants {
 	public static final String ENROLMENT_STATUS = "enrolmentStatus";
 	public static final String BIRTH_STATUS = "applicantBirthPlace";
 	public static final String RESIDENCE_STATUS = "residenceStatus";
+	public static final String ORIGIN_STATUS = "applicantOriginPlace";
+	public static final String BIRTH_DISTRICT = "applicantPlaceOfBirthDistrict";
+	public static final String RESIDENCE_DISTRICT = "applicantPlaceOfResidenceDistrict";
+	public static final String ORIGIN_DISTRICT = "applicantPlaceOfOriginDistrict";
+	public static final String EMPLOYER_DISTRICT = "employerDistrict";
+	public static final String SCHOOL_DISTRICT = "schoolDistrict";
+	public static final String ALIENNEW = "ALIENNEW";
+	public static final String ALIENRENEWAL = "ALIENRENEWAL";
+	public static final String ALIENLOST= "ALIENLOST";
+	public static final String DEACTIVATED= "DEACTIVATED";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
 	public static final String DemoGraphicFieldMessageLabel = "demoGraphicFieldMessageLabel";
@@ -870,8 +884,10 @@ public class RegistrationConstants {
 
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";//for A4 Ack
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_COP = "reg-cop-ack-template-part";
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO = "reg-bio-ack-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE = "reg-preview-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE_COP = "reg-cop-preview-template-part";
+	public static final String PREVIEW_TEMPLATE_CODE_BIO = "reg-bio-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO = "reg-bio-ack-template-part";
@@ -1925,7 +1941,9 @@ public class RegistrationConstants {
 	public static final String INVALID_DATE = "INVALID_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
+	public static final String NOT_ELIGIBLE_SERVICE= "NOT_ELIGIBLE_SERVICE";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
+	public static final String ONLY_FUTURE_DATE="ONLY_FUTURE_DATE";
 	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
 	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
 	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
@@ -2034,6 +2052,7 @@ public class RegistrationConstants {
 	public static final String MOSIP_HOSTNAME = "mosip.hostname";
 	public static final String MOSIP_UPGRADE_SERVER_URL = "mosip.client.upgrade.server.url";
 	public static final String HEALTH_CHECK_URL = "mosip.reg.healthcheck.url";
+	public static final String DOWNLOAD_BIO_SDK_URL = "mosip.download.bio.sdk.url";
 
 	/** Moved To Here from UiConstants file */
 	public static final String REGEX_TYPE = "REGEX";
@@ -2133,6 +2152,7 @@ public class RegistrationConstants {
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part";
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "ack_a6slip_template_part_out";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "renewal-reg_ack_a6slip_template_part";
+	public static final String REG_DEACTIVE_SLIP_TEMPLATE ="reg_deactive_slip_template";
 	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "renewal-ack_a6slip_template_part_out";
 	public static final String COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "cop_thermal_printer_template_part";
 
