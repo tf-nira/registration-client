@@ -142,9 +142,10 @@ public abstract class FxControl  {
 		if(!isFieldVisible) {
 			switch (uiFieldDTO.getType()) {
 				case "documentType":
-					getRegistrationDTo().removeDocument(uiFieldDTO.getId());
+					clearValue();
 					break;
 				case "biometricsType":
+					selectAndSet(null);
 					List<String> requiredAttributes = requiredFieldValidator.getRequiredBioAttributes(uiFieldDTO, getRegistrationDTo());
 					for(String bioAttribute : uiFieldDTO.getBioAttributes()) {
 						if(!requiredAttributes.contains(bioAttribute))
@@ -152,7 +153,10 @@ public abstract class FxControl  {
 					}
 					break;
 				default:
-					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					if (!uiFieldDTO.getId().equalsIgnoreCase("enrolmentCountry")) {
+						selectAndSet(null);
+						getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					}
 					break;
 			}
 		}
@@ -299,7 +303,7 @@ public abstract class FxControl  {
 			messageLabel.setManaged(true);
 		}
 	}
-
+  
 	/**
 	 *
 	 * @return
@@ -356,8 +360,8 @@ public abstract class FxControl  {
 			case ALIENNEW:
 			case ALIENRENEWAL:
 			case ALIENLOST:
-			case DEACTIVATED :
- 				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
+			case DEACTIVATED:
+				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
 		return mandatorySuffix;
@@ -407,7 +411,7 @@ public abstract class FxControl  {
 				case RENEWAL:
 				case FIRSTID:
 				case ALIENNEW:
-				case ALIENRENEWAL:
+				case ALIENRENEWAL: 
 				case ALIENLOST:
 				case DEACTIVATED :
 					return isVisibleAccordingToSpec;

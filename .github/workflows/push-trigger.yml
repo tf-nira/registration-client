@@ -24,6 +24,8 @@ on:
       - tf_nira_dev
       - tf_nira_prod
       - tf-nira-dev-jar
+      - tf_nira_preprod
+      - tf_nira_preprod_new1
 
 
 jobs:

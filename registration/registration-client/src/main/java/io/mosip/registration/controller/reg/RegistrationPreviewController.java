@@ -184,7 +184,8 @@ public class RegistrationPreviewController extends BaseController implements Ini
 			} else if(processCheck.equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_BIO,
 						ApplicationContext.applicationLanguage());
-			} else{
+			}
+			else{
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
 						ApplicationContext.applicationLanguage());
 			}
@@ -228,7 +229,8 @@ public class RegistrationPreviewController extends BaseController implements Ini
 			} else if(processCheck.equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_BIO,
 						ApplicationContext.applicationLanguage());
-			} else{
+			}
+			else{
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
 						ApplicationContext.applicationLanguage());
 			}

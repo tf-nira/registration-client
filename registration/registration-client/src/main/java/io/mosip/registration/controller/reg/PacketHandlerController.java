@@ -469,7 +469,6 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 			//slip acknowledgement
 			String slipAckTemplateText = null;
-			
 			if (registrationDTO.getProcessId().equals("ALIENNEW")) {
 				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {

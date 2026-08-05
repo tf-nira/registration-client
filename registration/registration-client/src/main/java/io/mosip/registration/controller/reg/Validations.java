@@ -204,6 +204,7 @@ public class Validations extends BaseController {
 			}
 			return false;
 		}
+		
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 
 		// Main Validation
@@ -230,6 +231,7 @@ public class Validations extends BaseController {
 				}
 		    }
 		}
+
 
 		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
 			int age =genericController.getDobAge();
