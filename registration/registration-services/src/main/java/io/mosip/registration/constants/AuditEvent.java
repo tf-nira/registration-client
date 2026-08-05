@@ -55,10 +55,6 @@ public enum AuditEvent {
 	NAV_DASHBOARD("REG-NAV-010", SYSTEM_EVENT.getCode(), "NAV_DASHBOARD",
 			"Navigation link: Dashboard"),
 	NAV_UIN_GETFIRSTID("REG-EVT-104", USER_EVENT.getCode(), "NAV_UIN_GETFIRSTID", "Navigation link: Get First Id"),
-	NAV_ALIEN_RENEW_UIN("REG-EVT-111", USER_EVENT.getCode(), "NAV_ALIEN_RENEW_UIN", "Click of navigation link: Alien Renew UIN"),
-	NAV_ALIEN_NEW_REG("REG-EVT-110", USER_EVENT.getCode(), "NAV_ALIEN_NEW_REG", "Click of navigation link: Alien New Registration"),
-	NAV_AlIEN_LOST_REG("REG-EVT-011", USER_EVENT.getCode(), "NAV_AlIEN_LOST_REG", "Click of navigation link: Alien Lost Registration"),
-	NAV_DEACTIVATED("REG-EVT-012",USER_EVENT.getCode(),"NAV_DEACTIVATED","Click of navigation link: Alien Deactivate"),
 
 	// Registration : Demographics Details
 	REG_DEMO_CAPTURE("REG-EVT-007", USER_EVENT.getCode(), "REG_DEMO_NEXT", "Started capturing demographic details"),
