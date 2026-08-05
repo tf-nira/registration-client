@@ -303,8 +303,7 @@ public abstract class FxControl  {
 			messageLabel.setManaged(true);
 		}
 	}
-
-
+  
 	/**
 	 *
 	 * @return

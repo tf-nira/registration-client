@@ -282,6 +282,12 @@ public class RegistrationConstants {
 	public static final String IRP = "Intern/Research Pass";
 	public static final String SP = "Special Pass";
 	public static final String COR = "Certificate of Residence";
+	public static final String ALIENNEW = "ALIENNEW";
+	public static final String ALIENRENEWAL = "ALIENRENEWAL";
+	public static final String ALIENLOST= "ALIENLOST";
+	public static final String DEACTIVATED= "DEACTIVATED";
+	public static final String NOT_ELIGIBLE_SERVICE= "NOT_ELIGIBLE_SERVICE";
+	public static final String ONLY_FUTURE_DATE="ONLY_FUTURE_DATE";
 	public static final String PHONE = "phone";
 	public static final String PHONE2 = "phone2";
 	public static final String EMPLOYER_PHONE = "employerPhone";
@@ -370,6 +376,12 @@ public class RegistrationConstants {
 	public static final String DemoGraphicFieldMessageLabel = "demoGraphicFieldMessageLabel";
 	public static final String Parent = "Parent";
 	public static final String updateUinCheckBox = "updateUinCheckBox";
+	public static final String ORIGIN_STATUS = "applicantOriginPlace";
+	public static final String BIRTH_DISTRICT = "applicantPlaceOfBirthDistrict";
+	public static final String RESIDENCE_DISTRICT = "applicantPlaceOfResidenceDistrict";
+	public static final String ORIGIN_DISTRICT = "applicantPlaceOfOriginDistrict";
+	public static final String EMPLOYER_DISTRICT = "employerDistrict";
+	public static final String SCHOOL_DISTRICT = "schoolDistrict";
 
 	public static final String REGISTRATION_DATA_DEMO = "registrationDTOContentDemo";
 	public static final String APPLICATION_LANGUAGE = "application_language";
@@ -878,6 +890,8 @@ public class RegistrationConstants {
 	public static final String PREVIEW_TEMPLATE_CODE_BIO = "reg-bio-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO = "reg-bio-ack-template-part";
+	public static final String PREVIEW_TEMPLATE_CODE_BIO = "reg-bio-preview-template-part";
 
 	// Notification Service
 	public static final String EMAIL_SUBJECT = "MOSIP REGISTRATION NOTIFICATION";

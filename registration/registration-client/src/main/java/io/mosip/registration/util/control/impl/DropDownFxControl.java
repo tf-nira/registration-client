@@ -43,7 +43,7 @@ public class DropDownFxControl extends FxControl {
 	private MasterSyncService masterSyncService;
 	private MasterSyncDao masterSyncDao;
 	
-	 Map<String, String> statusDistrictMap = Map.of(
+  Map<String, String> statusDistrictMap = Map.of(
              RegistrationConstants.RESIDENCE_STATUS, RegistrationConstants.RESIDENCE_DISTRICT,
              RegistrationConstants.BIRTH_STATUS, RegistrationConstants.BIRTH_DISTRICT,
              RegistrationConstants.ORIGIN_STATUS, RegistrationConstants.ORIGIN_DISTRICT,
@@ -64,7 +64,6 @@ public class DropDownFxControl extends FxControl {
 			 Set.of(RegistrationConstants.EMPLOYER_NAME,
 					 RegistrationConstants.OTHERCHILD)
 	);
-
 
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
@@ -479,7 +478,7 @@ public class DropDownFxControl extends FxControl {
 					}
 
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
+        if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");
 					FxControl fxControl2 =  getFxControl("numberOfOtherSpouses");
 					FxControl fxControl3 =  getFxControl("numberOfOtherSpousesAlien");
@@ -534,6 +533,7 @@ public class DropDownFxControl extends FxControl {
 						}
 					}
 				}
+				
 
 
 				Map<String, String> fieldMappings = Map.of("residenceStatus", "appResCountryUGA", "applicantBirthPlace", "appBirCountryUGA",

@@ -987,3 +987,4 @@ public class PacketHandlerController extends BaseController implements Initializ
 		return ( baseService.getMinLanguagesCount() >= 1 && baseService.getMaxLanguagesCount() > 1 );
 	}
 }
+

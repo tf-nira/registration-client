@@ -276,3 +276,4 @@ public class RegistrationPreviewController extends BaseController implements Ini
 		nextButton.setDisable(false);
 	}
 }
+
