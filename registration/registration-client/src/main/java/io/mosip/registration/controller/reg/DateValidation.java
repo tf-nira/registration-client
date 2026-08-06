@@ -4,6 +4,7 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -12,6 +13,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TimeZone;
 import java.time.DateTimeException;
 import io.mosip.registration.controller.ClientApplication;
@@ -569,7 +571,7 @@ public class DateValidation extends BaseController {
 					}
 				}
 			} else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
-			     if (dobDate.isAfter(currentDate)) {
+			    if (dobDate.isAfter(currentDate)) {
 					isValid = false;
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
 							RegistrationConstants.AGE_NON_FUTURE));

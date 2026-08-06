@@ -88,6 +88,7 @@ import io.mosip.kernel.biometrics.constant.OtherKey;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+
 /**
  * The implementation class of {@link PacketHandlerService} to handle the
  * registration data to create packet out of it and save the encrypted packet
@@ -197,26 +198,41 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			registrationDTO.setProcessId("NEW");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
 	        registrationDTO.addDemographicField("userServiceType", values);
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
 			registrationDTO.setProcessId("RENEWAL");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
-		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
 			registrationDTO.setProcessId("LOST");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
-		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
-			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
+			String ain = registrationDTO.getDemographic("AIN");
+			String serviceType = (ain.toLowerCase().startsWith("af") || ain.toLowerCase().startsWith("am")) ? "Alien Deactivated" : "Deactivated";
+			List<SimpleDto> values = Collections.singletonList( new SimpleDto("eng", serviceType));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+			if(registrationDTO.getDemographicSimpleType("reasonforCancellation") != null){
+				List<SimpleDto> reasonDtos = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("reasonforCancellation");
+				if(reasonDtos != null && !reasonDtos.isEmpty()){
+					String reasonValue = reasonDtos.get(0).getValue();
+					if("Others".equalsIgnoreCase(reasonValue)){
+						registrationDTO.addDemographicField("remark", (List<SimpleDto>) registrationDTO.getDemographicSimpleType("otherReasonForCancellation"));
+					} else {
+						registrationDTO.addDemographicField("remark", reasonDtos);
+					}
+				}
+			}
 		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
@@ -287,7 +303,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		}
 		
 		// Add the "isCardRequired" field for Renewal flow type
-	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL)) {
+	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL) || registrationDTO.getFlowType().equals(FlowType.ALIENRENEWAL)) {
 	        LOGGER.info("Setting isCardRequired field to Yes for Renewal flow type");
 	        registrationDTO.addDemographicField("isCardRequired", "Yes");
 	    }
@@ -329,7 +345,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 			LOGGER.info("Saving registration info in DB and on disk.");
 			registrationDAO.save(baseLocation + SLASH + packetManagerAccount + SLASH + registrationDTO.getPacketId(), registrationDTO);
-			LOGGER.info("After saving registrationDTO.");
+			LOGGER.info("After saving registrationDTO");
 			globalParamService.update(RegistrationConstants.AUDIT_TIMESTAMP, DateUtils.getUTCCurrentDateTime().toString());
 
 			auditFactory.audit(AuditEvent.PACKET_CREATION_SUCCESS, Components.PACKET_HANDLER,
@@ -770,3 +786,4 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				RegistrationExceptionConstants.REG_ACK_RECEIPT_READ_ERROR.getErrorMessage());
 	}
 }
+

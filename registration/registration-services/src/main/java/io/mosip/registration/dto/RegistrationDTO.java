@@ -14,6 +14,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.mosip.commons.packet.constants.Biometric;
 import io.mosip.commons.packet.dto.packet.AuditDto;
 import io.mosip.commons.packet.dto.packet.BiometricsException;
@@ -262,6 +264,11 @@ public class RegistrationDTO {
 		String key = String.format("%s_%s", fieldId, bioAttribute);
 		return this.biometrics.get(key);
 	}
+	
+	public void removeBiometric(String fieldId, String bioAttribute) {
+	    String key = String.format("%s_%s", fieldId, bioAttribute);
+	    this.biometrics.remove(key);
+	}
 
 	public void removeExceptionPhoto(String fieldId) {
 		String key = String.format("%s_%s", fieldId, RegistrationConstants.notAvailableAttribute);
@@ -399,16 +406,30 @@ public class RegistrationDTO {
 
 			/** Modify the Biometrics DTO and save */
 			for (Entry<String, BiometricsDto> entry : biometricsDTOMap.entrySet()) {
-				BiometricsDto savedRegistrationBiometric = getBiometric(fieldId, entry.getKey());
-				BiometricsDto value = entry.getValue();
-				value.setForceCaptured(isForceCaptured);
-				//value.setSubType(fieldId);
-				if( (savedRegistrationBiometric == null && (isQualityCheckPassed || isForceCaptured)) ||
-						(savedRegistrationBiometric != null &&
-								value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
-					addBiometric(fieldId, entry.getKey(), value);
-					//savedBiometrics.add(addBiometric(fieldId, entry.getKey(), value));
-				}
+			    BiometricsDto savedRegistrationBiometric = getBiometric(fieldId, entry.getKey());
+			    BiometricsDto value = entry.getValue();
+			    value.setForceCaptured(isForceCaptured);
+			    ObjectMapper objectMapper = new ObjectMapper();
+			    String effectiveFieldId = fieldId;
+
+			    try {
+			        Map<String, String> payloadMap = objectMapper.readValue(value.getPayLoad(), Map.class);
+			        String bioSubType = payloadMap.get("bioSubType");
+			        if (RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			        	payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
+			        	String updatedPayload = objectMapper.writeValueAsString(payloadMap);
+			        	value.setPayLoad(updatedPayload);
+			            effectiveFieldId = RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW;
+			        }
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+
+			    if ((savedRegistrationBiometric == null && (isQualityCheckPassed || isForceCaptured)) ||
+			        (savedRegistrationBiometric != null &&
+			            value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
+			        addBiometric(effectiveFieldId, entry.getKey(), value);
+			    }
 			}
 		}
 		//return savedBiometrics;

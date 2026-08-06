@@ -16,6 +16,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.mosip.biometrics.util.ConvertRequestDto;
 import io.mosip.biometrics.util.face.FaceDecoder;
 import io.mosip.biometrics.util.finger.FingerDecoder;
@@ -305,6 +307,13 @@ public class GenericBiometricsController extends BaseController {
 					}
 				}
 			}
+		}
+		if (isFace(modality)) {
+			fxControl.getSendOriginalCheckBoxContainer().setVisible(true);
+			fxControl.getSendOriginalCheckBoxContainer().setManaged(true);
+		} else {
+			fxControl.getSendOriginalCheckBoxContainer().setVisible(false);
+			fxControl.getSendOriginalCheckBoxContainer().setManaged(false);
 		}
 
 		/*if (nonExceptionBioAttributes != null) {
@@ -619,18 +628,33 @@ public class GenericBiometricsController extends BaseController {
 							getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0) + 1);
 					List<String> exceptionBioAttributes = getSelectedExceptionsByBioType();
 					Map<String, BiometricsDto> biometricsMap = new LinkedHashMap<>();
+					BiometricsDto showOnUIBiometricDto = null;
 					for (BiometricsDto biometricsDto : mdsCapturedBiometricsList) {
 						if (exceptionBioAttributes.contains(biometricsDto.getBioAttribute())) {
 							LOGGER.debug("As bio atrribute marked as exception, not storing into registration DTO : {}", biometricsDto.getBioAttribute());
 							continue;
 						}
-						LOGGER.info("Adding registration biometric data >> {}", biometricsDto.getBioAttribute());
-						biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
-						biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.get(String.format("%s_%s",
-								fxControl.getUiSchemaDTO().getId(), currentModality)));
-						biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+						ObjectMapper objectMapper = new ObjectMapper();
+				        Map<String, String> payloadMap = objectMapper.readValue(biometricsDto.getPayLoad(), Map.class);
+				        String bioSubType = payloadMap.get("bioSubType");
+				        
+				        if (!RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && RegistrationConstants.FACE_FULLFACE.equalsIgnoreCase(biometricsDto.getModalityName())) {
+				            showOnUIBiometricDto = biometricsDto;
+				        } else if(RegistrationConstants.FACE_FULLFACE.equalsIgnoreCase(biometricsDto.getModalityName())){
+				        	biometricsDto.setBioAttribute(RegistrationConstants.FACE_RAW);
+				        }
+
+				        biometricsDto.setSubType(fxControl.getUiSchemaDTO().getSubType());
+			            biometricsDto.setNumOfRetries(getRegistrationDTOFromSession().ATTEMPTS.getOrDefault(
+			                String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality), 0));
+			            biometricsMap.put(biometricsDto.getBioAttribute(), biometricsDto);
+				        LOGGER.info("Adding registration biometric data >> {}", biometricsDto.getBioAttribute());
 					}
 					fxControl.setData(biometricsMap);
+					if(showOnUIBiometricDto!=null) {
+						biometricsMap = new LinkedHashMap<>();
+						biometricsMap.put(showOnUIBiometricDto.getBioAttribute(), showOnUIBiometricDto);
+					}
 					LOGGER.debug("Completed Saving filtered biometrics into registration DTO");
 					addStreamImageAndScoreToCache(fxControl.getUiSchemaDTO().getId(), currentModality, biometricsMap,
 							getRegistrationDTOFromSession().ATTEMPTS.get(String.format("%s_%s", fxControl.getUiSchemaDTO().getId(), currentModality)));
@@ -706,12 +730,12 @@ public class GenericBiometricsController extends BaseController {
 				case EXCEPTION_PHOTO:
 				case FACE:
 					BiometricsDto faceDto = biometricsDtos.values().toArray(new BiometricsDto[0])[0];
-					ConvertRequestDto convertRequestDto = new ConvertRequestDto();
-					convertRequestDto.setVersion("ISO19794_5_2011");
-					convertRequestDto.setInputBytes(faceDto.getAttributeISO());
+					ConvertRequestDto convertRequestExceptionDto = new ConvertRequestDto();
+					convertRequestExceptionDto.setVersion("ISO19794_5_2011");
+					convertRequestExceptionDto.setInputBytes(faceDto.getAttributeISO());
 					getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.getAttributes().get(0), retry),
-							FaceDecoder.convertFaceISOToImageBytes(convertRequestDto));
+							FaceDecoder.convertFaceISOToImageBytes(convertRequestExceptionDto));
 					getRegistrationDTOFromSession().BIO_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							faceDto.getQualityScore());
@@ -722,7 +746,7 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().BIOMETRICS_DTO_MAP.put(String.format("%s_%s_%s",
 									fieldId, modalityName.name(), retry),
 							biometricsDtos);
-					break;
+				    break;
 			}
 		} catch (Exception exception) {
 			LOGGER.error("Failed to extract image from ISO", exception);

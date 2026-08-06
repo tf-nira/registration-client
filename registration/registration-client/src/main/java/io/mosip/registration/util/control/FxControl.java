@@ -24,7 +24,7 @@ import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -142,9 +142,10 @@ public abstract class FxControl  {
 		if(!isFieldVisible) {
 			switch (uiFieldDTO.getType()) {
 				case "documentType":
-					getRegistrationDTo().removeDocument(uiFieldDTO.getId());
+					clearValue();
 					break;
 				case "biometricsType":
+					selectAndSet(null);
 					List<String> requiredAttributes = requiredFieldValidator.getRequiredBioAttributes(uiFieldDTO, getRegistrationDTo());
 					for(String bioAttribute : uiFieldDTO.getBioAttributes()) {
 						if(!requiredAttributes.contains(bioAttribute))
@@ -152,7 +153,10 @@ public abstract class FxControl  {
 					}
 					break;
 				default:
-					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					if (!uiFieldDTO.getId().equalsIgnoreCase("enrolmentCountry")) {
+						selectAndSet(null);
+						getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					}
 					break;
 			}
 		}
@@ -184,19 +188,31 @@ public abstract class FxControl  {
 		
 		if (!uiFieldDTO.isRequired()) {
 			boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
-		    Node parentNode = this.node; // Store the node reference
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			String fieldvalue = null;
+			if(uiFieldDTO.getType().equalsIgnoreCase("string")){
+				fieldvalue = genericController.getStringTypeValue(uiFieldDTO.getId());
+			} else if (uiFieldDTO.getType().equalsIgnoreCase("simpleType")) {
+				fieldvalue = genericController.getSimpleTypeValue(uiFieldDTO.getId());
+			}
+			Node parentNode = this.node; // Store the node reference
 		        for (Node child : ((Pane) parentNode).getChildren()) {
 		        	if(child instanceof VBox) {
 		        		child = ((VBox) child).getChildren().get(0);
+
 		        	}
-		            if (child instanceof Label) {
+					if (child instanceof Label) {
 		                Label label = (Label) child;
 		                String labelName = label.getText();
 						if(labelName == null) {
 		                	break;
 		                }
+						String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
+							if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (fieldvalue == null || fieldvalue.isEmpty())) {
+								parentNode.setDisable(false);
+							}
 		                if (isRequiredField) {
-		                    if (!labelName.endsWith("*")) {
+							if (!labelName.endsWith("*")) {
 		                        label.setText(labelName + " *");
 		                    }
 		                }
@@ -287,7 +303,7 @@ public abstract class FxControl  {
 			messageLabel.setManaged(true);
 		}
 	}
-
+  
 	/**
 	 *
 	 * @return
@@ -344,8 +360,8 @@ public abstract class FxControl  {
 			case ALIENNEW:
 			case ALIENRENEWAL:
 			case ALIENLOST:
-			case DEACTIVATED :
- 				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
+			case DEACTIVATED:
+				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
 		return mandatorySuffix;
@@ -395,7 +411,7 @@ public abstract class FxControl  {
 				case RENEWAL:
 				case FIRSTID:
 				case ALIENNEW:
-				case ALIENRENEWAL:
+				case ALIENRENEWAL: 
 				case ALIENLOST:
 				case DEACTIVATED :
 					return isVisibleAccordingToSpec;

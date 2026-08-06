@@ -64,10 +64,16 @@ public class CheckBoxFxControl extends FxControl {
 		double prefWidth = simpleTypeVBox.getPrefWidth();
 
 		/** CheckBox */
-		CheckBox checkBox = getCheckBox(fieldName,
-				String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
-				RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
-
+		CheckBox checkBox = null;
+		if(fieldName.equalsIgnoreCase(RegistrationConstants.DECLARATION_ID)) {
+			checkBox = getCheckBox(fieldName,
+		            "", RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		} else {
+			checkBox = getCheckBox(fieldName,
+					String.join(RegistrationConstants.SLASH, labels) + getMandatorySuffix(uiFieldDTO),
+					RegistrationConstants.DEMOGRAPHIC_TEXTFIELD, prefWidth, false);
+		}
+		
 		setListener(checkBox);
 		simpleTypeVBox.getChildren().add(checkBox);
 		simpleTypeVBox.getChildren().add(getLabel(uiFieldDTO.getId() + RegistrationConstants.ERROR_MSG, null,
@@ -161,6 +167,13 @@ public class CheckBoxFxControl extends FxControl {
 			}
 			if (uiFieldDTO.isSetRequired()){
 				resetValue();
+			}
+			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && (flowType.equals(FlowType.ALIENNEW) || flowType.equals(FlowType.ALIENRENEWAL)  || flowType.equals(FlowType.ALIENLOST))) {
+				DropDownFxControl dropDownFxControl = new DropDownFxControl();
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.ENROLLMENT_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.RESIDENCE_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.EMPLOYER_DISTRICT);
+				dropDownFxControl.updateDistrictList(RegistrationConstants.INSIDE_UGANDA, RegistrationConstants.SCHOOL_DISTRICT);
 			}
 			
 			if(uiFieldDTO.getId().equalsIgnoreCase("consent") && flowType.equals(FlowType.ALIENNEW) || flowType.equals(FlowType.ALIENRENEWAL)  || flowType.equals(FlowType.ALIENLOST)) {
