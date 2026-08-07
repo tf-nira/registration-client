@@ -144,6 +144,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
 	private ProcessSpecDto process;
 	public Node node;
+	private boolean selectingInvalidValidationTab = false;
 	/**
 	 * Top most Grid pane in FXML
 	 */
@@ -802,8 +803,8 @@ public class GenericController extends BaseController {
 						.lookup(HASH + getRegistrationDTOFromSession().getRegistrationId());
 				String incompleteScreen = getInvalidScreenName(tabPane);
 
-				if (incompleteScreen == null) {
-					generateAlert(RegistrationConstants.ERROR, incompleteScreen + " Screen with ERROR !");
+				if (!incompleteScreen.equals(EMPTY)) {
+					LOGGER.error( "Validation failed. Switching to invalid screen: {}", incompleteScreen);
 					return;
 				}
 				authenticationController.goToNextPage();
@@ -816,6 +817,12 @@ public class GenericController extends BaseController {
 		tabPane.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if (selectingInvalidValidationTab) {
+					LOGGER.debug( "Selecting invalid validation tab directly. Old index: {}, New index: {}", oldValue, newValue);
+					selectingInvalidValidationTab = false;
+					return;
+				}
+
 				if (ignoreChange[0]) {
 					ignoreChange[0] = false;
 					return;
@@ -829,6 +836,17 @@ public class GenericController extends BaseController {
 
 				// Check if we are moving to the previous tab (oldValue > newValue)
 				boolean isMovingForward = newValue.intValue() > oldValue.intValue();
+				int forwardCount = newValue.intValue() - oldValue.intValue();
+
+				if (isMovingForward && forwardCount != 1 && forwardCount != -1) {
+					String invalidScreenName = getInvalidScreenName(tabPane);
+					if (!invalidScreenName.equals(EMPTY)) {
+						LOGGER.error("Cannot skip invalid screen. Switching to: {}",invalidScreenName);
+						return;
+					}
+					tabPane.getSelectionModel().select(oldValue.intValue());
+					return;
+				}
 
 				if (oldValue.intValue() >= 0 && newValue.intValue() != oldValue.intValue()) {
 
@@ -848,6 +866,8 @@ public class GenericController extends BaseController {
 							// call it again here
 							return;
 						}
+						tabPane.getTabs().get(oldValue.intValue()).getStyleClass()
+								.remove(TAB_LABEL_ERROR_CLASS);
 						String oldTabName = tabPane.getTabs().get(oldValue.intValue()).getText();
 
 						if (DEMOGRAPHIC_DETAILS.equals(oldTabName) || DOCUMENT_UPLOAD.equals(oldTabName)) {
@@ -1295,17 +1315,21 @@ public class GenericController extends BaseController {
 		for (UiScreenDTO screen : orderedScreens.values()) {
 			LOGGER.error("Started to validate screen : {} ", screen.getName());
 
+			Optional<Tab> result = tabPane.getTabs().stream()
+					.filter(t -> t.getId().equalsIgnoreCase(screen.getName() + "_tab")).findFirst();
+
 			if (!isAdditionalInfoRequestIdProvided(screen)) {
 				LOGGER.error("Screen validation failed {}, Additional Info request Id is required", screen.getName());
 				errorScreen = screen.getName();
+				if (result.isPresent()) {
+					selectingInvalidValidationTab = true;
+					tabPane.getSelectionModel().select(result.get());
+				}
 				break;
 			}
 
 			boolean anyInvalidField = screen.getFields().stream().anyMatch(
 					field -> getFxControl(field.getId()) != null && getFxControl(field.getId()).canContinue() == false);
-
-			Optional<Tab> result = tabPane.getTabs().stream()
-					.filter(t -> t.getId().equalsIgnoreCase(screen.getName() + "_tab")).findFirst();
 			if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screen.getName() + "_tab")
 					&& isCopNameChangeServiceSelected() && !isAnyCopNotificationNameFieldProvided()
 					&& result.isPresent()) {
@@ -1314,11 +1338,15 @@ public class GenericController extends BaseController {
 				showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
 				errorScreen = screen.getName();
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
+				selectingInvalidValidationTab = true;
+				tabPane.getSelectionModel().select(result.get());
 				break;
 			} else if (anyInvalidField && result.isPresent()) {
 				LOGGER.error("Screen validation failed {}", screen.getName());
 				errorScreen = screen.getName();
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
+				selectingInvalidValidationTab = true;
+				tabPane.getSelectionModel().select(result.get());
 				break;
 			} else if (result.isPresent())
 				result.get().getStyleClass().remove(TAB_LABEL_ERROR_CLASS);
