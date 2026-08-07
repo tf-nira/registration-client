@@ -185,7 +185,7 @@ public abstract class FxControl  {
 					break;
 			}
 		}
-		
+
 		if (!uiFieldDTO.isRequired()) {
 			boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
 			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);

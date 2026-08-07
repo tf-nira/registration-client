@@ -220,7 +220,6 @@ public class Validations extends BaseController {
 		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
 		    }
 		    List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get(key);
-		    System.out.println(countryCode);
 		    // If Uganda, validate first digit must be 0
 		    if (!countryCode.isEmpty() && countryCode.get(0).getValue().equalsIgnoreCase(RegistrationConstants.UGA_VALUE)) {
 		    	String number=value;
@@ -477,3 +476,6 @@ public class Validations extends BaseController {
 		return null;
 	}
 }
+
+
+

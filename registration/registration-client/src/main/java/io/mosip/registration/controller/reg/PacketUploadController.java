@@ -190,6 +190,19 @@ public class PacketUploadController extends BaseController implements Initializa
 		    "V", "ALIEN CANCELLATION"
 		);
 
+	private static final Map<String, String> PACKET_STATUS_MAP = Map.of(
+		    "N", "NEW",
+		    "U", "UPDATE",
+		    "R", "RENEWAL",
+		    "G", "FIRSTID",
+		    "L", "LOST/REPLACEMENT",
+		    "C", "BIOMETRIC_CORRECTION",
+		    "A", "ALIEN NEW",
+		    "I", "ALIEN RENEWAL",
+		    "E", "ALIEN LOST",
+		    "V", "ALIEN CANCELLATION"
+		);
+	
 	@FXML
 	private GridPane packetUploadPane;
 	
@@ -794,5 +807,6 @@ public class PacketUploadController extends BaseController implements Initializa
 		}
 
 	}
+
 
 }

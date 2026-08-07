@@ -5,6 +5,7 @@ import io.mosip.registration.controller.reg.LanguageSelectionController;
 import io.mosip.registration.dto.*;
 import io.mosip.registration.dto.mastersync.GenericDto;
 import io.mosip.registration.dto.schema.ValuesDTO;
+
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.util.control.impl.*;
 import io.mosip.registration.validator.RequiredFieldValidator;
@@ -613,6 +614,14 @@ public class GenericController extends BaseController {
 								}
 							}
 
+							if(sessionValue == null && field.getId().equalsIgnoreCase("numberOfOtherChild")) {
+								FxControl fxControlValue = getFxControl(field.getId());
+								if (fxControlValue != null && fxControlValue.getNode() != null) {
+									fxControlValue.getNode().setVisible(false);
+									fxControlValue.getNode().setManaged(false); // IMPORTANT
+								}
+							}
+
 							if(field.getId().equalsIgnoreCase(RegistrationConstants.CONSENT)){
 								FxControl enrolmentCountry = getFxControl(RegistrationConstants.ENROLLMENT_COUNTRY);
 								enrolmentCountry.selectAndSet("UGA");
@@ -1085,6 +1094,17 @@ public class GenericController extends BaseController {
 					nationalityCheck = validateSameNationality();
 				}
 
+				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
+					if(facilityType != null && facilityType.equalsIgnoreCase(RegistrationConstants.DP)) {
+						isLinkedsectionFields = validateEitherAinOrAID();
+					} else {
+						isLinkedsectionFields = true;
+					}
+					isphoneNoFilled = validateEitherLocalOrNonLocal();
+					nationalityCheck = validateSameNationality();
+				}
+
 				// Validate PRN differently
 				FxControl fxControl = getFxControl(field.getId());
 				/*if (field.getId().equalsIgnoreCase("PRNId") )
@@ -1250,6 +1270,112 @@ public class GenericController extends BaseController {
 			return false;
 		}
 		return value != null && !value.toString().trim().isEmpty();
+	}
+
+	public boolean validateSameNationality() {
+	    String primaryNationality = getSimpleTypeValue(RegistrationConstants.PRIMARY_NATIONALITY);
+	    String secondaryNationality = getSimpleTypeValue(RegistrationConstants.SECONDARY_NATIONALITY);
+	    if (primaryNationality != null && secondaryNationality != null) {
+	        return !primaryNationality.equalsIgnoreCase(secondaryNationality);
+	    } else {
+	    	return true;
+	    }
+	}
+
+
+	private boolean validateEitherAinOrAID() {
+		boolean valid = false;
+	    String principalAIN = getStringTypeValue(RegistrationConstants.PRINCIPAL_OF_AIN);
+	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
+	    if(principalAIN != null || principleAID != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean validateEitherLocalOrNonLocal() {
+		boolean valid = false;
+		String localCountryCodeList = getSimpleTypeValue(RegistrationConstants.COUNTRYCODE);
+	    String nonLocalCountryCodeList = getSimpleTypeValue(RegistrationConstants.NONLOCAL_COUNTRYCODE);
+	    String localPhoneValue = getStringTypeValue(RegistrationConstants.PHONE);
+	    String nonLocalPhoneValue = getStringTypeValue(RegistrationConstants.NONLOCAL_PHONE);
+	    if(localPhoneValue != null && localCountryCodeList != null) {
+	    	valid = true;
+	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
+	    	valid = true;
+	    }	
+	    return valid;
+	}
+
+	private boolean isCopNameChangeServiceSelected() {
+		return COP_NAME_CHANGE_SERVICE_FIELDS.stream().anyMatch(this::isDemographicFieldYes);
+	}
+
+	private boolean isAnyCopNotificationNameFieldProvided() {
+		return COP_NOTIFICATION_NAME_FIELDS.stream().anyMatch(this::isDemographicFieldProvided);
+	}
+
+	private boolean isDemographicFieldYes(String fieldId) {
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return "Y".equalsIgnoreCase(((String) value).trim());
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& "Y".equalsIgnoreCase(((SimpleDto) item).getValue().trim())) {
+					return true;
+				}
+				if (item != null && "Y".equalsIgnoreCase(item.toString().trim())) {
+					return true;
+				}
+			}
+		}
+		return value != null && "Y".equalsIgnoreCase(value.toString().trim());
+	}
+
+	private boolean isDemographicFieldProvided(String fieldId) {
+		FxControl control = getFxControl(fieldId);
+		if (control != null) {
+			return !isFieldEmpty(control);
+		}
+
+		Object value = getRegistrationDTOFromSession().getDemographics().get(fieldId);
+		if (value instanceof String) {
+			return !((String) value).trim().isEmpty();
+		}
+		if (value instanceof List<?>) {
+			for (Object item : (List<?>) value) {
+				if (item instanceof SimpleDto && ((SimpleDto) item).getValue() != null
+						&& !((SimpleDto) item).getValue().trim().isEmpty()) {
+					return true;
+				}
+				if (item != null && !item.toString().trim().isEmpty()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return value != null && !value.toString().trim().isEmpty();
+	}
+
+	public String getStringTypeValue(String fieldId) {
+
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+	    String fieldValue = (String) demographics.get(fieldId);
+		return fieldValue;
+	}
+
+	public String getSimpleTypeValue(String fieldId) {
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+	    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+		List<SimpleDto> fieldDataList = (List<SimpleDto>) demographics.get(fieldId);
+		if (fieldDataList != null) {
+			SimpleDto fieldData = fieldDataList.get(0);
+			return fieldData.getValue();
+		}
+		return null;
 	}
 
 	private boolean isFieldVisible(UiFieldDTO schemaDTO) {
@@ -2384,6 +2510,51 @@ public class GenericController extends BaseController {
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
 	}
 	
+	/**
+	 * Checks if a field is empty based on its control type
+	 * @param fxControl the FxControl to check
+	 * @return true if the field is empty, false otherwise
+	 */
+	private boolean isFieldEmpty(FxControl fxControl) {
+		try {
+			Object data = fxControl.getData();
+
+			if (data == null) {
+				return true;
+			}
+
+			if (data instanceof String) {
+				return ((String) data).trim().isEmpty();
+			}
+
+			if (data instanceof List<?>) {
+				List<?> dataList = (List<?>) data;
+				if (dataList.isEmpty()) {
+					return true;
+				}
+
+				// Check if all SimpleDto values are empty
+				for (Object item : dataList) {
+					if (item instanceof SimpleDto) {
+						SimpleDto simpleDto = (SimpleDto) item;
+						if (simpleDto.getValue() != null && !simpleDto.getValue().trim().isEmpty()) {
+							return false;
+						}
+					} else if (item != null && !item.toString().trim().isEmpty()) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			return data.toString().trim().isEmpty();
+
+		} catch (Exception e) {
+			LOGGER.debug("Error checking if field is empty for {}: {}", fxControl.getUiSchemaDTO().getId(), e.getMessage());
+			return true; // Assume empty if we can't determine
+		}
+	}
+
 	/**
 	 * Checks if a field is empty based on its control type
 	 * @param fxControl the FxControl to check

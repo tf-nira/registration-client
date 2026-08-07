@@ -65,6 +65,28 @@ public class DropDownFxControl extends FxControl {
 					 RegistrationConstants.OTHERCHILD)
 	);
 
+	Map<String, String> statusDistrictMap = Map.of(
+             RegistrationConstants.RESIDENCE_STATUS, RegistrationConstants.RESIDENCE_DISTRICT,
+             RegistrationConstants.BIRTH_STATUS, RegistrationConstants.BIRTH_DISTRICT,
+             RegistrationConstants.ORIGIN_STATUS, RegistrationConstants.ORIGIN_DISTRICT,
+             RegistrationConstants.ENROLMENT_STATUS, RegistrationConstants.ENROLLMENT_DISTRICT
+     );
+
+	private static final List<String> SECTION_FIRST_FIELDS = List.of(
+			 RegistrationConstants.EMPLOYER_NAME,
+		     RegistrationConstants.NAME_OF_SCHOOL,
+		     RegistrationConstants.OTHERCHILD,
+			 RegistrationConstants.PRINCIPAL_OF_AIN
+	);
+	 
+	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
+		    RegistrationConstants.STUDENT_PASS, Set.of(RegistrationConstants.NAME_OF_SCHOOL,RegistrationConstants.OTHERCHILD),
+		    RegistrationConstants.DP, Set.of(RegistrationConstants.PRINCIPAL_OF_AIN,RegistrationConstants.OTHERCHILD),
+		    "DEFAULT",
+		     Set.of(RegistrationConstants.EMPLOYER_NAME,
+					 RegistrationConstants.OTHERCHILD)
+	);
+
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
 		validation = applicationContext.getBean(Validations.class);

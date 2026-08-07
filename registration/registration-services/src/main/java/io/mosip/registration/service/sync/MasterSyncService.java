@@ -156,3 +156,4 @@ public interface MasterSyncService {
 	List<GenericDto> getFacilityTypeCategoryAndSubCategoryValues(String fieldName, String langCode, String facilityType);
 
 }
+

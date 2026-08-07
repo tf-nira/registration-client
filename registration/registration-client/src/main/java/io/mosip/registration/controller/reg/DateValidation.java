@@ -576,6 +576,14 @@ public class DateValidation extends BaseController {
 					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
 							RegistrationConstants.AGE_NON_FUTURE));
 				}
+			} else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
+			    LocalDate dateOfIssuance = dobDate;
+			    LocalDate minValidDate = currentDate.minusDays(90);
+			    if (dateOfIssuance.isAfter(currentDate) || dateOfIssuance.isAfter(minValidDate)) {
+			        isValid = false;
+			        resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.NOT_ELIGIBLE_SERVICE,
+							minDays, maxDays));
+			    }
 			}
 
 

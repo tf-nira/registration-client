@@ -4,7 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.doReturn;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -352,6 +352,9 @@ public class RegPacketStatusServiceTest {
 		doReturn("false").when(packetStatusService)
         .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 
+		packetStatusService = Mockito.spy(packetStatusService);
+		doReturn("false").when(packetStatusService)
+        .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 		assertSame(RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_FAILURE,
 				packetStatusService.deleteRegistrationPackets().getErrorResponseDTOs().get(0).getMessage());
 	}
@@ -457,3 +460,5 @@ public class RegPacketStatusServiceTest {
 		};
 	}
 }
+
+
