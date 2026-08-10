@@ -844,8 +844,6 @@ public class GenericController extends BaseController {
 						LOGGER.error("Cannot skip invalid screen. Switching to: {}",invalidScreenName);
 						return;
 					}
-					tabPane.getSelectionModel().select(oldValue.intValue());
-					return;
 				}
 
 				if (oldValue.intValue() >= 0 && newValue.intValue() != oldValue.intValue()) {
