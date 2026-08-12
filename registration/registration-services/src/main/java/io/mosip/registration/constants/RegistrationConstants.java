@@ -1925,6 +1925,7 @@ public class RegistrationConstants {
 	public static final String INVALID_AGE_MINOR = "INVALID_AGE_MINOR";
 	public static final String INVALID_AGE_MINOR_FIRSTID = "INVALID_AGE_MINOR_FIRSTID";
 	public static final String INVALID_DATE = "INVALID_DATE";
+	public static final String INVALID_EXPIRY_DATE = "INVALID_EXPIRY_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
 	public static final String NOT_ELIGIBLE_SERVICE= "NOT_ELIGIBLE_SERVICE";

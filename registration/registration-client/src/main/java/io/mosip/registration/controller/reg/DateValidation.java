@@ -527,11 +527,25 @@ public class DateValidation extends BaseController {
 				isValid = false; // If Age is Future date, set isValid to false
 				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
-				if(!dobDate.isAfter(currentDate)) {
-					isValid = false;
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
-							RegistrationConstants.ONLY_FUTURE_DATE, minDays, maxDays));
-				}
+
+			// Date of Expiry must be strictly in the future and
+			// not more than 10 years from the current date.
+			// Exactly 10 years from today is valid.
+			LocalDate maxExpiryDate = currentDate.plusYears(10);
+
+			if (!dobDate.isAfter(currentDate)) {
+				isValid = false;
+				resetFieldStyleClass(parentPane, fieldId,
+						getErrorMessage(validator,
+								RegistrationConstants.ONLY_FUTURE_DATE,
+								minDays, maxDays));
+
+			} else if (dobDate.isAfter(maxExpiryDate)) {
+				isValid = false;
+				resetFieldStyleClass(parentPane, fieldId,
+						getErrorMessage(validator,
+								RegistrationConstants.INVALID_EXPIRY_DATE));
+			}
 
 				if (isValid) {
 					TextField issuanceDD   = (TextField) getFxElement(parentPane,
