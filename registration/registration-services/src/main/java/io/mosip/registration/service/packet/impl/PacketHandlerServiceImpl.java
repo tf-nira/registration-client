@@ -197,26 +197,41 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			registrationDTO.setProcessId("NEW");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
 	        registrationDTO.addDemographicField("userServiceType", values);
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
 		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
 			registrationDTO.setProcessId("RENEWAL");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
 	        registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
-		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
 			registrationDTO.setProcessId("LOST");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
-			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
 	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
-		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
-			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Deactivated"));
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
+			String ain = registrationDTO.getDemographic("AIN");
+			String serviceType = (ain.toLowerCase().startsWith("af") || ain.toLowerCase().startsWith("am")) ? "Alien Deactivated" : "Deactivated";
+			List<SimpleDto> values = Collections.singletonList( new SimpleDto("eng", serviceType));
 			registrationDTO.addDemographicField("userServiceType", values);
 			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+			if(registrationDTO.getDemographicSimpleType("reasonforCancellation") != null){
+				List<SimpleDto> reasonDtos = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("reasonforCancellation");
+				if(reasonDtos != null && !reasonDtos.isEmpty()){
+					String reasonValue = reasonDtos.get(0).getValue();
+					if("Others".equalsIgnoreCase(reasonValue)){
+						registrationDTO.addDemographicField("remark", (List<SimpleDto>) registrationDTO.getDemographicSimpleType("otherReasonForCancellation"));
+					} else {
+						registrationDTO.addDemographicField("remark", reasonDtos);
+					}
+				}
+			}
 		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
