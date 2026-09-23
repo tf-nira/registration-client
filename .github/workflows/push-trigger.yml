@@ -144,7 +144,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - SERVICE_LOCATION: 'regclient'
+          - SERVICE_LOCATION: 'registration'
             SERVICE_NAME: 'regclient-keystore'
             BASE_IMAGE_BUILD: true
       fail-fast: false
