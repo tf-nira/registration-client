@@ -141,6 +141,7 @@ jobs:
 
 
   build-regclient-keystore-docker:
+    needs: build-regclient-local  
     strategy:
       matrix:
         include:
