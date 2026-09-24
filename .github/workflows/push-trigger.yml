@@ -147,6 +147,7 @@ jobs:
         include:
           - SERVICE_LOCATION: 'registration'
             SERVICE_NAME: 'regclient-keystore'
+            BUILD_ARTIFACT: 'registration-local'
             BASE_IMAGE_BUILD: true
       fail-fast: false
     name: ${{ matrix.SERVICE_NAME }}
