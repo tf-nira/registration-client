@@ -142,6 +142,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_COMMENT = "comment";
 	private static final String CONTROLTYPE_TITLE = "title";
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
+	private static final String FAMILY_NIN_ERROR_MSG = "At least one of Father, Mother or Blood Relative should be Ugandan.";
 	private ProcessSpecDto process;
 	public Node node;
 	/**
@@ -1012,6 +1013,32 @@ public class GenericController extends BaseController {
 		return newSelection;
 	}
 
+	private String ninValue(String fieldId) {
+		FxControl control = getFxControl(fieldId);
+		if (control == null) return null;
+		Object data = control.getData();
+		if (data instanceof String) return (String) data;
+		if (data instanceof List<?> && !((List<?>) data).isEmpty()) {
+			Object first = ((List<?>) data).get(0);
+			return (first instanceof SimpleDto) ? ((SimpleDto) first).getValue() : String.valueOf(first);
+		}
+		return null;
+	}
+
+	private boolean validateFamilyNinPresence() {
+		List<String> provided = Arrays.asList(ninValue("fatherNIN"), ninValue("motherNIN"), ninValue("guardianNIN_AIN"))
+				.stream()
+				.filter(v -> v != null && !v.trim().isEmpty())
+				.collect(Collectors.toList());
+
+		if (provided.isEmpty()) {
+			return true; // nothing entered — skip check
+		}
+
+		// At least one of the provided NINs must NOT start with 'A'
+		return provided.stream().anyMatch(v -> !v.trim().toUpperCase().startsWith("A"));
+	}
+
 	private boolean isScreenValid(final String screenName) {
 		Optional<UiScreenDTO> result = orderedScreens.values().stream()
 				.filter(screen -> screen.getName().equals(screenName.replace("_tab", EMPTY))).findFirst();
@@ -1044,7 +1071,7 @@ public class GenericController extends BaseController {
 							isNotificationOfChangeFilled = true;
 					}
 				}
-				
+
 
 				if(getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL) || getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)) {
 					String facilityType = getSimpleTypeValue(RegistrationConstants.FACILITY_TYPE);
@@ -1086,6 +1113,11 @@ public class GenericController extends BaseController {
 			return false;
 		}
 
+		if (isValid && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && !validateFamilyNinPresence()) {
+			showHideErrorNotification(FAMILY_NIN_ERROR_MSG, null);
+			return false;
+		}
+
 		if (isValid) {
 			showHideErrorNotification(null,null);
 			auditFactory.audit(AuditEvent.REG_NAVIGATION, Components.REGISTRATION_CONTROLLER,
@@ -1103,7 +1135,7 @@ public class GenericController extends BaseController {
 			showHideErrorNotification("At least one field in the 'Notification of Change' section must be filled.",null);
 			return false;
 		}
-		
+
 		if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && (RegistrationConstants.ALIENNEW.equals(process.getId()) || RegistrationConstants.ALIENRENEWAL.equals(process.getId()) || RegistrationConstants.ALIENLOST.equals(process.getId())) ) {
 			if(!isphoneNoFilled) {
 				showHideErrorNotification(RegistrationConstants.LOCAL_OR_NONLOCAL_ERROR_MSG,null);
@@ -1137,7 +1169,7 @@ public class GenericController extends BaseController {
 	    String principleAID = getStringTypeValue(RegistrationConstants.AID_OF_PRINCIPAL);
 	    if(principalAIN != null || principleAID != null) {
 	    	valid = true;
-	    }	
+	    }
 	    return valid;
 	}
 
@@ -1151,7 +1183,7 @@ public class GenericController extends BaseController {
 	    	valid = true;
 	    } else if(nonLocalCountryCodeList != null && nonLocalPhoneValue != null) {
 	    	valid = true;
-	    }	
+	    }
 	    return valid;
 	}
 
@@ -1306,6 +1338,12 @@ public class GenericController extends BaseController {
 				LOGGER.error("Screen validation failed {}, COP name change requires at least one name field",
 						screen.getName());
 				showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+				errorScreen = screen.getName();
+				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
+				break;
+			} else if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screen.getName() + "_tab")
+					&& !validateFamilyNinPresence() && result.isPresent()) {
+				showHideErrorNotification(FAMILY_NIN_ERROR_MSG, null);
 				errorScreen = screen.getName();
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
 				break;
