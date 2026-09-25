@@ -42,6 +42,29 @@ public class DropDownFxControl extends FxControl {
 	private DemographicChangeActionHandler demographicChangeActionHandler;
 	private MasterSyncService masterSyncService;
 	private MasterSyncDao masterSyncDao;
+	
+	 Map<String, String> statusDistrictMap = Map.of(
+             RegistrationConstants.RESIDENCE_STATUS, RegistrationConstants.RESIDENCE_DISTRICT,
+             RegistrationConstants.BIRTH_STATUS, RegistrationConstants.BIRTH_DISTRICT,
+             RegistrationConstants.ORIGIN_STATUS, RegistrationConstants.ORIGIN_DISTRICT,
+             RegistrationConstants.ENROLMENT_STATUS, RegistrationConstants.ENROLLMENT_DISTRICT
+     );
+	 
+	 private static final List<String> SECTION_FIRST_FIELDS = List.of(
+			 RegistrationConstants.EMPLOYER_NAME,
+		     RegistrationConstants.NAME_OF_SCHOOL,
+		     RegistrationConstants.OTHERCHILD,
+			 RegistrationConstants.PRINCIPAL_OF_AIN
+	);
+	 
+	 private static final Map<String, Set<String>> VISIBILITY_SECTION = Map.of(
+		    RegistrationConstants.STUDENT_PASS, Set.of(RegistrationConstants.NAME_OF_SCHOOL,RegistrationConstants.OTHERCHILD),
+		    RegistrationConstants.DP, Set.of(RegistrationConstants.PRINCIPAL_OF_AIN,RegistrationConstants.OTHERCHILD),
+		    "DEFAULT",
+			 Set.of(RegistrationConstants.EMPLOYER_NAME,
+					 RegistrationConstants.OTHERCHILD)
+	);
+
 
 	public DropDownFxControl() {
 		ApplicationContext applicationContext = ClientApplication.getApplicationContext();
@@ -227,6 +250,29 @@ public class DropDownFxControl extends FxControl {
 				}
 				getRegistrationDTo().addDemographicField(uiFieldDTO.getId(), values);
 				getRegistrationDTo().SELECTED_CODES.put(uiFieldDTO.getId()+"Code", selectedCode);
+				
+				if(uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.FACILITY_TYPE)) {
+					String fcValue = null;
+					Object facilityType = getRegistrationDTo().getDemographics().get(RegistrationConstants.FACILITY_TYPE);
+			        if (facilityType instanceof List<?>) {
+			            List<?> facilityTypeList = (List<?>) facilityType;
+			            if (!facilityTypeList.isEmpty() && facilityTypeList.get(0) instanceof SimpleDto) {
+			                SimpleDto dto = (SimpleDto) facilityTypeList.get(0);
+			                if (dto.getValue() != null) {
+			                	fcValue = dto.getValue().trim(); // Normalize
+			                }
+			            }
+			        }
+					updateFacilityCategory(fcValue);
+					updateFacilitySubCategory(fcValue);
+					handleEmployeeandSchoolSection(fcValue);
+				}
+				
+				String districtField = statusDistrictMap.get(uiFieldDTO.getId());
+	            if (districtField != null) {
+	                handleStatusandDistrictValue(uiFieldDTO.getId(), districtField);
+	            }
+	            
 				break;
 			default:
 				Optional<GenericDto> result = getPossibleValues(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0)).stream()
@@ -237,6 +283,103 @@ public class DropDownFxControl extends FxControl {
 				}
 				break;
 		}
+	}
+
+	private void handleEmployeeandSchoolSection(String fcValue) {
+	    if (fcValue == null) 
+	    	return;
+
+	    Set<String> visibleFields = VISIBILITY_SECTION
+	            .getOrDefault(fcValue, VISIBILITY_SECTION.get("DEFAULT"));
+
+	    for (String fieldId : SECTION_FIRST_FIELDS) {
+	        if (visibleFields.contains(fieldId)) {
+	            showSectionByAnyField(fieldId);
+	        } else {
+	            hideSectionByAnyField(fieldId);
+	        }
+	    }
+	}
+
+
+	private void hideSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(false);
+	            section.setManaged(false);
+	        }
+	    }
+	}
+
+	private void showSectionByAnyField(String fieldId) {
+	    FxControl fx = GenericController.getFxControlMap().get(fieldId);
+	    if (fx != null && fx.getNode() != null) {
+	        Node section = fx.getNode().getParent();
+	        if (section != null) {
+	            section.setVisible(true);
+	            section.setManaged(true);
+	        }
+	    }
+	}
+
+	private void handleStatusandDistrictValue(String statusField, String districtField) {
+		String resValue = null; 
+		Object residenceStatus = getRegistrationDTo().getDemographics().get(statusField); 
+		if (residenceStatus instanceof List<?>) { 
+			List<?> residenceStatusList = (List<?>) residenceStatus; 
+			if (!residenceStatusList.isEmpty() && residenceStatusList.get(0) instanceof SimpleDto) { 
+				SimpleDto dto = (SimpleDto) residenceStatusList.get(0); 
+				if (dto.getValue() != null) { 
+					resValue = dto.getValue().trim().toLowerCase(); // Normalize } } }
+				}
+			}
+		}
+	    updateDistrictList(resValue, districtField);
+	}
+
+	public void updateDistrictList(String status, String districtField) {
+		
+        if (status != null) {
+            FxControl fxControl = getFxControl(districtField);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFilteredFieldValues(
+                    RegistrationConstants.UGA, RegistrationConstants.DISTRICT, langCode, true, status);
+            
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
+	}
+	
+	private void updateFacilityCategory(String facilityType) {
+        if (facilityType != null) {
+            FxControl fxControl = getFxControl(RegistrationConstants.FACILITY_TYPE_CATEGORY);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFacilityTypeCategoryAndSubCategoryValues(
+            		RegistrationConstants.FACILITY_TYPE_CATEGORY, langCode, facilityType);
+            
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
+	}
+	
+	private void updateFacilitySubCategory(String facilityType) {
+        if (facilityType != null) {
+            FxControl fxControl = getFxControl(RegistrationConstants.FACILITY_TYPE_SUB_CATEGORY);
+            String langCode = getRegistrationDTo().getSelectedLanguagesByApplicant().get(0);
+
+            List<GenericDto> filteredValues = masterSyncService.getFacilityTypeCategoryAndSubCategoryValues(
+            		RegistrationConstants.FACILITY_SUB_CATEGORY_SUBTYPE, langCode, facilityType);
+            
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            dataList.put(langCode, filteredValues);
+            fxControl.fillData(dataList);
+        }
 	}
 
 	@Override
@@ -306,40 +449,89 @@ public class DropDownFxControl extends FxControl {
 					resetValue();
 				}
 
-				if(uiFieldDTO.getId().equalsIgnoreCase("genderCop")){
-					FxControl fxControl2 =  getFxControl("addSpouse");
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
+				if(uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.PRIMARY_NATIONALITY) || uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.SECONDARY_NATIONALITY)) {
+					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+					boolean nationalityCheck = genericController.validateSameNationality();
+					FxControl fxControl = getFxControl(uiFieldDTO.getId());
+					FxControl fxControl1 = getFxControl(RegistrationConstants.PRIMARY_NATIONALITY);
+					if(!nationalityCheck) {
+						fxControl.setMessage(RegistrationConstants.SAME_NATIONALITY_ERROR_MSG);
+					} else {
+						fxControl.setMessage(null);
+					}
 				}
+
+				List<String> fieldHierarchy = List.of(
+						RegistrationConstants.ENROLLMENT_DISTRICT,
+						RegistrationConstants.ENROLLMENT_COUNTY,
+						RegistrationConstants.ENROLLMENT_SUB_COUNTY,
+						RegistrationConstants.ENROLLMENT_PARISH,
+						RegistrationConstants.ENROLLMENT_VILLAGE
+					);
+
+					String changedFieldId = uiFieldDTO.getId();
+					int changedIndex = fieldHierarchy.indexOf(changedFieldId);
+
+					if (changedIndex != -1 && changedIndex < fieldHierarchy.size() - 1) {
+					    for (int i = changedIndex + 1; i < fieldHierarchy.size(); i++) {
+					        getRegistrationDTo().removeDemographicField(fieldHierarchy.get(i));
+					    }
+					}
+
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("gender")){
 					FxControl fxControl1 =  getFxControl("maritalStatus");
 					FxControl fxControl2 =  getFxControl("numberOfOtherSpouses");
+					FxControl fxControl3 =  getFxControl("numberOfOtherSpousesAlien");
 					fxControl1.selectAndSet(null);
 					fxControl1.setData(null);
 					fxControl1.getNode().setDisable(false);
-					fxControl2.selectAndSet(null);
-					fxControl2.setData(null);
-					fxControl2.getNode().setDisable(false);
+					if(fxControl2 != null) {
+						fxControl2.selectAndSet(null);
+						fxControl2.setData(null);
+						fxControl2.getNode().setDisable(false);
+					} else if(fxControl3 != null) {
+						fxControl3.selectAndSet(null);
+						fxControl3.setData(null);
+						fxControl3.getNode().setDisable(false);
+					}
 				}
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("maritalStatus")){
 					GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 					Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
-					SimpleDto genderData = (SimpleDto) ((ArrayList) demographics.get("gender")).get(0);
+					SimpleDto genderData = null;
+					if (demographics.get("gender") != null
+							&& !((ArrayList<?>) demographics.get("gender")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("gender")).get(0);
+					} else if (demographics.get("genderCop") != null
+							&& !((ArrayList<?>) demographics.get("genderCop")).isEmpty()) {
+						genderData = (SimpleDto) ((ArrayList<?>) demographics.get("genderCop")).get(0);
+					}
 					SimpleDto maritalStatusData = (SimpleDto) ((ArrayList) demographics.get("maritalStatus")).get(0);
 					FxControl fxControl1 =  getFxControl("numberOfOtherSpouses");
+					FxControl fxControl2 =  getFxControl("numberOfOtherSpousesAlien");
 					if (genderData.getValue().equalsIgnoreCase("Female") && !(maritalStatusData.getValue().equalsIgnoreCase("Single"))) {
-						fxControl1.selectAndSet("1");
-						fxControl1.setData("1");
-						fxControl1.getNode().setDisable(true);
-
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet("1");
+							fxControl1.setData("1");
+							fxControl1.getNode().setDisable(true);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet("1");
+							fxControl2.setData("1");
+							fxControl2.getNode().setDisable(true);
+						}
 					}
 					else {
-						fxControl1.selectAndSet(null);
-						fxControl1.setData(null);
-						fxControl1.getNode().setDisable(false);
+						if(fxControl1 != null) {
+							fxControl1.selectAndSet(null);
+							fxControl1.setData(null);
+							fxControl1.getNode().setDisable(false);
+						} else if(fxControl2 != null) {
+							fxControl2.selectAndSet(null);
+							fxControl2.setData(null);
+							fxControl2.getNode().setDisable(false);
+						}
 					}
 				}
 
@@ -361,6 +553,31 @@ public class DropDownFxControl extends FxControl {
 				            fxControl.getNode().setDisable(true);
 				        }
 				    }
+				}
+				
+				if (uiFieldDTO.getId().equalsIgnoreCase(RegistrationConstants.CARD_REQUIRED)) {
+				    GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+				    String cardValue = genericController.getRegistrationDTOFromSession().getDemographic(RegistrationConstants.CARD_REQUIRED);
+				    Set<String> copCat = Set.of(
+					        "familyInformationCat",
+					        "citizenshipTypeCat"
+					);
+				    
+				    // Get demographics list
+				    Map<String, Object> demographics = genericController.getRegistrationDTOFromSession().getDemographics();
+				    
+				    // Check if any copCat field has value "Y"
+			        boolean anyCopCatFieldHasY = demographics.entrySet().stream()
+			        	    .anyMatch(e -> copCat.contains(e.getKey()) && "Y".equals(String.valueOf(e.getValue())));
+			        
+			        FxControl fxControl = getFxControl(uiFieldDTO.getId()); // Assuming you have a FxControl store
+			        if (fxControl != null) {
+			        	if ("Yes".equalsIgnoreCase(cardValue) && anyCopCatFieldHasY && !fxControl.getNode().isDisable()) {
+			                fxControl.setMessage("This is subject to card change charges");
+			            } else {
+			                fxControl.setMessage(null); // or use null if your method handles that safely
+			            }
+			        }
 				}
 
 				if(uiFieldDTO.getId().equalsIgnoreCase("declarant")) {
@@ -405,12 +622,6 @@ public class DropDownFxControl extends FxControl {
 						fxControl2.selectAndSet("MLE");
 						fxControl2.setData("MLE");
 						fxControl2.getNode().setDisable(true);
-
-						// Nationality
-						FxControl fxControl3 =  getFxControl("declarantNationality");
-						fxControl3.selectAndSet("Ugandan");
-						fxControl3.setData("Ugandan");
-						fxControl3.getNode().setDisable(true);
 					}
 					else if (newValue.getName().equalsIgnoreCase("Mother")) {
 						for (int i=0; i<5; i++) {
@@ -456,19 +667,11 @@ public class DropDownFxControl extends FxControl {
 							fxControl2.setData("FRN");
 						}
 						fxControl2.getNode().setDisable(true);
-
-
-						// Nationality
-						FxControl fxControl4 =  getFxControl("declarantNationality");
-						fxControl4.selectAndSet("Ugandan");
-						fxControl4.setData("Ugandan");
-						fxControl4.getNode().setDisable(true);
 					}
 					else {
 						declarantFieldIds.add("declarantMaidenName");
 						declarantFieldIds.add("declarantGender");
 						declarantFieldIds.add("declarantResidenceStatus");
-						declarantFieldIds.add("declarantNationality");
 
 						for(String fieldId: declarantFieldIds) {
 							FxControl fxControl = getFxControl(fieldId);
@@ -528,15 +731,20 @@ public class DropDownFxControl extends FxControl {
 
 	@Override
 	public void fillData(Object data) {
-
+		ComboBox<GenericDto> comboBox = (ComboBox<GenericDto>) getField(uiFieldDTO.getId());
+		
+		comboBox.getItems().clear();
+		comboBox.setValue(null);
+		clearToolTipText();
+		
 		if (data != null) {
-
+			
 			Map<String, List<GenericDto>> val = (Map<String, List<GenericDto>>) data;
 
 			List<GenericDto> items = val.get(getRegistrationDTo().getSelectedLanguagesByApplicant().get(0));
 
 			if (items != null && !items.isEmpty()) {
-				setItems((ComboBox<GenericDto>) getField(uiFieldDTO.getId()), items);
+				setItems(comboBox, items);  // Fill with new data
 			}
 
 		}

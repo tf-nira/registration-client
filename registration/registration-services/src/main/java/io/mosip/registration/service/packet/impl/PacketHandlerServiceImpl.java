@@ -28,8 +28,8 @@ import io.mosip.registration.entity.MachineMaster;
 import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.service.config.GlobalParamService;
 import io.mosip.registration.service.sync.MasterSyncService;
-import io.mosip.registration.util.healthcheck.RegistrationSystemPropertiesChecker;
 import lombok.NonNull;
+import io.mosip.registration.util.healthcheck.RegistrationSystemPropertiesChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -87,6 +87,7 @@ import io.mosip.registration.util.common.BIRBuilder;
 import io.mosip.kernel.biometrics.constant.OtherKey;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
 
 /**
  * The implementation class of {@link PacketHandlerService} to handle the
@@ -192,6 +193,47 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 			responseDTO.getErrorResponseDTOs().add(errorResponseDTO);
 			return responseDTO;
 		}
+		
+		if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
+			registrationDTO.setProcessId("NEW");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
+	        registrationDTO.addDemographicField("userServiceType", values);
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
+		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
+			registrationDTO.setProcessId("RENEWAL");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
+	        registrationDTO.addDemographicField("userServiceType", values);
+			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENLOST)){
+			registrationDTO.setProcessId("LOST");
+			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien Replacement"));
+			registrationDTO.addDemographicField("userServiceType", values);
+			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
+		}
+		else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.DEACTIVATED)){
+			String ain = registrationDTO.getDemographic("AIN");
+			String serviceType = (ain.toLowerCase().startsWith("af") || ain.toLowerCase().startsWith("am")) ? "Alien Deactivated" : "Deactivated";
+			List<SimpleDto> values = Collections.singletonList( new SimpleDto("eng", serviceType));
+			registrationDTO.addDemographicField("userServiceType", values);
+			registrationDTO.addDemographicField("NIN",registrationDTO.getDemographic("AIN"));
+			if(registrationDTO.getDemographicSimpleType("reasonforCancellation") != null){
+				List<SimpleDto> reasonDtos = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("reasonforCancellation");
+				if(reasonDtos != null && !reasonDtos.isEmpty()){
+					String reasonValue = reasonDtos.get(0).getValue();
+					if("Others".equalsIgnoreCase(reasonValue)){
+						registrationDTO.addDemographicField("remark", (List<SimpleDto>) registrationDTO.getDemographicSimpleType("otherReasonForCancellation"));
+					} else {
+						registrationDTO.addDemographicField("remark", reasonDtos);
+					}
+				}
+			}
+		}
 
 		registrationDTO.addDemographicField("selectedHandles", "NIN");
 		
@@ -201,33 +243,46 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 				if (simpleDtos != null && !simpleDtos.isEmpty()) {
 				    String value = simpleDtos.get(0).getValue(); // Assuming you need the first item
-				    if ("Birth to Naturalization".equals(value)) {
+				    if ("Citizenship by Naturalization".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Naturalization"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
-				    else if("Birth to Dual Citizenship".equals(value)) {
+				    else if("Dual citizenship".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
-				    else if("Birth to Registration".equals(value)) {
+				    else if("Citizenship by Registration".equals(value)) {
 				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "By Registration"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Naturalisation to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Registration to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
-				        registrationDTO.addDemographicField("userServiceType", values);
-				    }
-				    else if("Citizenship Under Article  9 to Dual Citizenship".equals(value)) {
-				        List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Dual Citizenship"));
 				        registrationDTO.addDemographicField("userServiceType", values);
 				    }
 				}
 
 			}
+			if (registrationDTO.getDemographicSimpleType("removingName")!=null){
+				if(registrationDTO.getDemographicSimpleType("removingName").equals("Y") && registrationDTO.getDemographicSimpleType("otherNames")==null) {
+					List<SimpleDto> otherNamevalue = Collections.singletonList(new SimpleDto("eng", ""));
+					registrationDTO.addDemographicField("otherNames", otherNamevalue);
+				}
+			}
+
+
+				List<String> certTypes = Arrays.asList(
+					"dualCitizenshipCertificateNumber",
+					"registrationCertificateNumber",
+					"naturalizationCertificateNumber"
+				);
+
+				for (String certType : certTypes) {
+					List<SimpleDto> certList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType(certType);
+					if (certList != null && !certList.isEmpty()) {
+						String certificateNo = certList.get(0).getValue();
+						if (certificateNo != null && !certificateNo.isEmpty()) {
+						registrationDTO.addDemographicField("citizenshipCertificateNo", certificateNo);
+							break;
+						}
+					}
+				}
+
 		}
 		
 		if(registrationDTO.getDemographic("applicantUnabletoSign")!=null && !registrationDTO.getDemographic("applicantUnabletoSign").equals("N")) {
@@ -248,7 +303,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		}
 		
 		// Add the "isCardRequired" field for Renewal flow type
-	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL)) {
+	    if (registrationDTO.getFlowType().equals(FlowType.RENEWAL) || registrationDTO.getFlowType().equals(FlowType.ALIENRENEWAL)) {
 	        LOGGER.info("Setting isCardRequired field to Yes for Renewal flow type");
 	        registrationDTO.addDemographicField("isCardRequired", "Yes");
 	    }
@@ -256,6 +311,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		Map<String, String> metaInfoMap = new LinkedHashMap<>();
 		try {
 			SchemaDto schema = identitySchemaService.getIdentitySchema(registrationDTO.getIdSchemaVersion());
+			LOGGER.info("before saving registrationDTO ===> "+  registrationDTO.toString());
 			setDemographics(registrationDTO);
 			setDocuments(registrationDTO, metaInfoMap);
 			setBiometrics(registrationDTO, metaInfoMap);
@@ -289,7 +345,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 			LOGGER.info("Saving registration info in DB and on disk.");
 			registrationDAO.save(baseLocation + SLASH + packetManagerAccount + SLASH + registrationDTO.getPacketId(), registrationDTO);
-
+			LOGGER.info("After saving registrationDTO");
 			globalParamService.update(RegistrationConstants.AUDIT_TIMESTAMP, DateUtils.getUTCCurrentDateTime().toString());
 
 			auditFactory.audit(AuditEvent.PACKET_CREATION_SUCCESS, Components.PACKET_HANDLER,
@@ -459,6 +515,10 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				case RENEWAL:
 				case NEW:
 				case FIRSTID:
+				case ALIENNEW: 
+				case ALIENRENEWAL:
+				case ALIENLOST :
+				case DEACTIVATED:
 					if (demographics.get(fieldName) != null)
 						setField(registrationDTO.getRegistrationId(), fieldName, demographics.get(fieldName),
 								registrationDTO.getProcessId().toUpperCase(), source);
@@ -690,7 +750,7 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 
 	@Override
 	public void createAcknowledgmentReceipt(@NonNull String packetId, byte[] content, String format)
-			throws io.mosip.kernel.core.exception.IOException {
+            throws io.mosip.kernel.core.exception.IOException {
 		LOGGER.debug("Starting to create Registration ack receipt : {}", packetId);
 		byte[] signature = clientCryptoFacade.getClientSecurity().signData(content);
 		byte[] key = clientCryptoFacade.getClientSecurity().getEncryptionPublicPart();
@@ -698,7 +758,6 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				Paths.get(baseLocation, packetManagerAccount, packetId.concat("_Ack.").concat(format)).toFile());
 		registrationDAO.updateAckReceiptSignature(packetId, CryptoUtil.encodeToURLSafeBase64(signature));
 	}
-
 
 	public String getAcknowledgmentReceipt(@NonNull String packetId, @NonNull String filepath)
 			throws RegBaseCheckedException, io.mosip.kernel.core.exception.IOException {
@@ -712,13 +771,13 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 						FileUtils.readFileToByteArray(new File(filepath)),
 						RegistrationConstants.ACKNOWLEDGEMENT_FORMAT);
 				registration = registrationDAO.getRegistrationByPacketId(packetId);
-			} catch (io.mosip.kernel.core.exception.IOException  ex) {
+			} catch (io.mosip.kernel.core.exception.IOException ex) {
 				LOGGER.error("Failed to sign and encrypt existing ack receipt : {}", packetId, ex);
 			}
 		}
 
-		byte[] decryptedContent = clientCryptoFacade.decrypt(FileUtils.readFileToByteArray(new File(filepath)));
-		boolean isSignatureValid = clientCryptoFacade.getClientSecurity()
+        byte[] decryptedContent = clientCryptoFacade.decrypt(FileUtils.readFileToByteArray(new File(filepath)));
+        boolean isSignatureValid = clientCryptoFacade.getClientSecurity()
 				.validateSignature(ClientCryptoUtils.decodeBase64Data(registration.getAckSignature()), decryptedContent);
 		if(isSignatureValid)
 			return new String(decryptedContent);
@@ -727,3 +786,4 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 				RegistrationExceptionConstants.REG_ACK_RECEIPT_READ_ERROR.getErrorMessage());
 	}
 }
+

@@ -59,6 +59,8 @@ public class VirtualKeyboard {
 	private VBox root;
 
 	private boolean capsLock;
+	
+	private TextField textField;
 
 	private StringBuilder vkType = new StringBuilder();
 
@@ -406,78 +408,62 @@ public class VirtualKeyboard {
 	}
 
 	public void changeControlOfKeyboard(TextField textField) {
-		textField.setOnKeyPressed(new EventHandler<Event>() {
-			@Override
-			public void handle(Event event) {
-				if (!vkType.toString().contains("vk")) {
-					KeyEvent e = ((KeyEvent) event);
-					if (e.getCode().getName().equals("Caps Lock")) {
-						if (capsLock) {
-							capsLock = false;
-						} else {
-							capsLock = true;
-						}
-					}
-					if (e.getCode().getName().equals("Shift")) {
-						keyEvent = e;
-					}					
-					
-					textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-			            @Override
-			            public void handle(KeyEvent event) {
-			                switch (event.getCode()) {			                   
-			                    case SHIFT:
-			                    	keyEvent = null;
-							default:
-								break;
-			                }
-			            }
-			        });
-					
-					String key;
-					if (capsLock || (keyEvent != null ? keyEvent.getCode() != null && keyEvent.getCode().getName() != null && keyEvent.getCode().getName().equals("Shift") : false)) {
-						try {
-							key = keyboard.getString("shift_" + e.getCode().getName().replaceAll("\\s", ""));
-						} catch (MissingResourceException exception) {
-							LOGGER.error("Virtual Keyboard", APPLICATION_NAME, RegistrationConstants.APPLICATION_ID,
-									exception.getMessage());
-							key = null;
-						}
-						if (key != null) {
-							textField.fireEvent(new KeyEvent(KeyEvent.KEY_TYPED, key, e.getCode().getName(),
-									e.getCode(), false, false, false, false));
-							textField.setEditable(false);
-						}
-					} else {
-						try {
-							key = keyboard.getString("unshift_" + e.getCode().getName().replaceAll("\\s", ""));
-						} catch (MissingResourceException exception) {
-							LOGGER.error("Virtual Keyboard", APPLICATION_NAME, RegistrationConstants.APPLICATION_ID,
-									exception.getMessage());
-							key = null;
-						}
-						if (key != null) {
-							textField.fireEvent(new KeyEvent(KeyEvent.KEY_TYPED, key, e.getCode().getName(),
-									e.getCode(), false, false, false, false));
-							textField.setEditable(false);
-						}
-					}
-				}
-			}
-		});
-
-		textField.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(final ObservableValue<? extends String> obsVal, final String oldValue,
-					final String newValue) {
-				Platform.runLater(() -> {
-					textField.setEditable(true);
-				});
-
-			}
-		});
-
+	    textField.setOnKeyPressed(this::handleKeyPressed);
+	    textField.textProperty().addListener(this::handleTextChange);
 	}
+
+	private void handleKeyPressed(Event event) {
+	    if (!vkType.toString().contains("vk")) {
+	        KeyEvent e = (KeyEvent) event;
+	        toggleCapsLock(e);
+	        processShiftKey(e);
+	        String key = processKeyTyped(e);
+
+	        if (key != null && textField != null) {
+	            textField.fireEvent(new KeyEvent(KeyEvent.KEY_TYPED, key, e.getCode().getName(),
+	                    e.getCode(), false, false, false, false));
+	            textField.setEditable(false);
+	        }
+	    }
+	}
+
+	private void toggleCapsLock(KeyEvent e) {
+	    if (e.getCode().getName().equals("Caps Lock")) {
+	        capsLock = !capsLock;
+	    }
+	}
+
+	private void processShiftKey(KeyEvent e) {
+	    if (e.getCode().getName().equals("Shift")) {
+	        keyEvent = e;
+	    }
+	}
+
+	private String processKeyTyped(KeyEvent e) {
+	    String key;
+	    boolean isShiftActive = capsLock || (keyEvent != null && keyEvent.getCode().getName().equals("Shift"));
+
+	    String keyPrefix = isShiftActive ? "shift_" : "unshift_";
+
+	    try {
+	        key = keyboard.getString(keyPrefix + e.getCode().getName().replaceAll("\\s", ""));
+	    } catch (MissingResourceException exception) {
+	        LOGGER.error("Virtual Keyboard", APPLICATION_NAME, RegistrationConstants.APPLICATION_ID,
+	                exception.getMessage());
+	        key = null;
+	    }
+
+	    return key;
+	}
+
+	private void handleTextChange(ObservableValue<? extends String> obsVal, String oldValue, String newValue) {
+	    Platform.runLater(() -> {
+	        if (textField != null) {
+	            textField.setEditable(true);
+	        }
+	    });
+	}
+
 
 	public void focusListener(TextField field, double y, Node keyboardNode) {
 		field.focusedProperty().addListener(new ChangeListener<Boolean>() {

@@ -23,7 +23,9 @@ import io.mosip.registration.enums.FlowType;
 import io.mosip.registration.validator.RequiredFieldValidator;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Pane;
@@ -42,7 +44,8 @@ public abstract class FxControl  {
 
 	protected static final Logger LOGGER = AppConfig.getLogger(FxControl.class);
 	private static final String loggerClassName = "FxControl";
-
+	private Label messageLabel;
+	
 	protected UiFieldDTO uiFieldDTO;
 	protected FxControl control;
 	public Node node;
@@ -181,19 +184,31 @@ public abstract class FxControl  {
 		
 		if (!uiFieldDTO.isRequired()) {
 			boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
-		    Node parentNode = this.node; // Store the node reference
+			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+			String fieldvalue = null;
+			if(uiFieldDTO.getType().equalsIgnoreCase("string")){
+				fieldvalue = genericController.getStringTypeValue(uiFieldDTO.getId());
+			} else if (uiFieldDTO.getType().equalsIgnoreCase("simpleType")) {
+				fieldvalue = genericController.getSimpleTypeValue(uiFieldDTO.getId());
+			}
+			Node parentNode = this.node; // Store the node reference
 		        for (Node child : ((Pane) parentNode).getChildren()) {
 		        	if(child instanceof VBox) {
 		        		child = ((VBox) child).getChildren().get(0);
+
 		        	}
-		            if (child instanceof Label) {
+					if (child instanceof Label) {
 		                Label label = (Label) child;
 		                String labelName = label.getText();
 						if(labelName == null) {
 		                	break;
 		                }
+						String regId = String.valueOf(getRegistrationDTo().getRegistrationId());
+							if (regId != null && !regId.isEmpty() && regId.matches("^[A-Z0-9]{6}-[0-9]{14}$") && (fieldvalue == null || fieldvalue.isEmpty())) {
+								parentNode.setDisable(false);
+							}
 		                if (isRequiredField) {
-		                    if (!labelName.endsWith("*")) {
+							if (!labelName.endsWith("*")) {
 		                        label.setText(labelName + " *");
 		                    }
 		                }
@@ -240,7 +255,52 @@ public abstract class FxControl  {
 	public void clearToolTipText() {}
 	
 	public  void clearValue() {}
-	
+
+	public void setMessage(String message) {
+		Node controlNode = this.node;
+		Parent parent = controlNode.getParent();
+
+		VBox wrapper;
+
+		if (parent instanceof VBox) {
+			wrapper = (VBox) parent;
+		}
+		else if (parent instanceof GridPane) {
+			GridPane gridPane = (GridPane) parent;
+
+			Integer rowIndex = GridPane.getRowIndex(controlNode);
+			Integer columnIndex = GridPane.getColumnIndex(controlNode);
+			if (rowIndex == null) rowIndex = 0;
+			if (columnIndex == null) columnIndex = 0;
+
+			wrapper = new VBox(2);
+			gridPane.getChildren().remove(controlNode);
+			gridPane.add(wrapper, columnIndex, rowIndex);
+			wrapper.getChildren().add(controlNode);
+		} else {
+			return;
+		}
+
+		if (messageLabel == null) {
+			messageLabel = new Label();
+			messageLabel.setStyle("-fx-text-fill: #e22d2d; -fx-font-size: 11px;");
+			messageLabel.setVisible(false);
+			messageLabel.setManaged(false);
+			wrapper.getChildren().add(messageLabel);
+		}
+
+		if (message == null || message.trim().isEmpty()) {
+			messageLabel.setText("");
+			messageLabel.setVisible(false);
+			messageLabel.setManaged(false);
+		} else {
+			messageLabel.setText(message);
+			messageLabel.setVisible(true);
+			messageLabel.setManaged(true);
+		}
+	}
+
+
 	/**
 	 *
 	 * @return
@@ -294,7 +354,11 @@ public abstract class FxControl  {
 			case RENEWAL:
 			case FIRSTID:
 			case LOST:
- 				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
+			case ALIENNEW:
+			case ALIENRENEWAL:
+			case ALIENLOST:
+			case DEACTIVATED:
+				mandatorySuffix = schema.isRequired() ? RegistrationConstants.ASTRIK : RegistrationConstants.EMPTY;
 				break;
 		}
 		return mandatorySuffix;
@@ -343,6 +407,10 @@ public abstract class FxControl  {
 				case LOST:
 				case RENEWAL:
 				case FIRSTID:
+				case ALIENNEW:
+				case ALIENRENEWAL: 
+				case ALIENLOST:
+				case DEACTIVATED :
 					return isVisibleAccordingToSpec;
 			}
 		} catch (Exception exception) {

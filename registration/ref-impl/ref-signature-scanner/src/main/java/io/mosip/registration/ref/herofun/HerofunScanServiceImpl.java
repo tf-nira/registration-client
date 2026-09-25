@@ -35,6 +35,7 @@ public class HerofunScanServiceImpl implements SignatureService {
 
 	@Override
 	public BufferedImage scan(DocScanDevice docScanDevice, String deviceType) {
+		LOGGER.info("Entered into Scan method....");
 
 		SignaturePad signaturepad = SignaturePad.INSTANCE;
 		BufferedImage bufferedImage = null;
@@ -101,6 +102,7 @@ public class HerofunScanServiceImpl implements SignatureService {
 	public BufferedImage getSignatureImage(SignaturePad signaturepad) throws InterruptedException, ExecutionException, TimeoutException {
 	    // Create an ExecutorService to handle the thread and return the result
 	    ExecutorService executorService = Executors.newSingleThreadExecutor();
+	    LOGGER.info("Signature Processing Started..."+signaturepad );
 
 	    // Define the task to be executed in the thread
 	    Callable<BufferedImage> task = () -> {
@@ -115,16 +117,15 @@ public class HerofunScanServiceImpl implements SignatureService {
 	                if (statusCode == 0) {
 	                    LOGGER.info("Signature pad not ready. Waiting...");
 	                } else if (statusCode == 1) {
-	                    LOGGER.info("User has signed.");
-	                    break; // Exit the loop when the user has signed
+	                    LOGGER.info("User has signed within " + elapsedSeconds + " seconds.");
+	                    break;
 	                } else {
-	                    LOGGER.info("Unknown status code: " + statusCode);
+	                    LOGGER.warn("Unknown status code from pad: {}", statusCode);
 	                }
 	                // Wait for 1 second before checking again
 	                Thread.sleep(1000);
 	                elapsedSeconds++;
-
-	    	    	System.out.println(elapsedSeconds);
+	                LOGGER.info("Signature Capturing "+elapsedSeconds);
 	            }
 
 	            // Handle timeout
@@ -133,21 +134,35 @@ public class HerofunScanServiceImpl implements SignatureService {
 	                throw new TimeoutException("Signature process timed out.");
 	            }
 
-	            byte[] outPng = new byte[1000000]; // Assume max size of 1000000 bytes (1 MB)
-	            int[] outPngLength = new int[1]; // This will hold the length of the data
+	            int bufferSize = 1000000;
+	            byte[] outPng = new byte[bufferSize];
+	            int[] outPngLength = new int[1];
+
 	            int result = signaturepad.HWGetPng(outPng, outPngLength);
-	            while (result == -3) { // If result is -3, the buffer was too small
+	            while (result == -3) {
 	                LOGGER.info("Buffer too small. Increasing size...");
-	                outPng = new byte[outPng.length * 2]; // Double the buffer size
-	                result = signaturepad.HWGetPng(outPng, outPngLength); // Call again with a larger buffer
+	                bufferSize *= 2;
+	                outPng = new byte[bufferSize];
+	                result = signaturepad.HWGetPng(outPng, outPngLength);
 	            }
 
-	            // Convert byte array to BufferedImage
-	            return byteArrayToBufferedImage(outPng);
+	            if (result != 1) {
+	                LOGGER.error("Failed to get PNG from signature pad. Error code: {}", result);
+	                return null;
+	            }
+
+	            // Trim array to actual size
+	            byte[] trimmedPng = new byte[outPngLength[0]];
+	            System.arraycopy(outPng, 0, trimmedPng, 0, outPngLength[0]);
+
+	            return byteArrayToBufferedImage(trimmedPng);
 
 	        } catch (InterruptedException e) {
-	            LOGGER.error("Failed to complete the signature process due to interruption.", e);
+	            LOGGER.error("Signature capture was interrupted", e);
 	            Thread.currentThread().interrupt();
+	            return null;
+	        } catch (Exception ex) {
+	            LOGGER.info("Unexpected exception during signature capture", ex);
 	            return null;
 	        }
 	    };
@@ -156,15 +171,21 @@ public class HerofunScanServiceImpl implements SignatureService {
 	    Future<BufferedImage> future = executorService.submit(task);
 	    
 	    try {
-	        // Wait for the task to complete and get the result, with a timeout
-	        return future.get(60, TimeUnit.SECONDS); // Allow some buffer time for completion
+	        return future.get(60, TimeUnit.SECONDS); // Slightly higher than capture timeout
 	    } catch (TimeoutException e) {
-	        LOGGER.error("Signature capture process timed out.", e);
-	        throw e; // Re-throw the exception for the caller to handle
+	        LOGGER.error("Signature capture timed out", e);
+	        future.cancel(true);
+	        throw e;
+	    } catch (ExecutionException ex) {
+	        LOGGER.info("Execution failed during signature capture", ex);
+	        throw ex;
 	    } finally {
-	        LOGGER.info("Closing the signature pad...");
-	        signaturepad.HWClose(); // Close the device to release resources
-	        // Shutdown the executor service to free resources
+	        try {
+	            LOGGER.info("Closing signature pad...");
+	            signaturepad.HWClose();
+	        } catch (Exception e) {
+	            LOGGER.warn("Exception while closing signature pad", e);
+	        }
 	        executorService.shutdown();
 	    }
 	}
