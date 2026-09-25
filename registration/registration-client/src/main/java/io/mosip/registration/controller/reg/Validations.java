@@ -209,58 +209,42 @@ public class Validations extends BaseController {
 
 		// Declarant Age Validation
 		if ("declarantAge".equalsIgnoreCase(fieldId)) {
-
 			try {
-				int age = Integer.parseInt(value);
+				int declarantAge = Integer.parseInt(value);
+				int applicantAge = genericController.getDobAge();
 				String declarant = null;
-				Object declarantObj = genericController
-						.getRegistrationDTOFromSession()
-						.getDemographics()
-						.get("declarant");
+
+				Object declarantObj = genericController.getRegistrationDTOFromSession()
+						.getDemographics().get("declarant");
 
 				if (declarantObj instanceof List<?>) {
 					List<?> declarantList = (List<?>) declarantObj;
 					if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
 						SimpleDto dto = (SimpleDto) declarantList.get(0);
-						if (dto.getValue() != null) {
-							declarant = dto.getValue().trim();
-						}
+						if (dto.getValue() != null) declarant = dto.getValue().trim();
 					}
 				}
-				int minAge;
-				if ("Father".equalsIgnoreCase(declarant)
-						|| "Mother".equalsIgnoreCase(declarant)) {
-					minAge = 10;
-				} else {
-					minAge = 18;
-				}
-				if (age < minAge || age > 120) {
-					errorMessage = "Age must be between " + minAge + " and 120 years";
-					generateInvalidValueAlert(
-							parentPane,
-							node.getId(),
-							errorMessage,
-							showAlert
-					);
-					if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE)) {
-						addInvalidInputStyleClass(parentPane, node, false);
-					}
 
+				int minAge = applicantAge + 10;
+				if (!"Father".equalsIgnoreCase(declarant)
+						&& !"Mother".equalsIgnoreCase(declarant)) {
+					minAge = Math.max(minAge, 18);
+				} else {
+					minAge = Math.max(minAge, 10);
+				}
+
+				if (declarantAge < minAge || declarantAge > 120) {
+					errorMessage = "Age must be between " + minAge + " and 120 years";
+					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+					if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE))
+						addInvalidInputStyleClass(parentPane, node, false);
 					return false;
 				}
-
 			} catch (NumberFormatException e) {
 				errorMessage = "Please enter a valid age";
-				generateInvalidValueAlert(
-						parentPane,
-						node.getId(),
-						errorMessage,
-						showAlert
-				);
-				if (isPreviousValid
-						&& !node.getId().contains(RegistrationConstants.ON_TYPE)) {
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE))
 					addInvalidInputStyleClass(parentPane, node, false);
-				}
 				return false;
 			}
 		}
