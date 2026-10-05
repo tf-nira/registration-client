@@ -142,6 +142,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_COMMENT = "comment";
 	private static final String CONTROLTYPE_TITLE = "title";
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
+	private static final String FAMILY_NIN_ERROR_MSG = "At least one of Father, Mother or Blood Relative should be Ugandan.";
 	private ProcessSpecDto process;
 	public Node node;
 	private boolean selectingInvalidValidationTab = false;
@@ -1038,6 +1039,32 @@ public class GenericController extends BaseController {
 		return newSelection;
 	}
 
+	private String ninValue(String fieldId) {
+		FxControl control = getFxControl(fieldId);
+		if (control == null) return null;
+		Object data = control.getData();
+		if (data instanceof String) return (String) data;
+		if (data instanceof List<?> && !((List<?>) data).isEmpty()) {
+			Object first = ((List<?>) data).get(0);
+			return (first instanceof SimpleDto) ? ((SimpleDto) first).getValue() : String.valueOf(first);
+		}
+		return null;
+	}
+
+	private boolean validateFamilyNinPresence() {
+		List<String> provided = Arrays.asList(ninValue("fatherNIN"), ninValue("motherNIN"), ninValue("guardianNIN_AIN"))
+				.stream()
+				.filter(v -> v != null && !v.trim().isEmpty())
+				.collect(Collectors.toList());
+
+		if (provided.isEmpty()) {
+			return true; // nothing entered — skip check
+		}
+
+		// At least one of the provided NINs must NOT start with 'A'
+		return provided.stream().anyMatch(v -> !v.trim().toUpperCase().startsWith("A"));
+	}
+
 	private boolean isScreenValid(final String screenName) {
 		Optional<UiScreenDTO> result = orderedScreens.values().stream()
 				.filter(screen -> screen.getName().equals(screenName.replace("_tab", EMPTY))).findFirst();
@@ -1109,6 +1136,10 @@ public class GenericController extends BaseController {
 		if (isValid && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && isCopNameChangeServiceSelected()
 				&& !isAnyCopNotificationNameFieldProvided()) {
 			showHideErrorNotification(COP_NAME_CHANGE_NAME_REQUIRED_MSG, null);
+			return false;
+		}
+		if (isValid && RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screenName) && !validateFamilyNinPresence()) {
+			showHideErrorNotification(FAMILY_NIN_ERROR_MSG, null);
 			return false;
 		}
 		if (isValid) {
@@ -1338,6 +1369,12 @@ public class GenericController extends BaseController {
 				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
 				selectingInvalidValidationTab = true;
 				tabPane.getSelectionModel().select(result.get());
+				break;
+			} else if (RegistrationConstants.DEMO_TAB.equalsIgnoreCase(screen.getName() + "_tab")
+					&& !validateFamilyNinPresence() && result.isPresent()) {
+				showHideErrorNotification(FAMILY_NIN_ERROR_MSG, null);
+				errorScreen = screen.getName();
+				result.get().getStyleClass().add(TAB_LABEL_ERROR_CLASS);
 				break;
 			} else if (anyInvalidField && result.isPresent()) {
 				LOGGER.error("Screen validation failed {}", screen.getName());
