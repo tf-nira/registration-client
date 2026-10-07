@@ -10,12 +10,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import io.mosip.kernel.core.logger.spi.Logger;
-import io.mosip.registration.config.AppConfig;
-import io.mosip.registration.service.external.impl.PreRegZipHandlingServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.mosip.commons.packet.constants.Biometric;
 import io.mosip.commons.packet.dto.packet.AuditDto;
@@ -85,6 +84,7 @@ public class RegistrationDTO {
 	public Map<String, Double> SDK_SCORES = new HashMap<>();
 	public Map<String, Object> AGE_GROUPS = new HashMap<>();
 	public Map<String, Integer> ATTEMPTS = new HashMap<>();
+	public Map<String, Map<String, BiometricsDto>> BIOMETRICS_DTO_MAP = new HashMap<>();
 	public Map<String, List<String>> CONFIGURED_BIOATTRIBUTES = new HashMap<>();
 	public Map<String, String> SELECTED_CODES = new HashMap<>();
 	public Map<String, BlocklistedConsentDto> BLOCKLISTED_CHECK = new HashMap<>();
@@ -150,18 +150,33 @@ public class RegistrationDTO {
 					date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat())));
 
 			JSONObject ageGroupConfig = new JSONObject((String) ApplicationContext.map().get(RegistrationConstants.AGE_GROUP_CONFIG));
-			ageGroupConfig.keySet().forEach( group -> {
-				String[] range = ageGroupConfig.getString(group).split("-");
-				int ageInYears = Period.between(date, LocalDate.now(ZoneId.of("UTC"))).getYears();
-				if(ValueRange.of(Long.valueOf(range[0]), Long.valueOf(range[1])).isValidIntValue(ageInYears)) {
-					AGE_GROUPS.put(String.format("%s_%s", fieldId, "ageGroup"), group);
-					AGE_GROUPS.put(String.format("%s_%s", fieldId, "age"), ageInYears);
+			ageGroupConfig.keySet().forEach(group -> {
+			    String[] range = ageGroupConfig.getString(group).split("-");
+			    LocalDate currentDate = LocalDate.now(ZoneId.of("UTC"));
+			    Period period = Period.between(date, currentDate);
 
-					if(APPLICANT_DOB_SUBTYPE.equals(subType)) {
-						AGE_GROUPS.put("ageGroup", group);
-						AGE_GROUPS.put("age", ageInYears);
-					}
-				}
+			    int ageInYears = period.getYears();
+			    int ageInMonths = (ageInYears * 12) + period.getMonths();
+			    int ageIndays = period.getDays(); 
+			    if ((ageInMonths == 9 && ageIndays > 0) || (ageInYears == 5 && period.getMonths() == 0 && ageIndays > 0) || (ageInYears == 15 && period.getMonths() == 0 && ageIndays > 0) ) {
+			        ageInMonths += 1;
+			    }
+			    
+			    double currentAgeInYears = ageInMonths / 12.0;
+			    double startAge = Double.parseDouble(range[0]);
+			    double endAge = Double.parseDouble(range[1]);
+
+			    if (currentAgeInYears >= startAge && currentAgeInYears <= endAge) {
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "ageGroup"), group);
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "age"), ageInYears);
+			        AGE_GROUPS.put(String.format("%s_%s", fieldId, "monthAge"), ageInMonths);
+
+			        if (APPLICANT_DOB_SUBTYPE.equals(subType)) {
+			            AGE_GROUPS.put("ageGroup", group);
+			            AGE_GROUPS.put("age", ageInYears);
+			            AGE_GROUPS.put("monthAge", ageInMonths);
+			        }
+			    }
 			});
 		}
 	}
@@ -248,6 +263,11 @@ public class RegistrationDTO {
 	public BiometricsDto getBiometric(String fieldId, String bioAttribute) {
 		String key = String.format("%s_%s", fieldId, bioAttribute);
 		return this.biometrics.get(key);
+	}
+	
+	public void removeBiometric(String fieldId, String bioAttribute) {
+	    String key = String.format("%s_%s", fieldId, bioAttribute);
+	    this.biometrics.remove(key);
 	}
 
 	public void removeExceptionPhoto(String fieldId) {
@@ -386,16 +406,30 @@ public class RegistrationDTO {
 
 			/** Modify the Biometrics DTO and save */
 			for (Entry<String, BiometricsDto> entry : biometricsDTOMap.entrySet()) {
-				BiometricsDto savedRegistrationBiometric = getBiometric(fieldId, entry.getKey());
-				BiometricsDto value = entry.getValue();
-				value.setForceCaptured(isForceCaptured);
-				//value.setSubType(fieldId);
-				if( (savedRegistrationBiometric == null && (isQualityCheckPassed || isForceCaptured)) ||
-						(savedRegistrationBiometric != null &&
-								value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
-					addBiometric(fieldId, entry.getKey(), value);
-					//savedBiometrics.add(addBiometric(fieldId, entry.getKey(), value));
-				}
+			    BiometricsDto savedRegistrationBiometric = getBiometric(fieldId, entry.getKey());
+			    BiometricsDto value = entry.getValue();
+			    value.setForceCaptured(isForceCaptured);
+			    ObjectMapper objectMapper = new ObjectMapper();
+			    String effectiveFieldId = fieldId;
+
+			    try {
+			        Map<String, String> payloadMap = objectMapper.readValue(value.getPayLoad(), Map.class);
+			        String bioSubType = payloadMap.get("bioSubType");
+			        if (RegistrationConstants.RAW.equalsIgnoreCase(bioSubType) && value.getModalityName().equalsIgnoreCase(RegistrationConstants.FACE_FULLFACE)) {
+			        	payloadMap.put("bioSubType", RegistrationConstants.UNKNOWN);
+			        	String updatedPayload = objectMapper.writeValueAsString(payloadMap);
+			        	value.setPayLoad(updatedPayload);
+			            effectiveFieldId = RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW;
+			        }
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+
+			    if ((savedRegistrationBiometric == null && (isQualityCheckPassed || isForceCaptured)) ||
+			        (savedRegistrationBiometric != null &&
+			            value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
+			        addBiometric(effectiveFieldId, entry.getKey(), value);
+			    }
 			}
 		}
 		//return savedBiometrics;

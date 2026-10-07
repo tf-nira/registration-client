@@ -181,6 +181,9 @@ public class RegistrationPreviewController extends BaseController implements Ini
 			if(processCheck.equalsIgnoreCase("UPDATE")) {
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_COP,
 						ApplicationContext.applicationLanguage());
+			} else if(processCheck.equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_BIO,
+						ApplicationContext.applicationLanguage());
 			}
 			else{
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE,
@@ -217,11 +220,14 @@ public class RegistrationPreviewController extends BaseController implements Ini
 		LOGGER.info("Setting up preview content has been started");
 		try {
 			GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-			String prcessCheck=genericController.processCheck();
+			String processCheck=genericController.processCheck();
 			String ackTemplateText = "" ;
 
-			if(prcessCheck.equalsIgnoreCase("UPDATE")) {
+			if(processCheck.equalsIgnoreCase("UPDATE")) {
 				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_COP,
+						ApplicationContext.applicationLanguage());
+			} else if(processCheck.equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
+				ackTemplateText = templateService.getHtmlTemplate(RegistrationConstants.PREVIEW_TEMPLATE_CODE_BIO,
 						ApplicationContext.applicationLanguage());
 			}
 			else{

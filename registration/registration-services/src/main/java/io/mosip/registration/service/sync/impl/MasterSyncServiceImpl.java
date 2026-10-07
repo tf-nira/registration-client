@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -125,11 +126,11 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 			//Perform sync once again only during initial sync to pull all the latest changes.
 			if(responseDto.getSuccessResponseDTO() != null && isInitialSync()) {
 				// getting Last Sync date from Data from sync table
-				SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
-				if (masterSyncDetails != null) {
-					requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
-							DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
-				}
+//				SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
+//				if (masterSyncDetails != null) {
+//					requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
+//							DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
+//				}
 				responseDto = syncClientSettings(masterSyncDtls, triggerPoint, requestParamMap);
 			}
 			if (responseDto.getSuccessResponseDTO() != null && upgradeFullSyncEntities != null) {
@@ -289,7 +290,64 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 		}
 		return Collections.EMPTY_LIST;
 	}
-
+	
+	public List<GenericDto> getFilteredFieldValues(String fieldName, String hierarchyName, String langCode,
+            boolean isHierarchical, String enrolmentStatus) {
+		List<GenericDto> originalList = null;
+		try {
+			originalList = getFieldValues(fieldName, langCode, isHierarchical);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (RegistrationConstants.INSIDE_UGANDA.equalsIgnoreCase(enrolmentStatus) && enrolmentStatus != null) {
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().matches("\\d+"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.OUTSIDE_UGANDA.equalsIgnoreCase(enrolmentStatus) && enrolmentStatus != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().matches("[A-Za-z]+"))
+					.collect(Collectors.toList());
+		} else {
+			return originalList;
+		}
+	}
+	
+	public List<GenericDto> getFacilityTypeCategoryAndSubCategoryValues(String fieldName,String langCode, String facilityType) {
+		List<GenericDto> originalList = null;
+		try {
+			originalList = getDynamicField(fieldName, langCode);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (RegistrationConstants.ENTRY.equalsIgnoreCase(facilityType) && facilityType != null) {
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("ENTRY_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.STUDENT_PASS.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("STUDENT_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.DP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("DP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.IRP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("IRP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.SP.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("SP_"))
+					.collect(Collectors.toList());
+		} else if(RegistrationConstants.COR.equalsIgnoreCase(facilityType) && facilityType != null){
+			return originalList.stream()
+					.filter(dto -> dto.getCode() != null && dto.getCode().startsWith("COR_"))
+					.collect(Collectors.toList());
+		} else {
+			return originalList;
+		}
+	}
+	
 	/**
 	 * Error msg.
 	 *
@@ -390,11 +448,11 @@ public class MasterSyncServiceImpl extends BaseService implements MasterSyncServ
 
 		if (!isInitialSync()) {
 			// getting Last Sync date from Data from sync table
-			SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
-			if (masterSyncDetails != null) {
-				requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
-						DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
-			}
+//			SyncControl masterSyncDetails = masterSyncDao.syncJobDetails(masterSyncDtls);
+//			if (masterSyncDetails != null) {
+//				requestParamMap.put(RegistrationConstants.MASTER_DATA_LASTUPDTAE,
+//						DateUtils.formatToISOString(masterSyncDetails.getLastSyncDtimes().toLocalDateTime()));
+//			}
 
 			String registrationCenterId = getCenterId();
 			if (registrationCenterId != null)

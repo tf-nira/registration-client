@@ -197,6 +197,10 @@ public class RegistrationConstants {
 	public static final String PWORD = "PWD";
 	public static final String OTP = "OTP";
 	public static final String FACE = "FACE";
+	public static final String RAW = "RAW";
+	public static final String FACE_RAW = "faceRaw";
+	public static final String INDIVIDUAL_BIOMETRICS_RAW = "individualBiometricsRaw";
+	public static final String ORIGINAL_IMAGE = "originalImage";
 	public static final String FACE_FULLFACE = "FACE_FULL FACE";
 	public static final String IRIS = "IRIS";
 
@@ -250,7 +254,67 @@ public class RegistrationConstants {
 	public static final String REG_DDC_004 = "REG_DDC_004";
 	public static final String AGE_FIELD = "ageField";
 	public static final String MOBILE_NUMBER = "mobileNo";
+	public static final String CONSENT = "consent";
+	public static final String OTHER = "Other";
+	public static final String GUARDIAN = "guardian";
+	public static final String CHILD_FOR_AGE = "child";
+	public static final String SPOUSE = "spouse";
+	public static final String RENEWAL = "RENEWAL";
+	public static final String REMOVE_SPOUSE = "removeSpouse";
+	public static final String DECLARANT_NATIONALITY = "declarantNationality";
+	public static final String BY_NATURALIZATION = "By Naturalization";
+	public static final String BY_REGISTRATION = "By Registration";
+	public static final String DUAL_CITIZENSHIP = "Dual Citizenship";
+	public static final String USER_SERVICE_TYPE = "userServiceType";
+	public static final String ENROLLMENT_COUNTRY = "enrolmentCountry";
+	public static final String DISTRICT = "District";
+	public static final String LANG = "eng";
+	public static final String DECLARATION_ID = "declarationCheckBox";
+	public static final String DECLARATION = "Declaration";
+	public static final String FACILITY_TYPE = "facilityType";
+	public static final String FACILITY_TYPE_CATEGORY = "facilityTypeCategory";
+	public static final String FACILITY_SUB_CATEGORY_SUBTYPE = "facilitySubCategory";
+	public static final String FACILITY_TYPE_SUB_CATEGORY = "facilityTypeSubCategory";
+	public static final String DEMO_TAB = "DemographicDetails_tab";
+	public static final String ENTRY = "Entry";
+	public static final String STUDENT_PASS = "Student Pass";
+	public static final String DP = "Dependent Pass";
+	public static final String IRP = "Intern/Research Pass";
+	public static final String SP = "Special Pass";
+	public static final String COR = "Certificate of Residence";
+	public static final String PHONE = "phone";
+	public static final String PHONE2 = "phone2";
+	public static final String EMPLOYER_PHONE = "employerPhone";
+	public static final String LOCAL_PHONE = "localPhone";
+	public static final String NONLOCAL_PHONE = "nonLocalPhone";
+	public static final String SCHOOL_PHONE = "schoolPhone";
+	public static final String COUNTRYCODE = "CountryCode";
+	public static final String COUNTRYCODE2 = "CountryCode2";
+	public static final String EMPLOYER_COUNTRYCODE = "employerCountryCode";
+	public static final String LOCAL_COUNTRYCODE = "localCountryCode";
+	public static final String NONLOCAL_COUNTRYCODE = "nonLocalCountryCode";
+	public static final String SCHOOL_COUNTRYCODE = "schoolCountryCode";
+	public static final String UGA_VALUE = "Uganda (256)";
+	public static final String EMPLOYER_NAME = "employerName";
+	public static final String MARITAL_STATUS = "maritalStatus";
+	public static final String OTHERSPOUSE_ALIEN = "numberOfOtherSpousesAlien";
+	public static final String OTHERCHILD = "numberOfOtherChild";
+	public static final String NAME_OF_SCHOOL = "nameOfSchool";
+	public static final String PRINCIPAL_OF_AIN = "principalOfAIN";
+	public static final String AID_OF_PRINCIPAL = "applicationIDofPrincipal";
+	public static final String PRIMARY_NATIONALITY = "primaryNationality";
+	public static final String SECONDARY_NATIONALITY = "secondaryNationality";
+	public static final String UGA = "UGA";
+	public static final String INSIDE_UGANDA = "In Uganda";
+	public static final String OUTSIDE_UGANDA = "Outside Uganda";
+	public static final String ENROLLMENT_DISTRICT = "applicantPlaceOfEnrolmentDistrict";
+	public static final String ENROLLMENT_COUNTY ="applicantPlaceOfEnrolmentCounty";
+	public static final String ENROLLMENT_SUB_COUNTY = "applicantPlaceOfEnrolmentSubCounty";
+	public static final String ENROLLMENT_PARISH = "applicantPlaceOfEnrolmentParish";
+	public static final String ENROLLMENT_VILLAGE = "applicantPlaceOfEnrolmentVillage";
 	public static final String POSTAL_CODE = "postalCode";
+	public static final String CARD_REQUIRED = "isCardRequired";
+	public static final String TOAST_MSG = "This is subject to card change charges";
 	public static final String CNI_OR_PIN = "cniOrPinNumber";
 	public static final String UIN_ID = "uinId";
 	public static final String EMAIL_ID = "emailId";
@@ -288,7 +352,19 @@ public class RegistrationConstants {
 	public static final String PROOF_OF_INTRODUCER_SIGNATURE_ID = "introducerProofOfSignature";
 	public static final String UNABLE_SIGNATURE_ID = "applicantUnabletoSign";
 	public static final String UNABLE_INTRODUCER_SIGNATURE_ID = "introducerUnabletoSign";
+	public static final String ENROLMENT_STATUS = "enrolmentStatus";
+	public static final String BIRTH_STATUS = "applicantBirthPlace";
 	public static final String RESIDENCE_STATUS = "residenceStatus";
+	public static final String ORIGIN_STATUS = "applicantOriginPlace";
+	public static final String BIRTH_DISTRICT = "applicantPlaceOfBirthDistrict";
+	public static final String RESIDENCE_DISTRICT = "applicantPlaceOfResidenceDistrict";
+	public static final String ORIGIN_DISTRICT = "applicantPlaceOfOriginDistrict";
+	public static final String EMPLOYER_DISTRICT = "employerDistrict";
+	public static final String SCHOOL_DISTRICT = "schoolDistrict";
+	public static final String ALIENNEW = "ALIENNEW";
+	public static final String ALIENRENEWAL = "ALIENRENEWAL";
+	public static final String ALIENLOST= "ALIENLOST";
+	public static final String DEACTIVATED= "DEACTIVATED";
 	public static final String PRIMARY = "primary";
 	public static final String SECONDARY = "secondary";
 	public static final String DemoGraphicFieldMessageLabel = "demoGraphicFieldMessageLabel";
@@ -355,6 +431,7 @@ public class RegistrationConstants {
 	public static final String UIN_UPDATE_GENDER_LBL = "Gender";
 	public static final String MALE_CODE = "MLE";
 	public static final String FEMALE_CODE = "FLE";
+	public static final String OTHERS = "Others";
 	public static final String STREAMER_THREAD = "STREAMER_THREAD";
 
 	public static final String UIN_UPDATE_PARENT_DETAILS_LBL = "Parent/Guardian details";
@@ -794,8 +871,11 @@ public class RegistrationConstants {
 
 
 	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg-ack-template-part";//for A4 Ack
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_COP = "reg-cop-ack-template-part";
+	public static final String ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO = "reg-bio-ack-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE = "reg-preview-template-part";
 	public static final String PREVIEW_TEMPLATE_CODE_COP = "reg-cop-preview-template-part";
+	public static final String PREVIEW_TEMPLATE_CODE_BIO = "reg-bio-preview-template-part";
 	public static final String DASHBOARD_TEMPLATE_CODE = "reg-dashboard-template";
 	public static final String DASHBOARD_TEMPLATE = "Dashboard Template";
 
@@ -1252,6 +1332,7 @@ public class RegistrationConstants {
 	public static final String SYNC_TRANSACTION_NO_OF_DAYS_LIMIT = "mosip.registration.sync_transaction_no_of_days_limit";
 	public static final String REG_DELETION_CONFIGURED_DAYS = "mosip.registration.reg_deletion_configured_days";
 	public static final String PRE_REG_DELETION_CONFIGURED_DAYS = "mosip.registration.pre_reg_deletion_configured_days";
+	public static final String REG_PACKET_DELETION_ENABLE = "mosip.regproc.packet.cleanup.enable.all-old-zip-file.deletion";
 
 	// Audit Constants
 	public static final String AUDIT_LOGS_DELETION_SUCESS_MSG = "AUDIT_LOGS_DELETION_SUCESS_MSG";
@@ -1602,6 +1683,7 @@ public class RegistrationConstants {
 	public static final String SESSION_KEY = "sessionKey";
 	public static final String SIGNATURE = "signature";
 	public static final String INTRODUCER_SIGNATURE = "introducerSignature";
+	public static final String INTRODUCER_BIOMETRICS = "introducerBiometrics";
 	public static final String SIGNATURE_CODE = "SIG";
 	public static final String INTRODUCER_SIGNATURE_CODE = "INSI";
 	public static final String ADD = "aad";
@@ -1845,9 +1927,17 @@ public class RegistrationConstants {
 	public static final String INVALID_DATE = "INVALID_DATE";
 	public static final String INVALID_DATE_LIMIT = "INVALID_DATE_LIMIT";
 	public static final String CARD_EXP_DATE_LIMIT= "CARD_EXP_DATE_LIMIT";
+	public static final String NOT_ELIGIBLE_SERVICE= "NOT_ELIGIBLE_SERVICE";
 	public static final String DOB_REQUIRED = "DOB_REQUIRED";
-	public static final String MINIMUM_AGE_DIFF="MINIMUM_AGE_DIFF";
-	public static final String AGE_DIFF="AGE_DIFF";
+	public static final String ONLY_FUTURE_DATE="ONLY_FUTURE_DATE";
+	public static final String AGE_NON_FUTURE="AGE_NON_FUTURE";
+	public static final String BEFORE_APPLICANT_DOB="BEFORE_APPLICANT_DOB";
+	public static final String AFTER_APPLICANT_DOB="AFTER_APPLICANT_DOB";
+	public static final String MINOR_GUARDIAN="MINOR_GUARDIAN";
+	public static final String LOCAL_OR_NONLOCAL_ERROR_MSG="Any one of the (Local or non-Local) countrycode and phone pair is required!.";
+	public static final String AIN_OR_AID_ERROR_MSG="At least one field in the 'Linked Dependant to Principal' section must be filled.";
+	public static final String SAME_NATIONALITY_ERROR_MSG="Primary and Secondary Nationality must not be the same.";
+	public static final String INVALID_EXPIRY_ISSUANCE_DIFF = "INVALID_EXPIRY_ISSUANCE_DIFF";
 
 	public static final String ICONS_HBOX = "iconsHBox";
 	public static final String KEYBOARD_PANE = "keyboardPane";
@@ -1948,6 +2038,7 @@ public class RegistrationConstants {
 	public static final String MOSIP_HOSTNAME = "mosip.hostname";
 	public static final String MOSIP_UPGRADE_SERVER_URL = "mosip.client.upgrade.server.url";
 	public static final String HEALTH_CHECK_URL = "mosip.reg.healthcheck.url";
+	public static final String DOWNLOAD_BIO_SDK_URL = "mosip.download.bio.sdk.url";
 
 	/** Moved To Here from UiConstants file */
 	public static final String REGEX_TYPE = "REGEX";
@@ -2045,7 +2136,11 @@ public class RegistrationConstants {
 	public static final String ACKNOWLEDGEMENT_TEMPLATE = "Ack Template";
 
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "reg_ack_a6slip_template_part";
+	public static final String REG_DEACTIVE_SLIP_TEMPLATE ="reg_deactive_slip_template";
 	public static final String A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "ack_a6slip_template_part_out";
+	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "renewal-reg_ack_a6slip_template_part";
+	public static final String RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA = "renewal-ack_a6slip_template_part_out";
+	public static final String COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE = "cop_thermal_printer_template_part";
 
 	public static final String A6_THERMAL_PRINTER  = "mosip.registration.ack.printer.a6.thermal";
 

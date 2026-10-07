@@ -203,35 +203,111 @@ public class Validations extends BaseController {
 				addInvalidInputStyleClass(parentPane, node, false);
 			}
 			return false;
-		}GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
-		if(fieldId.equalsIgnoreCase("phone")){
-			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
-			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
-			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode");
-            System.out.println(countryCode);
-			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
-				String number=value;
-				if (number.charAt(0) != '0') {
-					errorMessage="Mobile No. is invalid";
-					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
-					return false;
+		}
+		
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+
+		// Father/Mother NIN validation based on Citizenship Type
+		if ("fatherNIN".equalsIgnoreCase(fieldId) || "motherNIN".equalsIgnoreCase(fieldId)) {
+
+			String citizenshipType = "fatherNIN".equalsIgnoreCase(fieldId)
+					? genericController.getSimpleTypeValue("fatherCitizenshipType")
+					: genericController.getSimpleTypeValue("motherCitizenshipType");
+
+			boolean isAlienNin = value.trim().matches("^[Aa].*");
+
+			if ("Non Citizen".equalsIgnoreCase(citizenshipType) && !isAlienNin) {
+
+				errorMessage = "Invalid Alien ID Number (AIN)";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE)) {
+					addInvalidInputStyleClass(parentPane, node, false);
 				}
+
+				return false;
 			}
-        }
-		if(fieldId.equalsIgnoreCase("phone2")){
-			GenericController generic= ClientApplication.getApplicationContext().getBean(GenericController.class);
-			Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
-			List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get("CountryCode2");
-			System.out.println(countryCode);
-			if(countryCode.get(0).getValue().equalsIgnoreCase("Uganda (256)")){
-				String number=value;
-				if (number.charAt(0) != '0') {
-					errorMessage="Mobile No. is invalid";
-					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
-					return false;
+
+			if (!"Non Citizen".equalsIgnoreCase(citizenshipType) && isAlienNin) {
+
+				errorMessage = "AIN only applicable for Non-Citizen";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE)) {
+					addInvalidInputStyleClass(parentPane, node, false);
 				}
+
+				return false;
 			}
 		}
+
+		// Declarant Age Validation
+		if ("declarantAge".equalsIgnoreCase(fieldId)) {
+			try {
+				int declarantAge = Integer.parseInt(value);
+				int applicantAge = genericController.getDobAge();
+				String declarant = null;
+
+				Object declarantObj = genericController.getRegistrationDTOFromSession()
+						.getDemographics().get("declarant");
+
+				if (declarantObj instanceof List<?>) {
+					List<?> declarantList = (List<?>) declarantObj;
+					if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+						SimpleDto dto = (SimpleDto) declarantList.get(0);
+						if (dto.getValue() != null) declarant = dto.getValue().trim();
+					}
+				}
+
+				int minAge = applicantAge + 10;
+				if (!"Father".equalsIgnoreCase(declarant)
+						&& !"Mother".equalsIgnoreCase(declarant)) {
+					minAge = Math.max(minAge, 18);
+				} else {
+					minAge = Math.max(minAge, 10);
+				}
+
+				if (declarantAge < minAge || declarantAge > 120) {
+					errorMessage = "Age must be between " + minAge + " and 120 years";
+					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+					if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE))
+						addInvalidInputStyleClass(parentPane, node, false);
+					return false;
+				}
+			} catch (NumberFormatException e) {
+				errorMessage = "Please enter a valid age";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE))
+					addInvalidInputStyleClass(parentPane, node, false);
+				return false;
+			}
+		}
+
+		// Main Validation
+		if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE) || fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2) || fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
+			GenericController generic = ClientApplication.getApplicationContext().getBean(GenericController.class);
+		    Map<String, Object> demographics = generic.getRegistrationDTOFromSession().getDemographics();
+		    String key = "";
+		    if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE)) {
+		        key = RegistrationConstants.COUNTRYCODE;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.PHONE2)) {
+		        key = RegistrationConstants.COUNTRYCODE2;
+		    } else if (fieldId.equalsIgnoreCase(RegistrationConstants.EMPLOYER_PHONE)) {
+		        key = RegistrationConstants.EMPLOYER_COUNTRYCODE;
+		    }
+		    List<SimpleDto> countryCode = (List<SimpleDto>) demographics.get(key);
+		    System.out.println(countryCode);
+		    // If Uganda, validate first digit must be 0
+		    if (!countryCode.isEmpty() && countryCode.get(0).getValue().equalsIgnoreCase(RegistrationConstants.UGA_VALUE)) {
+		    	String number=value;
+				if (number.charAt(0) != '0') {
+					errorMessage="Mobile No. is invalid";
+					generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+					return false;
+				}
+		    }
+		}
+
 
 		if(fieldId.equalsIgnoreCase("applicantPlaceOfResidenceYearsLived")){
 			int age =genericController.getDobAge();

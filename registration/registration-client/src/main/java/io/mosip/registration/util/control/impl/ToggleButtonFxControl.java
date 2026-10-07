@@ -148,6 +148,9 @@ public class ToggleButtonFxControl extends FxControl {
 					fxControl1.getNode().setDisable(false);
 				}
 			}
+			if (uiFieldDTO.isSetRequired()){
+				resetValue();
+			}
 
 			// handling other handlers
 			demographicChangeActionHandler.actionHandle((Pane) getNode(), node.getId(),

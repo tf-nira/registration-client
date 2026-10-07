@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
+import javafx.scene.control.TextArea;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -68,6 +69,8 @@ public class RejectionController extends BaseController implements Initializable
 	 * Button for Submit
 	 */
 	@FXML
+	private TextArea rejectionComment;
+	@FXML
 	private Button rejectionSubmit;
 
 	/** The rejectionmap list. */
@@ -97,6 +100,7 @@ public class RejectionController extends BaseController implements Initializable
 	public void initialize(URL location, ResourceBundle resources) {
 		LOGGER.info(LOG_REG_REJECT_CONTROLLER, APPLICATION_NAME, APPLICATION_ID, "Page loading has been started");
 		rejectionSubmit.disableProperty().set(true);
+		rejectionComment.disableProperty().set(true);
 		rejectionComboBox.getItems().clear();
 		List<ReasonListDto> reasonList;
 		try {
@@ -159,6 +163,12 @@ public class RejectionController extends BaseController implements Initializable
 		map.put(RegistrationConstants.PACKET_ID, rejRegData.getPacketId());
 		map.put(RegistrationConstants.STATUSCODE, RegistrationClientStatusCode.REJECTED.getCode());
 		map.put(RegistrationConstants.STATUSCOMMENT, rejectionComboBox.getSelectionModel().getSelectedItem());
+		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase(RegistrationConstants.OTHERS)){
+			map.put(RegistrationConstants.STATUSCOMMENT, rejectionComment.getText());
+		}
+		else {
+			map.put(RegistrationConstants.STATUSCOMMENT, rejectionComboBox.getSelectionModel().getSelectedItem());
+		}
 		rejectionmapList.add(map);
 
 		rejectionSubmit.disableProperty().set(true);
@@ -206,6 +216,23 @@ public class RejectionController extends BaseController implements Initializable
 	 * @param event
 	 */
 	public void rejectionComboboxAction() {
-		rejectionSubmit.disableProperty().set(false);
+		if(rejectionComboBox.getSelectionModel().getSelectedItem().equalsIgnoreCase(RegistrationConstants.OTHERS)){
+			rejectionComment.disableProperty().set(false);
+			rejectionSubmit.disableProperty().set(true);
+		}
+		else {
+			rejectionComment.disableProperty().set(true);
+			rejectionComment.clear();
+			rejectionSubmit.disableProperty().set(false);
+		}
+	}
+
+	public void rejectionCommentAction (){
+      if(rejectionComment.getText().isEmpty()){
+		  rejectionSubmit.disableProperty().set(true);
+	  }
+	  else {
+		  rejectionSubmit.disableProperty().set(false);
+	  }
 	}
 }
