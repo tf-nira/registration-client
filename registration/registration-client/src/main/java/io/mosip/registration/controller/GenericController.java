@@ -1026,6 +1026,12 @@ public class GenericController extends BaseController {
 	}
 
 	private boolean validateFamilyNinPresence() {
+
+		// Only apply this rule for the NEW registration process
+		if (process == null || !"NEW".equalsIgnoreCase(process.getId())) {
+			return true;
+		}
+
 		List<String> provided = Arrays.asList(ninValue("fatherNIN"), ninValue("motherNIN"), ninValue("guardianNIN_AIN"))
 				.stream()
 				.filter(v -> v != null && !v.trim().isEmpty())
