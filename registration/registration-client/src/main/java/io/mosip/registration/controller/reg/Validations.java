@@ -207,6 +207,40 @@ public class Validations extends BaseController {
 		
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 
+		// Father/Mother NIN validation based on Citizenship Type
+		if ("fatherNIN".equalsIgnoreCase(fieldId) || "motherNIN".equalsIgnoreCase(fieldId)) {
+
+			String citizenshipType = "fatherNIN".equalsIgnoreCase(fieldId)
+					? genericController.getSimpleTypeValue("fatherCitizenshipType")
+					: genericController.getSimpleTypeValue("motherCitizenshipType");
+
+			boolean isAlienNin = value.trim().matches("^[Aa].*");
+
+			if ("Non Citizen".equalsIgnoreCase(citizenshipType) && !isAlienNin) {
+
+				errorMessage = "Invalid Alien ID Number (AIN)";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE)) {
+					addInvalidInputStyleClass(parentPane, node, false);
+				}
+
+				return false;
+			}
+
+			if (!"Non Citizen".equalsIgnoreCase(citizenshipType) && isAlienNin) {
+
+				errorMessage = "AIN only applicable for Non-Citizen";
+				generateInvalidValueAlert(parentPane, node.getId(), errorMessage, showAlert);
+
+				if (isPreviousValid && !node.getId().contains(RegistrationConstants.ON_TYPE)) {
+					addInvalidInputStyleClass(parentPane, node, false);
+				}
+
+				return false;
+			}
+		}
+
 		// Declarant Age Validation
 		if ("declarantAge".equalsIgnoreCase(fieldId)) {
 			try {
