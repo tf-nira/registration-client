@@ -79,6 +79,7 @@ public class ClientSetupValidatorTest {
 	public void initialize() throws Exception {
 		PowerMockito.mockStatic(ApplicationContext.class, FileUtils.class);
 		PowerMockito.mockStatic(HMACUtils2.class);
+		ReflectionTestUtils.setField(ClientSetupValidator.class, "unknown_jars_found", false);
 	}
 	
 
@@ -136,6 +137,7 @@ public class ClientSetupValidatorTest {
 	@After
 	public void tear() throws Exception {
 		ClientSetupValidator clntSetUpValidator = null;
+		ReflectionTestUtils.setField(ClientSetupValidator.class, "unknown_jars_found", false);
 	}
 
 	@Test
