@@ -2,6 +2,7 @@ package io.mosip.registration.controller.reg;
 
 import static io.mosip.registration.constants.LoggerConstants.PACKET_HANDLER;
 import static io.mosip.registration.constants.RegistrationConstants.*;
+import static io.mosip.registration.constants.RegistrationConstants.COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -258,7 +259,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				lastSyncTime.setText(getLocalZoneTime(latestUpdateTime.isPresent() ? latestUpdateTime.get() : null));
 
-				setLastPreRegPacketDownloadedTime();
+//				setLastPreRegPacketDownloadedTime();
 			}
 		} catch (RuntimeException exception) {
 			LOGGER.error("REGISTRATION - ALERT - BASE_CONTROLLER", APPLICATION_NAME, APPLICATION_ID,
@@ -340,7 +341,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 				setImage(syncDataImageView, RegistrationConstants.SYNC_IMG);
 			}
 		});
-		downloadPreRegDataPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
+		/*downloadPreRegDataPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
 			if (newValue) {
 
 				setImage(downloadPreRegDataImageView, RegistrationConstants.DOWNLOAD_PREREG_FOCUSED_IMG);
@@ -348,7 +349,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				setImage(downloadPreRegDataImageView, RegistrationConstants.DWLD_PRE_REG_DATA_IMG);
 			}
-		});
+		});*/
 		updateOperatorBiometricsPane.hoverProperty().addListener((ov, oldValue, newValue) -> {
 			if (newValue) {
 				setImage(updateOperatorBiometricsImageView, RegistrationConstants.UPDATE_OP_BIOMETRICS_FOCUSED_IMG);
@@ -438,6 +439,10 @@ public class PacketHandlerController extends BaseController implements Initializ
 				case RENEWAL:
 				case UPDATE:
 				case FIRSTID:
+				case ALIENNEW:
+				case ALIENRENEWAL:
+				case ALIENLOST:
+				case DEACTIVATED :
 					Parent createRoot = getRoot(RegistrationConstants.CREATE_PACKET_PAGE);
 					getScene(createRoot).setRoot(createRoot);
 					getScene(createRoot).getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
@@ -457,14 +462,20 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 	public void showReciept() {
 		try {
+			ackReceiptController.setSlipStringWriter(null);
 			RegistrationDTO registrationDTO = getRegistrationDTOFromSession();
 			LOGGER.info("Showing receipt Started for process", registrationDTO.getProcessId());
 			String platformLanguageCode = ApplicationContext.applicationLanguage();
 
 			//slip acknowledgement
 			String slipAckTemplateText = null;
-
-			if (!registrationDTO.getProcessId().equals("LOST")) {
+			if (registrationDTO.getProcessId().equals("ALIENNEW")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if (registrationDTO.getProcessId().equals("ALIENRENEWAL")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+			} else if(registrationDTO.getProcessId().equals("DEACTIVATED")){
+				slipAckTemplateText = templateService.getHtmlTemplate(REG_DEACTIVE_SLIP_TEMPLATE, platformLanguageCode);
+			}else if (registrationDTO.getProcessId().equals("NEW")) {
 				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
 
 				String residenceStatus = null;
@@ -489,8 +500,36 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 				}
 			}
-			else {
-				slipAckTemplateText = templateService.getHtmlTemplate(A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+
+			else if (registrationDTO.getProcessId().equals("RENEWAL") || registrationDTO.getProcessId().equals("FIRSTID") ){
+				List<SimpleDto> residenceStatusList = (List<SimpleDto>) registrationDTO.getDemographicSimpleType("residenceStatus");
+
+				String residenceStatus = null;
+
+				if (residenceStatusList != null) {
+					residenceStatus = "eng".equals(residenceStatusList.get(0).getLanguage())
+							? residenceStatusList.get(0).getValue()
+							: null;
+				}
+
+				LOGGER.info("Renewal Residence Status: " + residenceStatus);
+
+				if (residenceStatus != null && !residenceStatus.isEmpty()) {
+					if ("In Uganda".equals(residenceStatus)) {
+						slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
+
+
+					} else {
+						slipAckTemplateText = templateService.getHtmlTemplate(RENEWAL_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE_OUTSIDE_UGANDA, platformLanguageCode);
+
+					}
+
+				}
+			}
+
+
+			else if(registrationDTO.getProcessId().equals("UPDATE")|| registrationDTO.getProcessId().equals("LOST") || registrationDTO.getProcessId().equals("ALIENLOST")) {
+				slipAckTemplateText = templateService.getHtmlTemplate(COP_A6_ACKNOWLEDGEMENT_TEMPLATE_CODE, platformLanguageCode);
 			}
 
 			if (slipAckTemplateText != null && !slipAckTemplateText.isEmpty()) {
@@ -505,8 +544,17 @@ public class PacketHandlerController extends BaseController implements Initializ
 			}
 
 			//A4 ack
-			String ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+			String ackTemplateText = "" ;
+			if(registrationDTO.getProcessId().equalsIgnoreCase("UPDATE")) {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_COP,
 					platformLanguageCode);
+			} else if(registrationDTO.getProcessId().equalsIgnoreCase("BIOMETRIC_CORRECTION")) {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE_BIO,
+						platformLanguageCode);
+			} else {
+				ackTemplateText = templateService.getHtmlTemplate(ACKNOWLEDGEMENT_TEMPLATE_CODE,
+						platformLanguageCode);
+			}
 
 			if (ackTemplateText != null && !ackTemplateText.isEmpty()) {
 
@@ -683,7 +731,7 @@ public class PacketHandlerController extends BaseController implements Initializ
 			} catch (RuntimeException runtimeException) {
 				LOGGER.error("", runtimeException);
 			}
-		} else {
+        } else {
 			if (response.getErrorResponseDTOs() != null && response.getErrorResponseDTOs().get(0).getCode()
 					.equals(RegistrationExceptionConstants.AUTH_ADVICE_USR_ERROR.getErrorCode())) {
 				generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.AUTH_ADVICE_FAILURE));

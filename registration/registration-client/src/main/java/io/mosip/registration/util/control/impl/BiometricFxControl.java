@@ -32,10 +32,12 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
@@ -52,6 +54,8 @@ public class BiometricFxControl extends FxControl {
 	private BioService bioService;
 	private Modality currentModality;
 	private Map<Modality, List<List<String>>> modalityAttributeMap = new HashMap<>();
+
+	private HBox sendOriginalCheckBoxContainer;
 
 	public BiometricFxControl() {
 		org.springframework.context.ApplicationContext applicationContext = ClientApplication.getApplicationContext();
@@ -100,6 +104,10 @@ public class BiometricFxControl extends FxControl {
 
 	@Override
 	public void setListener(Node node) {
+		CheckBox checkBox = (CheckBox) node;
+		checkBox.selectedProperty().addListener((options, oldValue, newValue) -> {
+			getRegistrationDTo().addDemographicField(RegistrationConstants.ORIGINAL_IMAGE, newValue ? "Y" : "N");
+		});
 
 	}
 
@@ -179,6 +187,23 @@ public class BiometricFxControl extends FxControl {
 					GridPane.setHalignment(captureDetails, HPos.CENTER);
 					GridPane.setValignment(captureDetails, VPos.TOP);
 					gridPane.add(captureDetails,1,1);
+
+					CheckBox sendOriginalCheckBox = new CheckBox("Send Original Image to Processor"); 
+					sendOriginalCheckBox.setId(RegistrationConstants.ORIGINAL_IMAGE); 
+					setListener(sendOriginalCheckBox); 
+					HBox checkBoxContainer = new HBox(sendOriginalCheckBox); 
+					checkBoxContainer.setAlignment(Pos.CENTER); // still center content
+					checkBoxContainer.setPadding(Insets.EMPTY); // can add if needed
+					checkBoxContainer.setSpacing(0);
+					checkBoxContainer.setManaged(true);  // allow layout manager to position it
+					checkBoxContainer.setVisible(false);  // show for testing
+					GridPane.setVgrow(checkBoxContainer, Priority.NEVER); 
+					GridPane.setHalignment(checkBoxContainer, HPos.CENTER); 
+					GridPane.setValignment(checkBoxContainer, VPos.TOP);   // Added vertical alignment top
+					GridPane.setMargin(checkBoxContainer, new Insets(-10, 0, 0, 0)); // move up by 10 pixels
+					gridPane.add(checkBoxContainer, 0, 2, 2, 1);
+					this.sendOriginalCheckBoxContainer = checkBoxContainer;
+					
 				} catch (IOException e) {
 					LOGGER.error("Failed to load biometrics capture details page", e);
 				}
@@ -390,10 +415,17 @@ public class BiometricFxControl extends FxControl {
 				getRegistrationDTo()).isEmpty()) {
 			return true;
 		}
-
+		boolean valid = false;
 		Map<String, Boolean> capturedDetails = bioService.getCapturedBiometrics(uiFieldDTO,
 				getRegistrationDTo().getIdSchemaVersion(), getRegistrationDTo());
-
+		
+		BiometricsDto bio = getRegistrationDTo().getBiometric(RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW, RegistrationConstants.FACE_RAW);
+		
+		if (bio != null && bio.getPayLoad() != null && !bio.getPayLoad().isEmpty()) {
+			   if (getRegistrationDTo().getDemographic(RegistrationConstants.ORIGINAL_IMAGE) == null || "N".equals(getRegistrationDTo().getDemographic(RegistrationConstants.ORIGINAL_IMAGE))) {
+				getRegistrationDTo().removeBiometric(RegistrationConstants.INDIVIDUAL_BIOMETRICS_RAW, RegistrationConstants.FACE_RAW);
+			}
+		}
 		String expression = String.join(" && ", uiFieldDTO.getBioAttributes());
 		ConditionalBioAttributes selectedCondition = requiredFieldValidator.getConditionalBioAttributes(uiFieldDTO,
 				getRegistrationDTo());
@@ -401,7 +433,11 @@ public class BiometricFxControl extends FxControl {
 			expression = selectedCondition.getValidationExpr();
 		}
 
-		boolean valid = MVEL.evalToBoolean(expression, capturedDetails);
+		if(selectedCondition != null && uiFieldDTO.getId().equalsIgnoreCase("individualBiometrics") && selectedCondition.getAgeGroup().equalsIgnoreCase(RegistrationConstants.CHILD)) {
+			valid = true;
+		} else {
+			valid = MVEL.evalToBoolean(expression, capturedDetails);
+		}
 		boolean exceptionExists = getRegistrationDTo().isBiometricExceptionAvailable(this.uiFieldDTO.getId());
 		valid = ( this.uiFieldDTO.isExceptionPhotoRequired() && exceptionExists ) ?
 				valid && biometricsController.isBiometricExceptionProofCollected(this.uiFieldDTO.getId()) : valid;
@@ -548,6 +584,10 @@ public class BiometricFxControl extends FxControl {
 		
 		return tickImageView;
 	}
+
+	 public HBox getSendOriginalCheckBoxContainer() {
+		 return sendOriginalCheckBoxContainer;
+	 }
 
 	/*public Image getExceptionDocumentAsImage() {
 		try {

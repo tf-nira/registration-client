@@ -14,6 +14,7 @@ keystore_secret="$keystore_secret_env"
 reg_client_custom_impls_url="$reg_client_custom_impls_url_env"
 host_name="$host_name_env"
 reg_client_docscan_impl_url="$reg_client_docscan_impl_url_env"
+admin_client_secret="$admin_client_secret_env"
 
 echo "initialized variables"
 
@@ -25,10 +26,15 @@ echo "mosip.reg.rollback.path=BackUp" >> "${work_dir}"/mosip-application.propert
 echo "mosip.reg.xml.file.url=${client_upgrade_server}/registration-client/maven-metadata.xml" >> "${work_dir}"/mosip-application.properties
 echo "mosip.client.upgrade.server.url=${client_upgrade_server}" >> "${work_dir}"/mosip-application.properties
 echo "mosip.hostname=${host_name}"  >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.url=https://raw.githubusercontent.com/Manishch22/VIdExpireBatchJob/main" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.zip.url=https://raw.githubusercontent.com/Manishch22/VIdExpireBatchJob/main/Tech5.zip" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.zip.extraction.path=C:/Bio_SDK/Tech5" >> "${work_dir}"/mosip-application.properties
-echo "mosip.bio.sdk.manifest.path=C:/Bio_SDK/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.url=https://github.com/tf-nira/registration-client/releases/download/1.2.0" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.zip.url=https://github.com/tf-nira/registration-client/releases/download/1.2.0/Tech5.zip" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.zip.extraction.path=C:/Tech5" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.manifest.path=C:/Tech5/T5OmniMatchBioSDK" >> "${work_dir}"/mosip-application.properties
+echo "mosip.download.bio.sdk.url=https://${host_name}/v1/masterdata/download/bio-sdk" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.auth.secretKey=${admin_client_secret}"  >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.auth.appId=admin" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.auth.clientId=mosip-admin-client" >> "${work_dir}"/mosip-application.properties
+echo "mosip.bio.sdk.auth.url=https://${host_name}/v1/authmanager/authenticate/clientidsecretkey" >> "${work_dir}"/mosip-application.properties
 
 echo "jar signing keystore_secret"
 echo ${keystore_secret}

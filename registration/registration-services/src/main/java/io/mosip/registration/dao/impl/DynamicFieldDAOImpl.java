@@ -5,6 +5,7 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -42,37 +43,91 @@ public class DynamicFieldDAOImpl implements DynamicFieldDAO {
 
 	@Override
 	public List<DynamicFieldValueDto> getDynamicFieldValues(String fieldName, String langCode) {
-		
-		LOGGER.debug("fetching the valueJSON ");
-		
-		DynamicField dynamicField = getDynamicField(fieldName, langCode);
-		
-		try {
-			String valueJson = (dynamicField != null) ? dynamicField.getValueJson() : "[]" ;
 
-			List<DynamicFieldValueDto> fields = MapperUtils.convertJSONStringToDto(valueJson == null ? "[]" : valueJson,
-					new TypeReference<List<DynamicFieldValueDto>>() {});
+	    LOGGER.debug("Fetching the valueJSON");
 
-			if (fields != null) {
-			    fields.sort((d1, d2) -> {
-			        if(fieldName.equals("CountryCode")) {
-			        	if ("UGA".equals(d1.getCode())) {
-				            return -1; // d1 comes first
-				        } else if ("UGA".equals(d2.getCode())) {
-				            return 1; // d2 comes first
-				        }
-			        }
-			        // Default sorting by code
-			        return d1.getCode().compareTo(d2.getCode());
-			    });
-			}
+	    DynamicField dynamicField = getDynamicField(fieldName, langCode);
 
-			return fields;
-			
-		} catch (IOException e) {
-			LOGGER.error("Unable to parse value json for dynamic field: ", e);
-		}
-		return null;
+	    try {
+	        String valueJson = (dynamicField != null) ? dynamicField.getValueJson() : "[]";
+
+	        List<DynamicFieldValueDto> fields = MapperUtils.convertJSONStringToDto(
+	            valueJson == null ? "[]" : valueJson,
+	            new TypeReference<List<DynamicFieldValueDto>>() {});
+
+	        if (fields != null) {
+
+	        	//Checking the value "Uganda" or "None" is present or not
+	            boolean hasUGA = fields.stream().anyMatch(f -> "UGA".equals(f.getCode()));
+	            boolean hasNone = fields.stream().anyMatch(f -> "None".equalsIgnoreCase(f.getValue()));
+
+	            Set<String> ugaPriorityFields = Set.of(
+	            	    "residenceStatus", 
+	            	    "applicantBirthPlace", 
+	            	    "applicantOriginPlace", 
+	            	    "fatherResidence", 
+	            	    "fatherOrigin", 
+	            	    "motherResidence", 
+	            	    "motherOrigin", 
+	            	    "guardianResidence",
+	            	    "CountryCode2",
+	            	    "CountryCode"
+	            	);
+
+	            fields.sort((d1, d2) -> {
+	                String code1 = d1.getCode();
+	                String code2 = d2.getCode();
+	                String value1 = d1.getValue();
+	                String value2 = d2.getValue();
+
+	                // UGA comes first only for certain fields
+	                if (hasUGA && ugaPriorityFields.contains(fieldName)) {
+	                    if ("UGA".equals(code1)) return -1;
+	                    if ("UGA".equals(code2)) return 1;
+	                }
+
+	                boolean isDisabilitiesField = "disabilities".equals(fieldName);
+
+	                boolean isNone1 = "None".equalsIgnoreCase(value1);
+	                boolean isNone2 = "None".equalsIgnoreCase(value2);
+
+	                boolean isOther1 = value1 != null && ("Other".equalsIgnoreCase(value1) || "Others".equalsIgnoreCase(value1) ||
+	                    value1.matches("^Other \\(\\d+\\).*"));
+	                
+	                boolean isOther2 = value2 != null && ("Other".equalsIgnoreCase(value2) || "Others".equalsIgnoreCase(value2) ||
+	                    value2.matches("^Other \\(\\d+\\).*"));
+
+	                if (isDisabilitiesField && hasNone && !hasUGA) {
+	                    if (isNone1) return -1;
+	                    if (isNone2) return 1;
+	                }
+
+	                if (!isDisabilitiesField) {
+	                    if (isOther1 && !isOther2) return 1;
+	                    if (!isOther1 && isOther2) return -1;
+
+	                    if (isNone1 && !isNone2) {
+	                        return isOther2 ? -1 : 1;
+	                    }
+	                    if (!isNone1 && isNone2) {
+	                        return isOther1 ? 1 : -1;
+	                    }
+	                }
+
+	                if (isNone1 && isNone2) return value1.compareTo(value2);
+	                if (isOther1 && isOther2) return value1.compareTo(value2);
+
+	                return code1.compareTo(code2);
+	            });
+	        }
+
+	        return fields;
+
+	    } catch (IOException e) {
+	        LOGGER.error("Unable to parse value json for dynamic field: ", e);
+	    }
+
+	    return null;
 	}
 
 }

@@ -1,6 +1,8 @@
 package io.mosip.registration.service.bio.impl;
 
 import static io.mosip.registration.constants.LoggerConstants.BIO_SERVICE;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_ID;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
 
@@ -83,6 +85,7 @@ public class BioServiceImpl extends BaseService implements BioService {
 		List<BiometricsDto> list = new ArrayList<BiometricsDto>();
 
 		try {
+			ObjectMapper objectMapper = new ObjectMapper();
 			LOGGER.info("mdmRequestDto details: {}", mdmRequestDto);
 			MdmBioDevice bioDevice = deviceSpecificationFactory.getDeviceInfoByModality(mdmRequestDto.getModality());
 			LOGGER.info("BioDevice details: {}", bioDevice);
@@ -192,7 +195,12 @@ public class BioServiceImpl extends BaseService implements BioService {
 					BiometricsDto biometricsDto = registrationDTO.getBiometric(fieldDto.getId(), attribute);
 					//its null, then check exception list
 					if(biometricsDto == null) {
-						capturedContext.put(attribute, registrationDTO.isBiometricExceptionAvailable(fieldDto.getId(), attribute));
+						boolean isException = registrationDTO.isBiometricExceptionAvailable(fieldDto.getId(), attribute);
+						if (RegistrationConstants.INTRODUCER_BIOMETRICS.equalsIgnoreCase(fieldDto.getId())) {
+							capturedContext.put(attribute, false);
+						} else {
+							capturedContext.put(attribute, isException);
+						}
 						continue;
 					}
 					//its force captured, not required to validate threshold

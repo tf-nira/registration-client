@@ -6,6 +6,11 @@ import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.exception.RegBaseCheckedException;
 import org.apache.commons.io.FileUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,6 +110,40 @@ public class SoftwareUpdateUtil {
             LOGGER.error("Failed to download {}", url, e);
         }
         throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
+    }
+
+    protected static void downloadZipfile(String url, File destinationFile, String cookie)
+            throws RegBaseCheckedException {
+        try {
+            int connectionTimeout = getConnectionTimeout();
+            int readTimeout = getReadTimeout();
+
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
+                    new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(connectionTimeout);
+            conn.setReadTimeout(readTimeout);
+            if (cookie != null) {
+                conn.setRequestProperty("Cookie", cookie);
+            }
+
+            try (InputStream in = conn.getInputStream()) {
+                FileUtils.copyInputStreamToFile(in, destinationFile);
+            }
+            LOGGER.info("Successfully downloaded zip file from {}", url);
+        } catch (Exception e) {
+            LOGGER.error("Failed to download {}", url, e);
+            throw new RegBaseCheckedException("REG-BUILD-005", "Failed to download " + url);
+        }
+    }
+
+    private static int getConnectionTimeout() {
+        Integer t = ApplicationContext.getIntValueFromApplicationMap(CONNECTION_TIMEOUT);
+        return t == null ? 600000 : t;
+    }
+
+    private static int getReadTimeout() {
+        Integer t = ApplicationContext.getIntValueFromApplicationMap(READ_TIMEOUT);
+        return t == null ? 0 : t;
     }
 
     protected static boolean deleteFile(String filePath) {
