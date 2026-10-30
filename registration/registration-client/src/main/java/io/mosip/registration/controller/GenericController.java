@@ -737,6 +737,7 @@ public class GenericController extends BaseController {
 					field -> getFxControl(field.getId()) != null && getFxControl(field.getId()).getNode().isVisible());
 		}
 		LOGGER.info("Screen refreshed, Screen: {} visible : {}", screenName, atLeastOneVisible);
+		if ("DemographicDetails".equals(screenName)) applyAlienResidenceRule();
 		return atLeastOneVisible;
 	}
 
@@ -2133,6 +2134,7 @@ public class GenericController extends BaseController {
 
 	public void refreshDependentFields(List<String> dependentFields) {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibilityForDependentFields(screen.getName(), dependentFields); });
+		if (dependentFields != null && dependentFields.contains("residenceStatus")) applyAlienResidenceRule();
 	}
 
 	public void resetValue() {
@@ -2392,6 +2394,26 @@ public class GenericController extends BaseController {
 	public String getCurrentScreenName() {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH + getRegistrationDTOFromSession().getRegistrationId());
 		return tabPane.getSelectionModel().getSelectedItem().getId().replace("_tab", EMPTY);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void applyAlienResidenceRule() {
+		FxControl residence = getFxControl("residenceStatus");
+		if (residence == null || process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
+
+		String nin = ninValue("NIN");
+		boolean alien = nin != null && nin.trim().matches("(?i)a.*");
+
+		for (ComboBox cb : findAllComboBoxes(residence.getNode())) {
+			if (!alien) { cb.setDisable(false); continue; }
+			for (Object item : cb.getItems()) {
+				if (item instanceof GenericDto && "UGA".equals(((GenericDto) item).getCode())) {
+					cb.getSelectionModel().select(item);
+					cb.setDisable(true);
+					break;
+				}
+			}
+		}
 	}
 
 	/**
