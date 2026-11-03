@@ -197,9 +197,15 @@ public class PacketHandlerServiceImpl extends BaseService implements PacketHandl
 		if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENNEW)) {
 			registrationDTO.setProcessId("NEW");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien New Registration"));
-	        registrationDTO.addDemographicField("userServiceType", values);
-	        List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
-	        registrationDTO.addDemographicField("residenceStatus", residenceStatus);
+			registrationDTO.addDemographicField("userServiceType", values);
+			List<SimpleDto> residenceStatus = Collections.singletonList(new SimpleDto("eng", "In Uganda"));
+			registrationDTO.addDemographicField("residenceStatus", residenceStatus);
+		} else if (registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.UPDATE)) {
+			String nin = registrationDTO.getDemographic("NIN");
+			if (nin != null && nin.trim().toLowerCase().startsWith("a")) {
+				List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Alien-COP"));
+				registrationDTO.addDemographicField("userServiceType", values);
+			}
 		} else if(registrationDTO.getProcessId().equalsIgnoreCase(RegistrationConstants.ALIENRENEWAL)){
 			registrationDTO.setProcessId("RENEWAL");
 			List<SimpleDto> values = Collections.singletonList(new SimpleDto("eng", "Renewal of Alien"));
