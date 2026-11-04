@@ -2132,9 +2132,31 @@ public class GenericController extends BaseController {
 		});
 	}
 
+    private void refreshCardRequiredDecision() {
+        if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
+
+        FxControl control = getFxControl("isCardRequired");
+        if (control == null) return;
+
+        UiFieldDTO field = control.getUiSchemaDTO();
+        if (field.getDefaultValue() == null || field.getDefaultValue2() == null) return;
+
+        boolean mustHave = control.isFieldDefaultValue(field);    // defaultValue  -> Yes
+        boolean mustNot  = control.isFieldDefaultValue2(field);   // defaultValue2 -> No
+
+        if (mustHave) {
+            control.selectAndSet("Y");
+            control.getNode().setDisable(true);
+        } else {
+            control.selectAndSet("N");
+            control.getNode().setDisable(mustNot);
+        }
+    }
+
 	public void refreshDependentFields(List<String> dependentFields) {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibilityForDependentFields(screen.getName(), dependentFields); });
 		if (dependentFields != null && dependentFields.contains("residenceStatus")) applyAlienResidenceRule();
+        if (dependentFields != null && dependentFields.contains("isCardRequired")) Platform.runLater(this::refreshCardRequiredDecision);
 	}
 
 	public void resetValue() {
