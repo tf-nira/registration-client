@@ -143,6 +143,8 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_TITLE = "title";
 	private static final String CONTROLTYPE_TOGGLE_BUTTON = "toggleButton";
 	private static final String FAMILY_NIN_ERROR_MSG = "At least one of Father, Mother or Blood Relative should be Ugandan.";
+	private static final List<String> AIN_BLOCKED_CATEGORIES = Arrays.asList("familyInformationCat", "citizenshipTypeCat", "placeOfOriginCat");
+	private boolean ainResetInProgress = false;
 	private ProcessSpecDto process;
 	public Node node;
 	/**
@@ -2132,6 +2134,51 @@ public class GenericController extends BaseController {
 		});
 	}
 
+	private boolean isAlienNin() {
+		String nin = ninValue("NIN");
+		return nin != null && nin.trim().matches("(?i)a.*");
+	}
+
+	private void clearControlValue(FxControl c) {
+		if (c instanceof TitleFxControl || c instanceof CommentFxControl) return;
+		if (c instanceof ToggleButtonFxControl || c instanceof CheckBoxFxControl) {
+			c.selectAndSet("N");
+		} else {
+			c.selectAndSet(null);
+			c.setData(null);
+			c.clearToolTipText();
+		}
+	}
+
+	/** When NIN is an AIN: force the 3 categories to 'N' and wipe everything under them. */
+	private void resetCategoriesForAin() {
+		if (ainResetInProgress || process == null
+				|| !"UPDATE".equalsIgnoreCase(process.getId()) || !isAlienNin()) return;
+
+		ainResetInProgress = true;
+		try {
+			LOGGER.info("AIN detected, resetting family/citizenship/origin categories");
+			for (String catId : AIN_BLOCKED_CATEGORIES) {
+				FxControl cat = getFxControl(catId);
+				if (cat == null) continue;
+
+				List<String> children = cat.getUiSchemaDTO().getDependentFields();
+				if (children != null) {
+					for (String childId : children) {
+						FxControl child = getFxControl(childId);
+						if (child != null) clearControlValue(child);
+					}
+				}
+				cat.selectAndSet("N");
+				cat.setData("N");
+			}
+			refreshFields();               // re-evaluate visibility of everything
+			refreshCardRequiredDecision(); // card decision for AIN
+		} finally {
+			ainResetInProgress = false;
+		}
+	}
+
     private void refreshCardRequiredDecision() {
         if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
 
@@ -2157,6 +2204,11 @@ public class GenericController extends BaseController {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibilityForDependentFields(screen.getName(), dependentFields); });
 		if (dependentFields != null && dependentFields.contains("residenceStatus")) applyAlienResidenceRule();
         if (dependentFields != null && dependentFields.contains("isCardRequired")) Platform.runLater(this::refreshCardRequiredDecision);
+
+		if (dependentFields != null && (dependentFields.contains("placeOfOriginCat")
+				|| dependentFields.contains("citizenshipTypeCat") || dependentFields.contains("familyInformationCat"))) {
+			Platform.runLater(this::resetCategoriesForAin);
+		}
 	}
 
 	public void resetValue() {
