@@ -1,6 +1,7 @@
 package io.mosip.registration.controller.reg;
 
 import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -146,6 +147,9 @@ public class DocumentScanController extends BaseController {
 			
 			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
 				bufferedImage =signatureFacade.scanDocument(scanDevice, DeviceType.SIGNATURE_PAD.toString());
+        if(bufferedImage != null) {
+				  bufferedImage = changeDimensionForSignature(bufferedImage);
+        }
 			} else {
 				bufferedImage = docScannerFacade.scanDocument(scanDevice, getValueFromApplicationContext(RegistrationConstants.IMAGING_DEVICE_TYPE));
 				
@@ -168,7 +172,11 @@ public class DocumentScanController extends BaseController {
 			scanPopUpViewController.getScanImage().setVisible(true);
 			scanPopUpViewController.getScanningMsg().setVisible(false);
 			scanPopUpViewController.showPreview(true);
-			generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.DOC_CAPTURE_SUCCESS));
+			if(subType.equals(RegistrationConstants.PROOF_OF_SIGNATURE) || subType.equals(RegistrationConstants.PROOF_OF_INTRODUCER_SIGNATURE)) {
+				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SIGN_CAPTURE_SUCCESS));
+			} else {
+				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.DOC_CAPTURE_SUCCESS));
+			}
 
 		} catch (RuntimeException exception) {
 			LOGGER.error("Exception while scanning documents for registration", exception);
@@ -177,6 +185,17 @@ public class DocumentScanController extends BaseController {
 			LOGGER.error("Exception while scanning documents for registration", e);
 			generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_DOCUMENT_ERROR));
 		}
+	}
+
+	public BufferedImage changeDimensionForSignature(BufferedImage bufferedImage) {
+		int targetWidth = 443;
+		int targetHeight = 118;
+		BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, bufferedImage.getType());
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.drawImage(bufferedImage, 0, 0, targetWidth, targetHeight, null);
+		g2d.dispose();
+		bufferedImage = resizedImage;
+		return bufferedImage;
 	}
 
 	public byte[] captureAndConvertBufferedImage() throws Exception {

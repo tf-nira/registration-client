@@ -186,7 +186,6 @@ public class LoginServiceImpl extends BaseService implements LoginService {
 					AuditReferenceIdTypes.APPLICATION_ID.getReferenceTypeId());
 
 			userDTO = MAPPER_FACADE.map(userDetailDAO.getUserDetail(userId), UserDTO.class);
-			
 			LOGGER.info("Completed fetching User details, user found : " + (userDTO == null ? false : true));
 			
 		} catch (RegBaseCheckedException regBaseCheckedException) {
@@ -489,7 +488,7 @@ public class LoginServiceImpl extends BaseService implements LoginService {
 		try {
 			getUserDetailValidation(userId);
 			UserDTO userDTO = getUserDetail(userId);
-			if (userDTO == null) {
+			if (userDTO == null || !userDTO.getId().equals(userId)) {
 				setErrorResponse(responseDTO, RegistrationConstants.USER_NAME_VALIDATION, null);
 				return responseDTO;
 			}

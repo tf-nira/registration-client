@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -69,21 +70,40 @@ public class DocScannerUtil {
         return null;
     }
 
-    private static byte[] getCompressedImage(BufferedImage bufferedImage, Float compressionQuality) throws IOException {
+    public static byte[] getCompressedImage(BufferedImage image, Float compressionQuality) throws IOException {
         ImageWriter imageWriter = null;
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            imageWriter = ImageIO.getImageWritersByFormatName(SCANNER_IMG_TYPE).next();
+            imageWriter = ImageIO.getImageWritersByFormatName("jpeg").next(); // assuming SCANNER_IMG_TYPE = "jpeg"
             ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
             imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             imageWriteParam.setCompressionQuality(compressionQuality == null ? 0.7f : compressionQuality);
-            imageWriter.setOutput(new MemoryCacheImageOutputStream(bos));
-            imageWriter.write(bufferedImage);
+
+            // Remove alpha channel (ARGB → RGB)
+            BufferedImage rgbImage = new BufferedImage(
+                    image.getWidth(), image.getHeight(),
+                    BufferedImage.TYPE_INT_RGB
+            );
+            Graphics2D g = rgbImage.createGraphics();
+            g.setColor(Color.WHITE); // Background for transparency
+            g.fillRect(0, 0, image.getWidth(), image.getHeight());
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+
+            // Set up output stream for the image writer
+            try (MemoryCacheImageOutputStream output = new MemoryCacheImageOutputStream(bos)) {
+                imageWriter.setOutput(output);
+                IIOImage iioImage = new IIOImage(rgbImage, null, null);
+                imageWriter.write(null, iioImage, imageWriteParam);
+            }
+
             return bos.toByteArray();
         } finally {
-            if (imageWriter != null)
+            if (imageWriter != null) {
                 imageWriter.dispose();
+            }
         }
     }
+
 
     private static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
         int original_width = imgSize.width;

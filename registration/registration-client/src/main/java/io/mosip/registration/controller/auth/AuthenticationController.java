@@ -608,45 +608,41 @@ public class AuthenticationController extends BaseController implements Initiali
 	private void loadNextScreen() {
 		LOGGER.info("Loading next authentication screen");
 		
-		try {
-			if (!SessionContext.userMap().isEmpty()) {
-				if (SessionContext.userMap().get(RegistrationConstants.IS_LOW_QUALITY_BIOMETRICS) == null) {
-					SessionContext.userMap().put(RegistrationConstants.IS_LOW_QUALITY_BIOMETRICS, false);
-				}
+		if (!SessionContext.userMap().isEmpty()) {
+			if (SessionContext.userMap().get(RegistrationConstants.IS_LOW_QUALITY_BIOMETRICS) == null) {
+				SessionContext.userMap().put(RegistrationConstants.IS_LOW_QUALITY_BIOMETRICS, false);
 			}
-			if (!userAuthenticationTypeList.isEmpty()) {
-				authCount++;
-				String authenticationType = String
-						.valueOf(userAuthenticationTypeList.get(RegistrationConstants.PARAM_ZERO));
+		}
+		if (!userAuthenticationTypeList.isEmpty()) {
+			authCount++;
+			String authenticationType = String
+					.valueOf(userAuthenticationTypeList.get(RegistrationConstants.PARAM_ZERO));
 
-				if (authenticationType.equalsIgnoreCase(RegistrationConstants.OTP)) {
-					getOTP.setVisible(true);
-				}
-				operatorAuthContinue.setDisable(false);
-				genericController.disableAuthenticateButton(false);
-				loadAuthenticationScreen(authenticationType);
-			} else {
-				if (!isReviewer) {
-					/*
-					 * Check whether the biometric exceptions are enabled and supervisor
-					 * authentication is required
-					 */
-					if (!getRegistrationDTOFromSession().getBiometricExceptions().isEmpty()
-							&& RegistrationConstants.ENABLE.equalsIgnoreCase(
-							getValueFromApplicationContext(RegistrationConstants.REVIEWER_AUTH_CONFIG))) {
-						authCount = 0;
-						isReviewer = true;
-						getAuthenticationModes(ProcessNames.EXCEPTION.getType());
-					} else {
-						submitRegistration();
-					}
-				} else {
-					submitRegistration();
-				}
+			if (authenticationType.equalsIgnoreCase(RegistrationConstants.OTP)) {
+				getOTP.setVisible(true);
 			}
-		} catch (RegBaseCheckedException exception) {
-			LOGGER.error("REGISTRATION - OPERATOR_AUTHENTICATION", APPLICATION_NAME, APPLICATION_ID,
-					exception.getMessage() + ExceptionUtils.getStackTrace(exception));
+			operatorAuthContinue.setDisable(false);
+			genericController.disableAuthenticateButton(false);
+			loadAuthenticationScreen(authenticationType);
+		} 
+		else {
+//				if (!isReviewer) {
+//					/*
+//					 * Check whether the biometric exceptions are enabled and supervisor
+//					 * authentication is required
+//					 */
+//					if (!getRegistrationDTOFromSession().getBiometricExceptions().isEmpty()
+//							&& RegistrationConstants.ENABLE.equalsIgnoreCase(
+//							getValueFromApplicationContext(RegistrationConstants.REVIEWER_AUTH_CONFIG))) {
+//						authCount = 0;
+//						isReviewer = true;
+//						getAuthenticationModes(ProcessNames.EXCEPTION.getType());
+//					} else {
+//						submitRegistration();
+//					}
+//				} else {
+				submitRegistration();
+//				}
 		}
 	}
 

@@ -2,6 +2,7 @@ package io.mosip.registration.test.packetStatusSync;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import java.sql.Timestamp;
@@ -319,7 +320,9 @@ public class RegPacketStatusServiceTest {
 		List<Registration> list = prepareSamplePackets();
 		SuccessResponseDTO successResponseDTO = new SuccessResponseDTO();
 		successResponseDTO.setMessage(RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_SUCCESS);
-
+		packetStatusService = Mockito.spy(packetStatusService);
+		doReturn("false").when(packetStatusService)
+        .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 		when(registrationDAO.get(Mockito.any(), Mockito.any())).thenReturn(list);
 
 		Mockito.doNothing().when(packetStatusDao).delete(Mockito.any());
@@ -345,6 +348,9 @@ public class RegPacketStatusServiceTest {
 	@Test
 	public void deleteReRegistrationPacketsFailureTest() {
 		when(registrationDAO.get(Mockito.any(), Mockito.any())).thenThrow(RuntimeException.class);
+		packetStatusService = Mockito.spy(packetStatusService);
+		doReturn("false").when(packetStatusService)
+        .getGlobalConfigValueOf(RegistrationConstants.REG_PACKET_DELETION_ENABLE);
 
 		assertSame(RegistrationConstants.REGISTRATION_DELETION_BATCH_JOBS_FAILURE,
 				packetStatusService.deleteRegistrationPackets().getErrorResponseDTOs().get(0).getMessage());
