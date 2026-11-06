@@ -145,6 +145,12 @@ public class GenericController extends BaseController {
 	private static final String FAMILY_NIN_ERROR_MSG = "At least one of Father, Mother or Blood Relative should be Ugandan.";
 	private static final List<String> AIN_BLOCKED_CATEGORIES = Arrays.asList("familyInformationCat", "citizenshipTypeCat", "placeOfOriginCat");
 	private boolean ainResetInProgress = false;
+	private static final String ENROLMENT_TYPE_FIELD = "enrolmentStatus";
+	private static final String ENROLMENT_DEFAULT_CODE = "UGA";
+	private boolean enrolmentRuleInProgress = false;
+	private static final List<String> ENROLMENT_FIELDS_LEAF_FIRST = Arrays.asList("applicantPlaceOfEnrolmentVillage", "applicantPlaceOfEnrolmentParish", "applicantPlaceOfEnrolmentSubCounty", "applicantPlaceOfEnrolmentCounty", "applicantPlaceOfEnrolmentDistrict", "enrolmentStatus");
+	private static final String ENROLMENT_COUNTRY_FIELD = "enrolmentCountry";
+	private String lastNinValue = null;
 	private ProcessSpecDto process;
 	public Node node;
 	/**
@@ -248,6 +254,7 @@ public class GenericController extends BaseController {
 		anchorPane.prefHeightProperty().bind(genericScreen.heightProperty());
 		fields = getAllFields(registrationDTO.getProcessId(), registrationDTO.getIdSchemaVersion());
 		additionalInfoReqIdScreenOrder = null;
+		lastNinValue = null;
 		updateFlowAllowedProcess.clear();
 		updateFlowAllowedProcess.add(FlowType.UPDATE.name());
 		updateFlowAllowedProcess.add(FlowType.RENEWAL.name());
@@ -739,7 +746,10 @@ public class GenericController extends BaseController {
 					field -> getFxControl(field.getId()) != null && getFxControl(field.getId()).getNode().isVisible());
 		}
 		LOGGER.info("Screen refreshed, Screen: {} visible : {}", screenName, atLeastOneVisible);
-		if ("DemographicDetails".equals(screenName)) applyAlienResidenceRule();
+		if ("DemographicDetails".equals(screenName)) {
+			applyAlienResidenceRule();
+			lockEnrolmentForAin();
+		}
 		return atLeastOneVisible;
 	}
 
@@ -2200,6 +2210,111 @@ public class GenericController extends BaseController {
         }
     }
 
+	/** Called on every dependent-field refresh; acts only if the NIN/AIN text really changed. */
+	private void handleNinChange() {
+		if (enrolmentRuleInProgress || process == null
+				|| !"UPDATE".equalsIgnoreCase(process.getId())) return;
+
+		String current = ninValue("NIN");
+		current = current == null ? "" : current.trim();
+		if (current.equals(lastNinValue)) return;
+		lastNinValue = current;
+
+		if (preregFetching) {               // don't wipe data being loaded from pre-reg
+			lockEnrolmentForAin();
+			return;
+		}
+		resetEnrolmentSection();
+		lockEnrolmentForAin();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void resetEnrolmentSection() {
+		enrolmentRuleInProgress = true;
+		try {
+			Map<String, Object> demo = getRegistrationDTOFromSession().getDemographics();
+			for (String id : ENROLMENT_FIELDS_LEAF_FIRST) {
+				FxControl c = getFxControl(id);
+				if (c == null) continue;
+				c.getNode().setDisable(false);              // unlock first
+				clearControlValue(c);
+				for (ComboBox cb : findAllComboBoxes(c.getNode())) {
+					cb.getSelectionModel().clearSelection();
+				}
+				demo.remove(id);
+			}
+
+			// re-evaluate visibility: children hide because enrolmentStatus is now null
+			orderedScreens.values().forEach(s ->
+					refreshScreenVisibilityForDependentFields(s.getName(), ENROLMENT_FIELDS_LEAF_FIRST));
+		} finally {
+			enrolmentRuleInProgress = false;
+		}
+	}
+
+	/** AIN: Type of Enrolment = In Uganda (locked), Country = Uganda (locked). */
+	private void lockEnrolmentForAin() {
+		if (enrolmentRuleInProgress || process == null
+				|| !"UPDATE".equalsIgnoreCase(process.getId())) return;
+
+		FxControl status = getFxControl(ENROLMENT_TYPE_FIELD);
+		FxControl country = getFxControl(ENROLMENT_COUNTRY_FIELD);
+		if (status == null) return;
+
+		if (!isAlienNin()) {
+			status.getNode().setDisable(false);
+			if (country != null) country.getNode().setDisable(true);
+			return;
+		}
+
+		enrolmentRuleInProgress = true;
+		try {
+			if (!selectComboByCode(status, ENROLMENT_DEFAULT_CODE)) {
+				status.selectAndSet(ENROLMENT_DEFAULT_CODE);
+				status.setData(ENROLMENT_DEFAULT_CODE);
+			}
+			status.getNode().setDisable(true);
+
+			// make Country/District/... visible now
+			List<String> children = status.getUiSchemaDTO().getDependentFields();
+			if (children != null) {
+				orderedScreens.values().forEach(s ->
+						refreshScreenVisibilityForDependentFields(s.getName(), children));
+			}
+		} finally {
+			enrolmentRuleInProgress = false;
+		}
+
+		// Country's items only exist after it becomes visible, so select on the next pulse
+		Platform.runLater(() -> {
+			FxControl c = getFxControl(ENROLMENT_COUNTRY_FIELD);
+			if (c == null) return;
+			if (!selectComboByCode(c, ENROLMENT_DEFAULT_CODE)) {
+				c.selectAndSet(ENROLMENT_DEFAULT_CODE);   // same fallback as loadPreRegSync
+				c.setData(ENROLMENT_DEFAULT_CODE);
+			}
+			c.getNode().setDisable(true);
+		});
+	}
+
+	/** Selects the item with the given code; returns true if it is selected afterwards. */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private boolean selectComboByCode(FxControl control, String code) {
+		if (control == null) return false;
+		for (ComboBox cb : findAllComboBoxes(control.getNode())) {
+			for (Object item : cb.getItems()) {
+				if (item instanceof GenericDto && code.equals(((GenericDto) item).getCode())) {
+					Object cur = cb.getSelectionModel().getSelectedItem();
+					if (!(cur instanceof GenericDto && code.equals(((GenericDto) cur).getCode()))) {
+						cb.getSelectionModel().select(item);
+					}
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public void refreshDependentFields(List<String> dependentFields) {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibilityForDependentFields(screen.getName(), dependentFields); });
 		if (dependentFields != null && dependentFields.contains("residenceStatus")) applyAlienResidenceRule();
@@ -2209,6 +2324,7 @@ public class GenericController extends BaseController {
 				|| dependentFields.contains("citizenshipTypeCat") || dependentFields.contains("familyInformationCat"))) {
 			Platform.runLater(this::resetCategoriesForAin);
 		}
+		Platform.runLater(this::handleNinChange);
 	}
 
 	public void resetValue() {
