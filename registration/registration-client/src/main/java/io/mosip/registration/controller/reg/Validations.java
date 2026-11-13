@@ -259,12 +259,13 @@ public class Validations extends BaseController {
 					}
 				}
 
-				int minAge = applicantAge + 10;
-				if (!"Father".equalsIgnoreCase(declarant)
-						&& !"Mother".equalsIgnoreCase(declarant)) {
-					minAge = Math.max(minAge, 18);
+				boolean isParent = "Father".equalsIgnoreCase(declarant) || "Mother".equalsIgnoreCase(declarant);
+
+				int minAge;
+				if (isParent) {
+					minAge = Math.max(applicantAge + 10, 10);
 				} else {
-					minAge = Math.max(minAge, 10);
+					minAge = 18;
 				}
 
 				if (declarantAge < minAge || declarantAge > 120) {
