@@ -4,19 +4,23 @@ import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_
 
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TimeZone;
 
 import io.mosip.registration.controller.ClientApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
@@ -96,11 +100,20 @@ public class DateValidation extends BaseController {
 			if (isValid) {
 				populateAge(parentPane, fieldId);
 			}
+			else{
+				dd.setText(null);
+				mm.setText(null);
+				yyyy.setText(null);
+				populateAgeNull(parentPane, fieldId);
+				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE));
+			}
+		}
+		else{
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE));
+			return isValid;
 		}
 		boolean err=true;
-		int enteredYear = Integer.parseInt(yyyy.getText());
-		int currentYear = LocalDate.now().getYear();
-		int yearDifference = currentYear-enteredYear;
+		int yearDifference = getRegistrationDTOFromSession().getAge();
 		int highAgeNew =Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL));
 //		int highAgeFirstId=Integer.parseInt(getValueFromApplicationContext(RegistrationConstants.AGE_VAL_FIRSTID));
 		int highAgeFirstId = 16;
@@ -264,6 +277,14 @@ public class DateValidation extends BaseController {
 
 		}
 	}
+	private void populateAgeNull(Pane parentPane, String fieldId) {
+
+		TextField ageField = (TextField) getFxElement(parentPane,
+				fieldId + RegistrationConstants.AGE_FIELD + RegistrationConstants.TEXT_FIELD);
+		if (ageField != null) {
+			ageField.setText(null);
+		}
+	}
 
 	private void populateDateFields(Pane parentPane, String fieldId, int age) {
 		TextField dd = (TextField) getFxElement(parentPane,
@@ -298,8 +319,8 @@ public class DateValidation extends BaseController {
 	private boolean isValidDate(Validator validator, Pane parentPane, String dd, String mm, String yyyy, String fieldId) {
 		if (isValidValue(dd) && isValidValue(mm) && isValidValue(yyyy)) {
 			try {
-				if (dd.length() != 2 || mm.length() != 2) {
-					return false;  // Invalid if dd or mm is not exactly two digits
+				if (dd.length() != 2 || mm.length() != 2 || yyyy.length() != 4) {
+					return false;
 				}
 
 				// Format the day and month as two digits
@@ -307,6 +328,10 @@ public class DateValidation extends BaseController {
 				String formattedMonth = String.format("%02d", Integer.parseInt(mm));
 
 				LocalDate date = LocalDate.of(Integer.valueOf(yyyy), Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+				int minYear = LocalDate.now().minusYears(120).getYear();
+				if (Integer.valueOf(yyyy) < minYear) {
+					return false; // too old
+				}
 
 				if (LocalDate.now().compareTo(date) >= 0) {
 					String dob = date.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
@@ -393,7 +418,7 @@ public class DateValidation extends BaseController {
 		TextField yyyy = (TextField) getFxElement(parentPane,
 				fieldId + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
 		String dob="";
-		boolean isValid = false;
+		boolean isValid = true;
 		Validator validator = null;
 		boolean checkCardExpire = false;
 		if (dd.getText().matches(RegistrationConstants.NUMBER_REGEX)
@@ -408,8 +433,16 @@ public class DateValidation extends BaseController {
 			String formattedDay = String.format("%02d", Integer.parseInt(dd.getText()));
 			String formattedMonth = String.format("%02d", Integer.parseInt(mm.getText()));
 
-			LocalDate localDate = LocalDate.of(Integer.valueOf(yyyy.getText()),
-					Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+			LocalDate localDate;
+			try {
+				localDate = LocalDate.of(Integer.valueOf(yyyy.getText()),
+						Integer.valueOf(formattedMonth), Integer.valueOf(formattedDay));
+			} catch (DateTimeException ex) {
+			    isValid = false;
+			    resetFieldStyleClass(parentPane, fieldId,
+			            getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT, minDays, maxDays));
+			    return isValid;
+			}
 
 			dob = localDate.format(DateTimeFormatter.ofPattern(ApplicationContext.getDateFormat()));
 			isValid = validator != null && validator.getValidator() != null ? dob.matches(validator.getValidator()) : true;
@@ -423,38 +456,146 @@ public class DateValidation extends BaseController {
                 isValid = false;
                 checkCardExpire = true;
             }
+			
+			String guardianRelationToApplicant = null;
+			Object declarantObj = getRegistrationDTOFromSession().getDemographics().get("guardianRelationToApplicant");
+            if (declarantObj instanceof List<?>) {
+                List<?> declarantList = (List<?>) declarantObj;
+                if (!declarantList.isEmpty() && declarantList.get(0) instanceof SimpleDto) {
+                    SimpleDto dto = (SimpleDto) declarantList.get(0);
+                    if (dto.getValue() != null) {
+                    	guardianRelationToApplicant = dto.getValue().trim().toLowerCase(); // Normalize
+                    }
+                }
+            }
+            
+            // Parse both dob, current date and dateofbirth strings into LocalDate objects
+			LocalDate dobDate = LocalDate.parse(dob, formatter);
+			LocalDate currentDate = LocalDate.parse(LocalDate.now().format(formatter), formatter);
+			
+			// Calculate the difference between Current Data and Input Date
+			Period period1 = Period.between(currentDate, dobDate);
 
-			if(isValid && !dateofbirth.equalsIgnoreCase("")){
-				// Parse both dob and dateofbirth strings into LocalDate objects
-				LocalDate dobDate = LocalDate.parse(dob, formatter);
+			if(isValid && !dateofbirth.equalsIgnoreCase("") && !getRegistrationDTOFromSession().getProcessId().equalsIgnoreCase(RegistrationConstants.RENEWAL)){
 				LocalDate dateofbirthDate = LocalDate.parse(dateofbirth, formatter);
 
-				// Calculate the period (difference) between the two dates
+				// Calculate the period (difference) between Applicant Date and Input Date
 				Period period = Period.between(dateofbirthDate, dobDate);
-
-				// Check if the difference is at least 18 years
-				if ( (uiFieldDTO.getId().contains("spouse") || uiFieldDTO.getId().contains("removeSpouse") || uiFieldDTO.getId().contains("child") )  && period.getYears() < 18) {
-					isValid = false; // If the difference is less than 18 years, set isValid to false
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINIMUM_AGE_DIFF));
+				
+				// Check the date if any future date or before Applicant or After applicant
+				if ( (uiFieldDTO.getId().contains(RegistrationConstants.SPOUSE) || uiFieldDTO.getId().contains(RegistrationConstants.REMOVE_SPOUSE) )  && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
+					isValid = false; // If Age is Future date, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
 				}
-				else if(uiFieldDTO.getId().contains("guardian") && period.getYears()>-1){
-					isValid = false; // If the difference is less than 18 years, set isValid to false
-					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_DIFF));
+			    else if (guardianRelationToApplicant != null && guardianRelationToApplicant.equalsIgnoreCase(RegistrationConstants.OTHER) && uiFieldDTO.getId().contains(RegistrationConstants.GUARDIAN)) {
+			        Period applicantAge = Period.between(dateofbirthDate, currentDate);
+			        int applicantYears = applicantAge.getYears();
+			        int guardianYears = Period.between(dobDate, currentDate).getYears();
 
+			        if (applicantYears >= 40) {
+			            // Guardian must be at least 18 years old, even if younger than applicant
+			            if (guardianYears < 18) {
+			                isValid = false;
+			                resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.MINOR_GUARDIAN));
+			            }
+			        } else {
+			            // For applicants < 40, guardian must be older or equal in age
+			            if (guardianYears < applicantYears) {
+			                isValid = false;
+			                resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AFTER_APPLICANT_DOB));
+			            }
+			        }
+			    }
+				else if(uiFieldDTO.getId().contains(RegistrationConstants.GUARDIAN) && period.getDays() >= 0 && period.getMonths() >= 0 && period.getYears() >= 0){
+					isValid = false; // If Age is After Applicant DOB, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AFTER_APPLICANT_DOB));
+				}
+				else if(uiFieldDTO.getId().contains(RegistrationConstants.CHILD_FOR_AGE) && period.getDays() <= 0 && period.getMonths() <= 0 && period.getYears() <= 0) {
+					isValid = false; // If Age is Before Applicant DOB, set isValid to false
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.BEFORE_APPLICANT_DOB));
+				} 
+			}
+		
+			//no need future validation excludedFields
+			Set<String> excludedFields = Set.of(
+					"dateOfExpiry",
+					"ninExpiryDate",
+					"dateOfIssuance"
+			);
+			
+			if(!excludedFields.contains(uiFieldDTO.getId()) && (period1.getDays() > 0 || period1.getMonths() > 0 || period1.getYears() > 0)) {
+				isValid = false; // If Age is Future date, set isValid to false
+				resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.AGE_NON_FUTURE));
+			} else if(uiFieldDTO.getId().equalsIgnoreCase("dateOfExpiry")) {
+				if(!dobDate.isAfter(currentDate)) {
+					isValid = false;
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+							RegistrationConstants.ONLY_FUTURE_DATE, minDays, maxDays));
+				}
+
+				if (isValid) {
+					TextField issuanceDD   = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.DD   + RegistrationConstants.TEXT_FIELD);
+					TextField issuanceMM   = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.MM   + RegistrationConstants.TEXT_FIELD);
+					TextField issuanceYYYY = (TextField) getFxElement(parentPane,
+							"dateOfIssuance" + RegistrationConstants.YYYY + RegistrationConstants.TEXT_FIELD);
+
+					boolean issuanceFieldsPresent = issuanceDD   != null && issuanceMM   != null && issuanceYYYY != null
+							&& !issuanceDD.getText().isBlank()
+							&& !issuanceMM.getText().isBlank()
+							&& !issuanceYYYY.getText().isBlank();
+
+					if (issuanceFieldsPresent) {
+						try {
+							String formattedIssuanceDay   = String.format("%02d", Integer.parseInt(issuanceDD.getText()));
+							String formattedIssuanceMonth = String.format("%02d", Integer.parseInt(issuanceMM.getText()));
+							LocalDate issuanceDate = LocalDate.of(
+									Integer.parseInt(issuanceYYYY.getText()),
+									Integer.parseInt(formattedIssuanceMonth),
+									Integer.parseInt(formattedIssuanceDay)
+							);
+							long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(issuanceDate, dobDate);
+							LOGGER.info(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME,
+									RegistrationConstants.APPLICATION_ID,
+									"dateOfExpiry diff check: issuance=" + issuanceDate
+											+ ", expiry=" + dobDate + ", days=" + daysBetween);
+							if (daysBetween <= 90) {
+								isValid = false;
+								resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+										RegistrationConstants.INVALID_EXPIRY_ISSUANCE_DIFF, minDays, maxDays));
+							}
+						} catch (Exception ex) {
+							LOGGER.error(LoggerConstants.DATE_VALIDATION, APPLICATION_NAME,
+									RegistrationConstants.APPLICATION_ID, ExceptionUtils.getStackTrace(ex));
+						}
+					}
+				}
+
+			} else if (uiFieldDTO.getId().equalsIgnoreCase("dateOfIssuance")) {
+				if (dobDate.isAfter(currentDate)) {
+					isValid = false;
+					resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator,
+							RegistrationConstants.AGE_NON_FUTURE));
 				}
 			}
 
 
-			if (isValid) {
-				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
-				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
-				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
-			}
+//			if (!isValid) {
+//				LocalDate afterMaxDays = LocalDate.now().plusDays(maxDays);
+//				LocalDate beforeMinDays = LocalDate.now().plusDays(minDays);
+//				isValid = (localDate.isAfter(beforeMinDays) && localDate.isBefore(afterMaxDays));
+//			}
+		} else {
+			isValid = false;
+			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
+				minDays, maxDays));
 		}
 		if (checkCardExpire) {
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.CARD_EXP_DATE_LIMIT));
         }
 		if(uiFieldDTO.isRequired() && (dd.getText().isEmpty() || mm.getText().isEmpty() || yyyy.getText().isEmpty()) ) {
+			isValid = false;
 			resetFieldStyleClass(parentPane, fieldId, isValid ? null : getErrorMessage(validator, RegistrationConstants.INVALID_DATE_LIMIT,
 				minDays, maxDays));
 		}

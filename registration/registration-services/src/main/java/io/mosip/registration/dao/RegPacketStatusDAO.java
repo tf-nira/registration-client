@@ -39,4 +39,6 @@ public interface RegPacketStatusDAO {
 
 
 	List<Registration> getPacketIdsByStatusExported();
+
+	boolean existsById(Registration registration);
 }
