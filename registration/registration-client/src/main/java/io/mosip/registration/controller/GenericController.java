@@ -2189,26 +2189,33 @@ public class GenericController extends BaseController {
 		}
 	}
 
-    private void refreshCardRequiredDecision() {
-        if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
+	/** Yes if defaultValue, No (locked) if defaultValue2, otherwise leave the user's choice / blank. */
+	private void applyCardRequiredDefault(FxControl control) {
+		UiFieldDTO field = control.getUiSchemaDTO();
+		boolean mustHave = control.isFieldDefaultValue(field);
+		boolean mustNot  = control.isFieldDefaultValue2(field);
 
-        FxControl control = getFxControl("isCardRequired");
-        if (control == null) return;
+		if (mustHave) {
+			control.selectAndSet("Y");
+			control.getNode().setDisable(true);
+		} else if (mustNot) {
+			control.selectAndSet("N");
+			control.getNode().setDisable(true);
+		} else if (control.getNode().isDisable()) {
+			// was locked by an earlier default, release it and blank it
+			control.selectAndSet(null);
+			control.getNode().setDisable(false);
+		}
+	}
 
-        UiFieldDTO field = control.getUiSchemaDTO();
-        if (field.getDefaultValue() == null || field.getDefaultValue2() == null) return;
-
-        boolean mustHave = control.isFieldDefaultValue(field);    // defaultValue  -> Yes
-        boolean mustNot  = control.isFieldDefaultValue2(field);   // defaultValue2 -> No
-
-        if (mustHave) {
-            control.selectAndSet("Y");
-            control.getNode().setDisable(true);
-        } else {
-            control.selectAndSet("N");
-            control.getNode().setDisable(mustNot);
-        }
-    }
+	private void refreshCardRequiredDecision() {
+		if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
+		FxControl control = getFxControl("isCardRequired");
+		if (control == null) return;
+		UiFieldDTO field = control.getUiSchemaDTO();
+		if (field.getDefaultValue() == null || field.getDefaultValue2() == null) return;
+		applyCardRequiredDefault(control);
+	}
 
 	/** Called on every dependent-field refresh; acts only if the NIN/AIN text really changed. */
 	private void handleNinChange() {
@@ -2348,6 +2355,10 @@ public class GenericController extends BaseController {
 								}
 
 								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
+									if ("isCardRequired".equals(field.getId())) {
+										applyCardRequiredDefault(fxControl);
+										continue;   // skip the generic Y/N logic below
+									}
 									boolean check1 = fxControl.isFieldDefaultValue(field);
 									boolean check2 = fxControl.isFieldDefaultValue2(field);
 
