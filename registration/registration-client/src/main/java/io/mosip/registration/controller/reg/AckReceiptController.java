@@ -3,17 +3,32 @@ package io.mosip.registration.controller.reg;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_ID;
 import static io.mosip.registration.constants.RegistrationConstants.APPLICATION_NAME;
 
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Base64;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.print.PrintHelper;
-import com.sun.javafx.print.Units;
+import javax.imageio.ImageIO;
+import javax.swing.JEditorPane;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
+
 import io.mosip.registration.api.printer.PrinterStatusChecker;
+import io.mosip.registration.api.thermal.printer.ThermalPrinter;
 import javafx.collections.ObservableSet;
 import javafx.print.*;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -135,50 +150,156 @@ public class AckReceiptController extends BaseController implements Initializabl
 	@FXML
 	public void printReceiptThermal(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
-				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Receipt");
-		slipWebView.getEngine().loadContent(slipStringWriter.toString());
-		PrinterJob job = PrinterJob.createPrinterJob();
-		if (job != null) {
-			job.getJobSettings().setJobName("A6_Ack");
-			ObservableSet<Printer> printers = Printer.getAllPrinters();
-			Printer selectedPrinter = null;
-			Paper customPaper = null;
-			if(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH) != null &&
-					getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT) != null
-			) {
-				//customPaper = PrintHelper.createPaper("A6 Paper", 75, Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
-				customPaper = PrintHelper.createPaper("A6 Paper", Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_WIDTH)), Double.parseDouble(getValueFromApplicationContext(RegistrationConstants.PRINT_ACK_A6_HEIGHT)), Units.MM);//If thermal Printer
+				RegistrationConstants.APPLICATION_ID, "Printing the Acknowledgement Thermal Receipt");
+		
+		try {
+			Document doc = Jsoup.parse(slipStringWriter.toString());
+	        Element qrImg = doc.selectFirst("img.qrimage");
+	        
+	        String path = "C:/Thermal_images/";
+	        File pathFile = new File(path);
+	        if (!pathFile.exists()) {
+	            pathFile.mkdirs();
+	        }
+	        
+	        File[] oldQrImages = pathFile.listFiles(f -> f.getName().startsWith("qr_image") && f.getName().endsWith(".png"));
+	        if (oldQrImages != null) {
+		        for (File file : oldQrImages) {
+		            boolean deleted = file.delete();
+		            if (!deleted) {
+		                LOGGER.warn("Failed to delete old QR image: " + file.getAbsolutePath());
+		            }
+		        }
+		    }
 
-				List<PrinterStatusChecker> connectedPrinters = PrinterStatusChecker.getPrintersWithStatus();
-				System.out.println(connectedPrinters.toString());
-				for (PrinterStatusChecker checker : connectedPrinters) {
-					if (checker.getPrinterName().contains(getValueFromApplicationContext(RegistrationConstants.A6_THERMAL_PRINTER))) {
-						selectedPrinter = Printer.getAllPrinters()
-								.stream()
-								.filter(printer -> printer.getName().equalsIgnoreCase(checker.getPrinterName()))
-								.findFirst()
-								.orElse(null);
-						break;
-					}
-				}
+	        if (qrImg != null) {
+	            String src = qrImg.attr("src");
+	            if (src.startsWith("data:image")) {
+	            	LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Updating qr code image");
+	                String base64 = src.split(",")[1];
+	                byte[] qrBytes = Base64.getDecoder().decode(base64);
+	                BufferedImage qrImage = ImageIO.read(new ByteArrayInputStream(qrBytes));
+	                
+		            File qrFile = new File(path + "qr_image_" + System.currentTimeMillis() + ".png");
+		            ImageIO.write(qrImage, "png", qrFile);
+		            
+		            Thread.sleep(500);
+		            
+		            String fileUrl = qrFile.toURI().toString();
+		            qrImg.attr("src", fileUrl);
+		            qrImg.attr("width", "100");
+		            qrImg.attr("height", "100");
+		            LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Updated qr code image");
+	            }
+	        }
+			
+			BufferedImage rendered = renderHtmlToImage(doc.html(), 640);
+			rendered = zoomImage(rendered, 575);
+	        saveAsMonochromeBmp(rendered, path + "print_image.bmp");
+	        
+	        LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+    				RegistrationConstants.APPLICATION_ID, "Receipt image saved");
+			
+			ThermalPrinter thermalPrinter = ThermalPrinter.INSTANCE;
+			long printerID = thermalPrinter.POS_Port_OpenA("SP-USB1", 1002, false, null);
+
+			if ((int)printerID < 0) {
+			    generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer not connected");
+			    LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+        				RegistrationConstants.APPLICATION_ID, "Thermal printer port open failed, status: " + (int)printerID);
 			} else {
-				customPaper = PrintHelper.createPaper("A6 Paper", 60, 100, Units.MM);
+			    long printerStatus = thermalPrinter.POS_Status_RTQueryStatus(printerID);
+
+			    if ((int)printerStatus == 1) {
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer is out of paper");
+			    } else if ((int)printerStatus == 0) {
+			    	long printStatus = thermalPrinter.POS_Output_PrintBmpDirectA(printerID, path + "print_image.bmp");
+			        if ((int)printStatus != 0) {
+			            generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer connected but print failed");
+			            LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+		        				RegistrationConstants.APPLICATION_ID, "Failed to print data with thermal printer, status: " + (int)printStatus);
+			        } else {
+			        	long feedStatus = thermalPrinter.POS_Control_FeedLines(printerID, 100);
+			        	if ((int) feedStatus != 0) {
+			        	    LOGGER.warn("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+			        	        RegistrationConstants.APPLICATION_ID, "Feed after print failed, status: " + (int) feedStatus);
+			        	}
+			        	generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
+			        }
+			    } else {
+			        generateAlert(RegistrationConstants.ALERT_INFORMATION, "Thermal printer not connected");
+			        LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+	        				RegistrationConstants.APPLICATION_ID, "Thermal printer not connected, status: " + (int)printerStatus);
+			    }
+
+			    thermalPrinter.POS_Port_Close(printerID);
 			}
-			if(selectedPrinter != null){
-				generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.PRINT_INITIATION_SUCCESS);
-				PageLayout pageLayout = selectedPrinter.createPageLayout(customPaper, PageOrientation.PORTRAIT, Printer.MarginType.HARDWARE_MINIMUM);
-				job.setPrinter(selectedPrinter);
-				job.getJobSettings().setPageLayout(pageLayout);
-				slipWebView.getEngine().print(job);
-				job.endJob();
-			}
-			else{
-				generateAlert(RegistrationConstants.ALERT_INFORMATION,
-						RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED_THERMAL_NOT_CONNECTED));
-			}
+		} catch (Exception e) {
+			generateAlert(RegistrationConstants.ALERT_INFORMATION,
+					RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.PRINT_INITIATION_FAILED));
+			LOGGER.error("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,
+    				RegistrationConstants.APPLICATION_ID, "Exception while printing slip", e);
 		}
 	}
+	
+	private BufferedImage renderHtmlToImage(String html, int width) {
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType("text/html");
+        pane.setEditable(false);
 
+        HTMLEditorKit kit = new HTMLEditorKit();
+        StyleSheet styleSheet = new StyleSheet();
+        styleSheet.addRule("body { padding-top: 20px; padding-bottom: 20px; margin: 0; }");
+        kit.setStyleSheet(styleSheet);
+        pane.setEditorKit(kit);
+        
+        pane.setText(html);
+        
+        pane.setSize(width, Short.MAX_VALUE);
+        Dimension preferredSize = pane.getPreferredSize();
+//      preferredSize.width = width;
+        pane.setSize(preferredSize);
+
+        BufferedImage image = new BufferedImage(preferredSize.width, preferredSize.height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        pane.paint(g);
+        g.dispose();
+        return image;
+    }
+	
+	private BufferedImage zoomImage(BufferedImage original, int targetWidth) {
+	    int originalWidth = original.getWidth();
+	    int originalHeight = original.getHeight();
+
+	    double scaleFactor = (double) targetWidth / originalWidth;
+	    int targetHeight = (int) (originalHeight * scaleFactor);
+
+	    BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+	    Graphics2D g2 = scaledImage.createGraphics();
+	    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+	    g2.drawImage(original, 0, 0, targetWidth, targetHeight, null);
+	    g2.dispose();
+
+	    return scaledImage;
+	}
+	
+	private void saveAsMonochromeBmp(BufferedImage original, String outputPath) throws IOException {
+        BufferedImage gray = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g = gray.createGraphics();
+        g.drawImage(original, 0, 0, null);
+        g.dispose();
+
+        // Dithering / binarization for 1-bit BMP
+        BufferedImage mono = new BufferedImage(gray.getWidth(), gray.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+        Graphics2D g2 = mono.createGraphics();
+        g2.drawImage(gray, 0, 0, null);
+        g2.dispose();
+
+        ImageIO.write(mono, "bmp", new File(outputPath));
+    }
+	
 	@FXML
 	public void printReceipt(ActionEvent event) {
 		LOGGER.info("REGISTRATION - UI - ACK_RECEIPT_CONTROLLER", RegistrationConstants.APPLICATION_NAME,

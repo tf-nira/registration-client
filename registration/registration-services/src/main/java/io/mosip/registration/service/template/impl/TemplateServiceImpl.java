@@ -44,7 +44,7 @@ public class TemplateServiceImpl implements TemplateService {
 
 		StringBuilder templateBuilder = new StringBuilder();
 		if (nullCheckForTemplate(templateTypeCode, langCode)) {
-			List<Template> templateParts = templateDao.getAllTemplates(templateTypeCode+"%", langCode);
+			List<Template> templateParts = templateDao.getAllTemplates(templateTypeCode, langCode);
 			if(templateParts != null) {
 				templateParts.forEach(template -> {
 					templateBuilder.append(template.getFileText());
