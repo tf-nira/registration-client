@@ -2220,25 +2220,30 @@ public class GenericController extends BaseController {
 		}
 	}
 
-	private void refreshCardRequiredDecision() {
-		if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
-
-		FxControl control = getFxControl("isCardRequired");
-		if (control == null) return;
-
+	private void applyCardRequiredDefault(FxControl control) {
 		UiFieldDTO field = control.getUiSchemaDTO();
-		if (field.getDefaultValue() == null || field.getDefaultValue2() == null) return;
-
 		boolean mustHave = control.isFieldDefaultValue(field);
 		boolean mustNot  = control.isFieldDefaultValue2(field);
 
 		if (mustHave) {
 			control.selectAndSet("Y");
 			control.getNode().setDisable(true);
-		} else {
+		} else if (mustNot) {
 			control.selectAndSet("N");
-			control.getNode().setDisable(mustNot);
+			control.getNode().setDisable(true);
+		} else if (control.getNode().isDisable()) {
+			control.selectAndSet(null);
+			control.getNode().setDisable(false);
 		}
+	}
+
+	private void refreshCardRequiredDecision() {
+		if (process == null || !"UPDATE".equalsIgnoreCase(process.getId())) return;
+		FxControl control = getFxControl("isCardRequired");
+		if (control == null) return;
+		UiFieldDTO field = control.getUiSchemaDTO();
+		if (field.getDefaultValue() == null || field.getDefaultValue2() == null) return;
+		applyCardRequiredDefault(control);
 	}
 
 	/** Called on every dependent-field refresh; acts only if the NIN/AIN text really changed. */
@@ -2379,6 +2384,10 @@ public class GenericController extends BaseController {
 								}
 
 								if (field.getDefaultValue() != null && field.getDefaultValue2() != null) {
+									if ("isCardRequired".equals(field.getId())) {
+										applyCardRequiredDefault(fxControl);
+										continue;
+									}
 									boolean check1 = fxControl.isFieldDefaultValue(field);
 									boolean check2 = fxControl.isFieldDefaultValue2(field);
 
