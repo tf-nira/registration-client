@@ -362,6 +362,7 @@ public class RegistrationConstants {
 	public static final String EMPLOYER_DISTRICT = "employerDistrict";
 	public static final String SCHOOL_DISTRICT = "schoolDistrict";
 	public static final String ALIENNEW = "ALIENNEW";
+	public static final String UPDATE = "UPDATE";
 	public static final String ALIENRENEWAL = "ALIENRENEWAL";
 	public static final String ALIENLOST= "ALIENLOST";
 	public static final String DEACTIVATED= "DEACTIVATED";
